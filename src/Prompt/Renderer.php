@@ -234,6 +234,8 @@ class Renderer extends PromptsRenderer
 
             $this->hotkey('q', 'Quit');
 
+            $this->hotkey('r', 'Restart');
+
             $this->line(
                 $this->centerHorizontally($this->hotkeys(), $this->width)->first()
             );

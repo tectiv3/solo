@@ -108,6 +108,7 @@ class Dashboard extends Prompt
             ->on('c', fn() => $this->currentCommand()->clear())
             ->on('p', fn() => $this->currentCommand()->pause())
             ->on('f', fn() => $this->currentCommand()->follow())
+            ->on('r', fn() => $this->currentCommand()->restart())
 
             // Scrolling
             ->onDown(fn() => $this->currentCommand()->scrollDown())
