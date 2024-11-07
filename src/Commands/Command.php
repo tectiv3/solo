@@ -143,7 +143,7 @@ class Command implements Loopable
         if(!empty($this->customHotKeys) && !$this->keyPressListener){
             $this->keyPressListener = KeyPressListener::for($dashboard);
             foreach($this->customHotKeys as $customKeybinding){
-                $this->keyPressListener->on($customKeybinding->key, $customKeybinding->callback);
+                $this->keyPressListener->on($customKeybinding->key, fn() => $customKeybinding->execute());
             }
         }
 

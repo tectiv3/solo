@@ -143,7 +143,7 @@ class Dashboard extends Prompt
             foreach ($command->customHotKeys as $hotKey) {
                 $listener->on($hotKey->key, function() use ($hotKey, $command) {
                     if($command->focused && $hotKey->isActive($command)){
-                        ($hotKey->callback)();
+                        $hotKey->execute();
                     }
                 });
             }

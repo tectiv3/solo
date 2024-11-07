@@ -16,12 +16,17 @@ class CustomHotKey
     function __construct(
         public string|array $key,
         public string $name,
-        public readonly Closure $callback,
+        private readonly Closure $callback,
         private readonly ?Closure $when = null,
     ) { }
 
     public function isActive(Command $command): bool
     {
         return $this->when?->call($this, $command) ?? true;
+    }
+
+    public function execute(): void
+    {
+        $this->callback->call($this);
     }
 }
