@@ -1,6 +1,8 @@
 <?php
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @link https://aaronfrancis.com
+ * @link https://twitter.com/aarondfrancis
  */
 
 namespace AaronFrancis\Solo\Tests\Unit;
@@ -40,5 +42,4 @@ class AnsiAwareTest extends Base
             $wrapped
         );
     }
-
 }
