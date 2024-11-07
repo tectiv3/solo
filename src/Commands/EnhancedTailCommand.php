@@ -59,7 +59,8 @@ class EnhancedTailCommand extends Command
             ->map(fn($line) => Solo::makeTheme()->red($line));
 
         $exception = collect($lines[1])
-            ->flatMap($this->wrapLine(...))
+            // 3 for the 3 spaces we prepend.
+            ->flatMap(fn($line) => $this->wrapLine($line, -3))
             ->map(fn($line) => '   ' . Solo::makeTheme()->exception($line));
 
         return [

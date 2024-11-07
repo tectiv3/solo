@@ -14,12 +14,6 @@ class AnsiAware
         $ansiEscapeSequence = '/(\x1b\[[0-9;]*[mGK])/';
         $wordsPattern = '/(\S+\s+)/';
 
-        // Check if the string contains any ANSI escape sequences.
-        if (!preg_match($ansiEscapeSequence, $string)) {
-            // No ANSI codes found, use standard wordwrap. Safer this way.
-            return wordwrap($string, $width, $break, $cut);
-        }
-
         // Split the string into an array of printable characters and ANSI codes
         $parts = preg_split($ansiEscapeSequence, $string, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
