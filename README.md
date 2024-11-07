@@ -126,5 +126,58 @@ Solo::useTheme('dark')
 
 To remove a command, simply delete the command. No need to create a PR to fix the stub. We've provided a reasonable set of starting commands, but the `SoloServiceProvider` lives in your application, so you have full control of it.
 
+## Usage
 
+To use Solo, you simply need to run `php artisan solo`.
+
+You'll be presented with a dashboard. To navigate between processes use the left/right arrows. You can scroll the output by using the up/down keys. **Shift + up/down** scrolls by 10 lines instead of one.
+
+See the hotkeys on the dashboard for further details.
+
+## Theming
+
+Two themes are shipped by default: light and dark.
+
+To change the theme you can pass 'light' or 'dark' to the `useTheme` method.
+
+```php
+Solo::useTheme('dark');
+```
+
+If you prefer to have it .env driven so that you and your teammates can have different themes, you can create a `config/solo.php` with a `theme` key. Manually set configuration takes precedence over configuration, so you'll need to remove the `useTheme` call.
+
+### Creating a new theme
+
+You can create a new theme by either subclassing the `LightTheme` or `DarkTheme` or by implementing the `Theme` interface. 
+
+After you create the theme, you'll need to register it by calling:
+
+```php
+// overwrite the default light theme
+Solo::registerTheme('light', AaronsAwesomeLightTheme::class);
+
+// or create something totally new
+Solo::registerTheme('synth', SynthWave::class);
+```
+
+### Modifying the dashboard
+
+If you want, you can register a new Renderer to render the entire dashboard. This is out of scope for documentation and only for the brave of heart, but once you do you can register it thusly:
+
+```php
+Solo::setRenderer(MyFancyDashboardRenderer::class);
+```
+
+## Allowing packages to register commands
+
+By default, packages are not allowed to register commands. If they do register commands, they'll be marked as "unsafe." They'll still show up on your dashboard, but they will not run.
+
+To allow a package to register a command, you must add the caller to your service provider:
+
+```php
+Solo::allowCommandsAddedFrom([
+  \Laravel\Pint\AppServiceProvider::class // Note that Pint doesn't actually register Solo commands, this is just an example!
+]);
+
+```
 
