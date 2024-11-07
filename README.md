@@ -176,8 +176,25 @@ To allow a package to register a command, you must add the caller to your servic
 
 ```php
 Solo::allowCommandsAddedFrom([
-  \Laravel\Pint\AppServiceProvider::class // Note that Pint doesn't actually register Solo commands, this is just an example!
+  // Note that Pint doesn't actually register Solo commands, this is just an example!
+  \Laravel\Pint\PintServiceProvider::class,
 ]);
-
 ```
+
+## Contributing
+Please help.
+
+I haven't test this on Windows, I don't have a Windows machine!
+
+Also there are gonna be _so_ many edge cases with commands, terminals, etc. I need a good way to test these things. If you're good at testing, please help me set up a good scaffold. 
+
+## Support me
+
+This is free! I also don't take donations.
+
+If you want to support me you can either buy one of my courses or tell your friends about them or just generally help me spread the word about the things I make. That's all!
+
+- Mastering Postgres: https://masteringpostgres.com
+- High Performance SQLite: https://highperformancesqlite.com
+- Screencasting: https://screencasting.com
 
