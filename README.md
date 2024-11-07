@@ -53,3 +53,78 @@ php artisan solo
 ```
 
 This will start every command defined in your `SoloServiceProvider`.
+
+
+## Customization
+
+To customize Solo, you can open your `SoloServiceProvider` and make changes there.
+
+By default, it will look something like this:
+
+```php
+namespace App\Providers;
+
+use AaronFrancis\Solo\Commands\EnhancedTailCommand;
+use AaronFrancis\Solo\Facades\Solo;
+use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
+
+class SoloServiceProvider extends SoloApplicationServiceProvider
+{
+    public function register()
+    {
+        Solo::useTheme('dark')
+            // Commands that auto start.
+            ->addCommands([
+                EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
+                'Vite' => 'npm run dev',
+                // 'HTTP' => 'php artisan serve',
+                'About' => 'php artisan solo:about'
+            ])
+            // Not auto-started
+            ->addLazyCommands([
+                'Queue' => 'php artisan queue:listen --tries=1',
+                // 'Reverb' => 'php artisan reverb:start',
+                // 'Pint' => 'pint --ansi',
+            ])
+            // FQCNs of trusted classes that can add commands.
+            ->allowCommandsAddedFrom([
+                //
+            ]);
+    }
+
+    public function boot()
+    {
+        //
+    }
+}
+```
+
+Several commands are provided to get you started in the right direction.
+
+## Adding / removing commands
+
+To add new commands, you can pass a key/value pair of name/command to `addCommands` or `addLazyCommands`.
+
+Lazy commands do not auto start. That can be helpful when you don't need to run a command everytime, but it might be useful from time to time. Like Queues or Reverb.
+
+You may also pass a `AaronFrancis\Solo\Commands\Command` instance (with no key) to the `addCommands` or `addLazyCommands` methods.
+
+For example, notice the `EnhancedTailCommand` command here:
+
+```php
+Solo::useTheme('dark')
+    // Commands that auto start.
+    ->addCommands([
+        EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
+        'Vite' => 'npm run dev',
+        // 'HTTP' => 'php artisan serve',
+        'About' => 'php artisan solo:about'
+    ])
+```
+
+`EnhancedTailCommand` is a subclass of `Command` with a little bit of logic to make the logs more readable. You're free to create your own subclasses if you want!
+
+To remove a command, simply delete the command. No need to create a PR to fix the stub. We've provided a reasonable set of starting commands, but the `SoloServiceProvider` lives in your application, so you have full control of it.
+
+
+
