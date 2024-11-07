@@ -13,6 +13,7 @@ use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use SplQueue;
 
 class Command implements Loopable
@@ -37,11 +38,18 @@ class Command implements Loopable
         public bool $autostart = true
     ) {
         $this->clear();
+
+        $this->boot();
     }
 
     public static function make(mixed ...$arguments): static
     {
         return new static(...$arguments);
+    }
+
+    public function boot(): void
+    {
+        //
     }
 
     public function setDimensions($width, $height): static
@@ -88,15 +96,34 @@ class Command implements Loopable
         dd(iterator_to_array($this->lines));
     }
 
-    public function addLine($line)
+    public function addOutput($text)
     {
-        $this->lines->enqueue($line);
+        $line = $this->lines->isEmpty() ? '' : $this->lines->pop();
+
+        $line .= $text;
+
+        $newLines = explode(PHP_EOL, $line);
+
+        foreach ($newLines as $line) {
+            $this->lines->enqueue($line);
+        }
 
         // Enforce a strict 2000 line limit, which
         // seems like more than enough.
         if ($this->lines->count() > 2000) {
             $this->lines->dequeue();
         }
+    }
+
+    public function addLine($line)
+    {
+        $last = $this->lines->isEmpty() ? '' : $this->lines->top();
+
+        if ($last !== '') {
+            $line = Str::start($line, "\n");
+        }
+
+        $this->addOutput(Str::finish($line, "\n"));
     }
 
     public function focus(): void

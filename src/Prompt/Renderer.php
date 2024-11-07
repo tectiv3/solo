@@ -232,9 +232,9 @@ class Renderer extends PromptsRenderer
 
             $this->hotkey('s', $this->currentCommand->processRunning() ? 'Stop ' : 'Start');
 
-            $this->hotkey('q', 'Quit');
-
             $this->hotkey('r', 'Restart');
+
+            $this->hotkey('q', 'Quit');
 
             $this->line(
                 $this->centerHorizontally($this->hotkeys(), $this->width)->first()

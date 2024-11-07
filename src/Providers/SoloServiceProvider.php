@@ -7,6 +7,7 @@
 
 namespace AaronFrancis\Solo\Providers;
 
+use AaronFrancis\Solo\Console\Commands\About;
 use AaronFrancis\Solo\Console\Commands\Install;
 use AaronFrancis\Solo\Console\Commands\Solo;
 use AaronFrancis\Solo\Manager;
@@ -34,7 +35,8 @@ class SoloServiceProvider extends ServiceProvider
     {
         $this->commands([
             Solo::class,
-            Install::class
+            Install::class,
+            About::class
         ]);
     }
 

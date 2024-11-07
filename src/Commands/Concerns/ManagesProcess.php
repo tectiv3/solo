@@ -167,14 +167,6 @@ trait ManagesProcess
             return;
         }
 
-        $line = $this->lines->isEmpty() ? '' : $this->lines->pop();
-
-        $line .= $latest;
-
-        $newLines = explode(PHP_EOL, $line);
-
-        foreach ($newLines as $line) {
-            $this->addLine($line);
-        }
+        $this->addOutput($latest);
     }
 }
