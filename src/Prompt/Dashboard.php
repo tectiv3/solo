@@ -141,9 +141,12 @@ class Dashboard extends Prompt
                 continue;
 
             foreach ($command->customHotKeys as $hotKey) {
-                $listener->on($hotKey->key, function() use ($hotKey, $command) {
+                $listener->on($hotKey->key, function($key) use ($hotKey, $command) {
                     if($command->focused && $hotKey->isActive($command)){
                         $hotKey->execute();
+
+                        // color is set manually here, should we move it to a method in the Command class?
+                        $command->addLine("\e[33mExecuted custom hotkey: $key ($hotKey->name)\e[39m");
                     }
                 });
             }
@@ -246,3 +249,4 @@ class Dashboard extends Prompt
         return null;
     }
 }
+
