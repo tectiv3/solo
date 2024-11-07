@@ -8,6 +8,9 @@
 ╚══════╝ ╚═════╝ ╚══════╝ ╚═════╝  (for Laravel)
 ```
 
+> [!WARNING]  
+> This is still beta software. Use with caution.
+
 ## About 
 
 Solo for Laravel is a package to run multiple commands at once, to aid in local development. After installing, you can open the SoloServiceProvider to add or remove commands.
@@ -36,7 +39,7 @@ This would not be possible without Joe Tannenbaum's [Laracasts course](https://l
 Require the package:
 
 ```shell
-composer require aaronfrancis/solo
+composer require aaronfrancis/solo --dev
 ```
 
 Install the Service Provider:
@@ -184,7 +187,7 @@ Solo::allowCommandsAddedFrom([
 ## Contributing
 Please help.
 
-I haven't test this on Windows, I don't have a Windows machine!
+I haven't tested this on Windows, I don't have a Windows machine!
 
 Also there are gonna be _so_ many edge cases with commands, terminals, etc. I need a good way to test these things. If you're good at testing, please help me set up a good scaffold. 
 
