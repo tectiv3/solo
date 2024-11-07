@@ -2,11 +2,26 @@
 
 namespace AaronFrancis\Solo\Console;
 
+use AaronFrancis\Solo\Commands\Command;
+use Closure;
+
 class CustomHotKey
 {
+    /**
+     * @param  string|array  $key
+     * @param  string  $name
+     * @param Closure(): void $callback
+     * @param null|(Closure(Command): bool) $when
+     */
     function __construct(
         public string|array $key,
         public string $name,
-        public $callback,
-    ) {}
+        public readonly Closure $callback,
+        private readonly ?Closure $when = null,
+    ) { }
+
+    public function isActive(Command $command): bool
+    {
+        return $this->when?->call($this, $command) ?? true;
+    }
 }
