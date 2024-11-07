@@ -23,9 +23,31 @@ trait ManagesProcess
 
     protected ?Carbon $stopInitiatedAt;
 
+    protected ?Closure $processModifier = null;
+
     public function createPendingProcess(): PendingProcess
     {
-        return Process::command($this->command);
+        $process = Process::command($this->command)->forever();
+
+        if ($this->processModifier) {
+            call_user_func($this->processModifier, $process);
+        }
+
+        // Add some default env variables to hopefully
+        // make output more manageable.
+        return $process->env([
+            'FORCE_COLOR' => '1',
+            'COLUMNS' => $this->scrollPaneWidth(),
+            'LINES' => $this->scrollPaneHeight(),
+            ...$process->environment
+        ]);
+    }
+
+    public function withProcess(Closure $cb)
+    {
+        $this->processModifier = $cb;
+
+        return $this;
     }
 
     public function autostart(): static
@@ -137,5 +159,22 @@ trait ManagesProcess
         }
 
         $this->afterTerminateCallbacks = [];
+    }
+
+    protected function gatherLatestOutput(): void
+    {
+        if (!$latest = $this->process?->latestOutput()) {
+            return;
+        }
+
+        $line = $this->lines->isEmpty() ? '' : $this->lines->pop();
+
+        $line .= $latest;
+
+        $newLines = explode(PHP_EOL, $line);
+
+        foreach ($newLines as $line) {
+            $this->addLine($line);
+        }
     }
 }

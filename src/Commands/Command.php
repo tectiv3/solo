@@ -8,11 +8,11 @@
 namespace AaronFrancis\Solo\Commands;
 
 use AaronFrancis\Solo\Commands\Concerns\ManagesProcess;
+use AaronFrancis\Solo\Helpers\AnsiAware;
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use SplQueue;
 
 class Command implements Loopable
@@ -83,6 +83,11 @@ class Command implements Loopable
     | Actions
     |--------------------------------------------------------------------------
     */
+    public function dd()
+    {
+        dd(iterator_to_array($this->lines));
+    }
+
     public function addLine($line)
     {
         $this->lines->enqueue($line);
@@ -158,6 +163,12 @@ class Command implements Loopable
         return $this->height - 5;
     }
 
+    public function scrollPaneWidth(): int
+    {
+        // 2 box borders + 2 spaces for padding.
+        return $this->width - 4;
+    }
+
     public function wrappedLines(): Collection
     {
         return collect($this->lines)
@@ -175,8 +186,7 @@ class Command implements Loopable
 
     protected function wrapLine($line, $width = null): array
     {
-        // 2 box borders + 2 spaces for padding.
-        $defaultWidth = $this->width - 4;
+        $defaultWidth = $this->scrollPaneWidth();
 
         if (is_int($width)) {
             $width = $width < 0 ? $defaultWidth + $width : $width;
@@ -185,6 +195,13 @@ class Command implements Loopable
         if (!$width) {
             $width = $defaultWidth;
         }
+
+        // A bit experimental, but seems to work.
+        return explode(PHP_EOL, AnsiAware::wordwrap(
+            string: $line,
+            width: $width,
+            cut: true
+        ));
 
         return explode(PHP_EOL, wordwrap(
             string: $line,
@@ -197,19 +214,5 @@ class Command implements Loopable
     {
         // Primarily here for any subclasses.
         return $lines;
-    }
-
-    protected function gatherLatestOutput(): void
-    {
-        if (!$latest = $this->process?->latestOutput()) {
-            return;
-        }
-
-        // All logs have a phantom trailing newline
-        $newLines = explode(PHP_EOL, Str::chopEnd($latest, "\n"));
-
-        foreach ($newLines as $line) {
-            $this->addLine($line);
-        }
     }
 }

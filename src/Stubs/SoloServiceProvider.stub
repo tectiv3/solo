@@ -5,8 +5,6 @@ namespace App\Providers;
 use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
-use AaronFrancis\Solo\Manager;
-use Illuminate\Support\ServiceProvider;
 
 class SoloServiceProvider extends SoloApplicationServiceProvider
 {
@@ -20,13 +18,14 @@ class SoloServiceProvider extends SoloApplicationServiceProvider
             // Commands that auto start.
             ->addCommands([
                 EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
-                // 'HTTP' => 'php artisan serve',
                 'Vite' => 'npm run dev',
+                // 'HTTP' => 'php artisan serve',
             ])
             // Not auto-started
             ->addLazyCommands([
-                // 'Reverb' => 'php artisan reverb:start'
                 'Queue' => 'php artisan queue:listen --tries=1',
+                // 'Reverb' => 'php artisan reverb:start',
+                // 'Pint' => 'pint --ansi',
             ]);
     }
 
@@ -34,5 +33,4 @@ class SoloServiceProvider extends SoloApplicationServiceProvider
     {
         //
     }
-
 }

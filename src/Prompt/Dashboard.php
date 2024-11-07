@@ -49,8 +49,8 @@ class Dashboard extends Prompt
         pcntl_signal(SIGWINCH, [$this, 'handleResize']);
 
         $this->commands = collect(Solo::commands())->each(function (Command $command) {
-            $command->autostart();
             $command->setDimensions($this->width, $this->height);
+            $command->autostart();
         })->all();
 
         $this->registerLoopables(...$this->commands);
@@ -103,6 +103,7 @@ class Dashboard extends Prompt
     protected function showDashboard(): void
     {
         $listener = KeyPressListener::for($this)
+            ->on('D', fn() => $this->currentCommand()->dd())
             // Logs
             ->on('c', fn() => $this->currentCommand()->clear())
             ->on('p', fn() => $this->currentCommand()->pause())
