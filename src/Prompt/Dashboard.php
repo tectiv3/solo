@@ -123,20 +123,33 @@ class Dashboard extends Prompt
 
                 $this->selectedCommand = ($this->selectedCommand - 1 + count($this->commands)) % count($this->commands);
 
-                $this->currentCommand()->focus();
+                $this->currentCommand()->focus($this);
             })
             ->onRight(function () {
                 $this->currentCommand()->blur();
 
                 $this->selectedCommand = ($this->selectedCommand + 1) % count($this->commands);
 
-                $this->currentCommand()->focus();
+                $this->currentCommand()->focus($this);
             })
 
             // Quit
             ->on(['q', Key::CTRL_C], fn() => $this->quit());
 
-        $this->currentCommand()->focus();
+        foreach ($this->commands as $command) {
+            if(!$command->customHotKeys)
+                continue;
+
+            foreach ($command->customHotKeys as $hotKey) {
+                $listener->on($hotKey->key, function() use ($hotKey, $command) {
+                    if($command->focused){
+                        ($hotKey->callback)();
+                    }
+                });
+            }
+        }
+
+        $this->currentCommand()->focus($this);
 
         $this->loop(function () use ($listener) {
             $this->currentCommand()->catchUpScroll();
