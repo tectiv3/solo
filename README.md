@@ -81,6 +81,9 @@ class SoloServiceProvider extends SoloApplicationServiceProvider
                 EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
                 'Vite' => 'npm run dev',
                 // 'HTTP' => 'php artisan serve',
+                new Command(name: 'Foo', command: 'pwd', autostart: false, customHotKeys: [
+                    new CustomHotKey(key: 'e', name: 'echo', callback: fn() => Log::info('pressed "e"...')),
+                ]),
                 'About' => 'php artisan solo:about'
             ])
             // Not auto-started
@@ -121,6 +124,9 @@ Solo::useTheme('dark')
         EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
         'Vite' => 'npm run dev',
         // 'HTTP' => 'php artisan serve',
+        new Command(name: 'Foo', command: 'pwd', autostart: false, customHotKeys: [
+            new CustomHotKey(key: 'e', name: 'echo', callback: fn() => Log::info('pressed "e"...')),
+        ]),
         'About' => 'php artisan solo:about'
     ])
 ```
