@@ -137,7 +137,7 @@ class Dashboard extends Prompt
             ->on(['q', Key::CTRL_C], fn() => $this->quit());
 
         foreach ($this->commands as $command) {
-            if(!$command->customHotKeys)
+            if(empty($command->customHotKeys))
                 continue;
 
             foreach ($command->customHotKeys as $hotKey) {

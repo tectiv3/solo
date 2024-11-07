@@ -234,11 +234,9 @@ class Renderer extends PromptsRenderer
 
             $this->hotkey('r', 'Restart');
 
-            if($this->currentCommand->customHotKeys){
-                foreach ($this->currentCommand->customHotKeys as $hotKey) {
-                    $key = is_array($hotKey->key) ? $hotKey->key[0] : $hotKey->key;
-                    $this->hotkey($key, $hotKey->name);
-                }
+            foreach ($this->currentCommand->customHotKeys as $hotKey) {
+                $key = is_array($hotKey->key) ? $hotKey->key[0] : $hotKey->key;
+                $this->hotkey($key, $hotKey->name);
             }
 
             $this->hotkey('q', 'Quit');

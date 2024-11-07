@@ -41,15 +41,14 @@ class Command implements Loopable
      * @param  string  $name
      * @param  string  $command
      * @param  bool  $autostart
-     * @param ?array<CustomHotKey>  $customHotKeys
+     * @param array<CustomHotKey>  $customHotKeys
      */
     public function __construct(
         public readonly string $name,
         public readonly string $command,
         public bool $autostart = true,
-        public ?array $customHotKeys = null,
+        public array $customHotKeys = [],
     ) {
-
         $this->clear();
 
         $this->boot();
@@ -141,7 +140,7 @@ class Command implements Loopable
 
     public function focus(Dashboard $dashboard): void
     {
-        if($this->customHotKeys && !$this->keyPressListener){
+        if(!empty($this->customHotKeys) && !$this->keyPressListener){
             $this->keyPressListener = KeyPressListener::for($dashboard);
             foreach($this->customHotKeys as $customKeybinding){
                 $this->keyPressListener->on($customKeybinding->key, $customKeybinding->callback);
