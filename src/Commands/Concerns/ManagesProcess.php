@@ -27,7 +27,8 @@ trait ManagesProcess
 
     public function createPendingProcess(): PendingProcess
     {
-        $process = Process::command($this->command)->forever();
+        $parts = explode(' ', $this->command);
+        $process = Process::command($parts)->forever();
 
         if ($this->processModifier) {
             call_user_func($this->processModifier, $process);
