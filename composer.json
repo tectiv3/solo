@@ -15,7 +15,7 @@
         "illuminate/console": "^10|^11",
         "illuminate/process": "^10|^11",
         "ext-pcntl": "*",
-        "joetannenbaum/chewie": "^0.1.7"
+        "joetannenbaum/chewie": "^0.1.8"
     },
     "require-dev": {
         "illuminate/database": "^10|^11",
