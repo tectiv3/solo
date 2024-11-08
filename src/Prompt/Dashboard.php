@@ -9,6 +9,7 @@ namespace AaronFrancis\Solo\Prompt;
 
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Facades\Solo;
+use AaronFrancis\Solo\Support\Frames;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;
 use Chewie\Concerns\RegistersRenderers;
@@ -34,6 +35,8 @@ class Dashboard extends Prompt
 
     public int $height;
 
+    public Frames $frames;
+
     public static function start(): void
     {
         (new static)->run();
@@ -47,6 +50,8 @@ class Dashboard extends Prompt
         [$this->width, $this->height] = $this->getDimensions();
 
         pcntl_signal(SIGWINCH, [$this, 'handleResize']);
+
+        $this->frames = new Frames;
 
         $this->commands = collect(Solo::commands())->each(function (Command $command) {
             $command->setDimensions($this->width, $this->height);
@@ -143,6 +148,7 @@ class Dashboard extends Prompt
             $this->render();
 
             $listener->once();
+            $this->frames->next();
         }, 25_000);
 
         // @TODO reconsider using?
