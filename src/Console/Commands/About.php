@@ -48,7 +48,7 @@ Solo was developed by Aaron Francis. If you like it, please let me know!
 • Twitter: https://twitter.com/aarondfrancis
 • Website: https://aaronfrancis.com
 • YouTube: https://youtube.com/@aarondfrancis
-•  GitHub: https://github.com/aarondfrancis/solo
+• GitHub: https://github.com/aarondfrancis/solo
 
  
 EOT;
