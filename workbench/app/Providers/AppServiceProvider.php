@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @link https://aaronfrancis.com
+ * @link https://twitter.com/aarondfrancis
+ */
 
 namespace App\Providers;
 
@@ -7,7 +12,6 @@ use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
 use Illuminate\Support\ProcessUtils;
 
-use function Illuminate\Support\php_binary;
 use function Orchestra\Testbench\package_path;
 
 class AppServiceProvider extends SoloApplicationServiceProvider
