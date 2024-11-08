@@ -11,6 +11,9 @@
         "function_declaration": {
             "closure_fn_spacing": "none"
         },
+        "phpdoc_separation": {
+            "groups": [["author","link"],["param","return"]]
+        },
         "trailing_comma_in_multiline": false
     }
 }
