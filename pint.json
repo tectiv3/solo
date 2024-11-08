@@ -11,12 +11,6 @@
         "function_declaration": {
             "closure_fn_spacing": "none"
         },
-        "trailing_comma_in_multiline": false,
-        "header_comment": {
-            "header": "@author Aaron Francis <aarondfrancis@gmail.com>\n@link https://aaronfrancis.com\n@link https://twitter.com/aarondfrancis",
-            "comment_type": "PHPDoc",
-            "location": "after_open",
-            "separate": "bottom"
-        }
+        "trailing_comma_in_multiline": false
     }
 }
