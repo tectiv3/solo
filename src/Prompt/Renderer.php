@@ -10,6 +10,7 @@ namespace AaronFrancis\Solo\Prompt;
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Facades\Solo;
+use AaronFrancis\Solo\Helpers\AnsiAware;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;
@@ -139,9 +140,42 @@ class Renderer extends PromptsRenderer
             ? $this->theme->processRunning(' Running: ')
             : $this->theme->processStopped(' Stopped: ');
 
-        $state .= $this->theme->dim($this->currentCommand->command);
+        $command = $this->marquee(
+            $this->dim($this->currentCommand->command),
+            $this->width - AnsiAware::mb_strlen($state),
+            $this->dashboard->frames->current(buffer: 6)
+        );
 
-        $this->line($state);
+        $this->line($state . $command);
+    }
+
+    protected function marquee(string $string, int $width, int $frame)
+    {
+        $length = AnsiAware::mb_strlen($string);
+
+        if ($length <= $width) {
+            return $string;
+        }
+
+        // Maximum starting position
+        $maxPos = $length - $width;
+
+        // Define the sequence of positions for the marquee effect
+        $starts = array_merge(
+            [0, 0],                        // Pause at start for one frame
+            range(1, $maxPos),             // Move forward
+            [$maxPos, $maxPos],            // Pause at end for one frame
+            range($maxPos - 1, 0, -1),     // Move backward
+            [0]                            // Pause at start again before repeating
+        );
+
+        $totalFrames = count($starts);
+
+        // Calculate the current index in the positions array
+        $index = $frame % $totalFrames;
+        $start = $starts[$index];
+
+        return AnsiAware::substr($string, $start, $width);
     }
 
     protected function renderContentPane(): void

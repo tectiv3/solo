@@ -15,7 +15,7 @@
         "illuminate/console": "^10|^11",
         "illuminate/process": "^10|^11",
         "ext-pcntl": "*",
-        "joetannenbaum/chewie": "^0.1.7"
+        "joetannenbaum/chewie": "^0.1.8"
     },
     "require-dev": {
         "illuminate/database": "^10|^11",
@@ -29,7 +29,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "AaronFrancis\\Solo\\Tests\\": "tests/"
+            "AaronFrancis\\Solo\\Tests\\": "tests/",
+            "App\\": "workbench/app/"
         }
     },
     "extra": {
@@ -38,5 +39,20 @@
                 "AaronFrancis\\Solo\\Providers\\SoloServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "dev": [
+            "@php vendor/bin/testbench solo"
+        ]
     }
 }
