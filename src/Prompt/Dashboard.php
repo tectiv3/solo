@@ -19,6 +19,8 @@ use Illuminate\Support\Sleep;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\note;
 
 class Dashboard extends Prompt
 {
@@ -57,6 +59,17 @@ class Dashboard extends Prompt
             $command->setDimensions($this->width, $this->height);
             $command->autostart();
         })->all();
+
+        if (count($this->commands) === 0) {
+            alert("No commands to run.");
+            note(
+                'Please check if SoloServiceProvider needs to be registered manually in your application.'.
+                PHP_EOL.
+                'Make sure that SoloServiceProvider adds at least one command.'
+            );
+
+            $this->quit();
+        }
 
         $this->registerLoopables(...$this->commands);
     }
