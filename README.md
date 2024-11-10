@@ -17,7 +17,9 @@ Solo for Laravel is a package to run multiple commands at once, to aid in local 
 
 You can have all the commands needed to run your application behind a single command: 
 
-> php artisan solo
+```shell
+php artisan solo
+```
 
 Each command runs in its own tab in Solo.
 
