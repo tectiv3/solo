@@ -184,6 +184,57 @@ Solo::allowCommandsAddedFrom([
 ]);
 ```
 
+
+## Defining your service provider in a custom namespace
+
+By default, your `SoloServiceProvider` is created in the `App\Providers` namespace.
+
+If, for some reason, your `SoloServiceProvider` is stored in a non-standard location (for example, your Laravel
+application uses a custom folder structure), you can tell Laravel Solo to consider it as a safe location to register commands from.
+
+Please call `useCustomNameSpaceProvider($this)` **before** using `addCommands` or `addLazyCommands`:
+
+```php
+namespace App\Custom\Namespace\Providers;
+
+use AaronFrancis\Solo\Commands\EnhancedTailCommand;
+use AaronFrancis\Solo\Facades\Solo;
+use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
+
+class SoloServiceProvider extends SoloApplicationServiceProvider
+{
+    public function register()
+    {
+        Solo::useTheme('dark')
+            // Call before registering commands!
+            ->useCustomNamespaceProvider($this)
+            // Commands that auto start.
+            ->addCommands([
+                EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
+                'Vite' => 'npm run dev',
+                // 'HTTP' => 'php artisan serve',
+                'About' => 'php artisan solo:about'
+            ])
+            // Not auto-started
+            ->addLazyCommands([
+                'Queue' => 'php artisan queue:listen --tries=1',
+                // 'Reverb' => 'php artisan reverb:start',
+                // 'Pint' => 'pint --ansi',
+            ])
+            // FQCNs of trusted classes that can add commands.
+            ->allowCommandsAddedFrom([
+                //
+            ]);
+    }
+
+    public function boot()
+    {
+        //
+    }
+}
+```
+
+
 ## Contributing
 Please help.
 

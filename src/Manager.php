@@ -11,6 +11,7 @@ use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Commands\UnsafeCommand;
 use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Prompt\Renderer;
+use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
 use AaronFrancis\Solo\Themes\DarkTheme;
 use AaronFrancis\Solo\Themes\LightTheme;
 use Exception;
@@ -60,6 +61,26 @@ class Manager
             App::getNamespace() . 'Providers\\AppServiceProvider',
             App::getNamespace() . 'Providers\\SoloServiceProvider',
         ];
+    }
+
+    /**
+     * Allow user-defined SoloServiceProvider to be placed in a custom namespace, registering its location as safe.
+     *
+     * @return $this
+     */
+    public function useCustomNamespaceProvider(SoloApplicationServiceProvider $serviceProvider): static
+    {
+        // $serviceProvider must be an instance of the original SoloApplicationServiceProvider: this ensures that
+        // the user is not trying to register as safe an arbitrary class namespace.
+
+        $className = $serviceProvider::class;
+
+        if (! in_array($className, $this->configurationAllowedFrom)) {
+            $this->configurationAllowedFrom[] = $className;
+            $this->commandsAllowedFrom[] = $className;
+        }
+
+        return $this;
     }
 
     /**
