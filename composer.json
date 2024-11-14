@@ -28,6 +28,9 @@
         }
     },
     "autoload-dev": {
+        "files": [
+            "tests/Support/helpers.php"
+        ],
         "psr-4": {
             "AaronFrancis\\Solo\\Tests\\": "tests/",
             "App\\": "workbench/app/"

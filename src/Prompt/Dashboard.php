@@ -9,6 +9,10 @@ namespace AaronFrancis\Solo\Prompt;
 
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Facades\Solo;
+use AaronFrancis\Solo\Hotkeys\DefaultHotkeys;
+use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Hotkeys\KeyHandler;
+use AaronFrancis\Solo\Hotkeys\VimHotkeys;
 use AaronFrancis\Solo\Support\Frames;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;
@@ -31,11 +35,15 @@ class Dashboard extends Prompt
 
     public int $selectedCommand = 0;
 
+    public ?int $lastSelectedCommand = null;
+
     public int $width;
 
     public int $height;
 
     public Frames $frames;
+
+    public KeyPressListener $listener;
 
     public static function start(): void
     {
@@ -46,6 +54,8 @@ class Dashboard extends Prompt
     {
         $this->registerRenderer(Solo::getRenderer());
         $this->createAltScreen();
+
+        $this->listener = KeyPressListener::for($this);
 
         [$this->width, $this->height] = $this->getDimensions();
 
@@ -92,7 +102,6 @@ class Dashboard extends Prompt
         putenv('COLUMNS=' . $terminal->cols());
         putenv('LINES=' . $terminal->lines());
 
-        // Get our buffered dimensions.
         [$width, $height] = $this->getDimensions();
 
         if ($width !== $this->width || $height !== $this->height) {
@@ -105,73 +114,92 @@ class Dashboard extends Prompt
         return false;
     }
 
-    protected function showDashboard(): void
+    public function rebindHotkeys()
     {
-        $listener = KeyPressListener::for($this)
-            ->on('D', fn() => $this->currentCommand()->dd())
-            // Logs
-            ->on('c', fn() => $this->currentCommand()->clear())
-            ->on('p', fn() => $this->currentCommand()->pause())
-            ->on('f', fn() => $this->currentCommand()->follow())
-            ->on('r', fn() => $this->currentCommand()->restart())
+        $this->listener->clearExisting();
 
-            // Scrolling
-            ->onDown(fn() => $this->currentCommand()->scrollDown())
-            ->on(Key::SHIFT_DOWN, fn() => $this->currentCommand()->scrollDown(10))
-            ->onUp(fn() => $this->currentCommand()->scrollUp())
-            ->on(Key::SHIFT_UP, fn() => $this->currentCommand()->scrollUp(10))
+        collect(Solo::hotkeys())
+            ->merge($this->currentCommand()->hotkeys())
+            ->each(function (Hotkey $hotkey) {
+                $hotkey->init($this->currentCommand(), $this);
+                $this->listener->on($hotkey->keys, $hotkey->handle(...));
+            });
+    }
 
-            // Processes
-            ->on('s', fn() => $this->currentCommand()->toggle())
-            ->onLeft(function () {
-                $this->currentCommand()->blur();
-
-                $this->selectedCommand = ($this->selectedCommand - 1 + count($this->commands)) % count($this->commands);
-
-                $this->currentCommand()->focus($this);
-            })
-            ->onRight(function () {
-                $this->currentCommand()->blur();
-
-                $this->selectedCommand = ($this->selectedCommand + 1) % count($this->commands);
-
-                $this->currentCommand()->focus($this);
-            })
-
-            // Quit
-            ->on(['q', Key::CTRL_C], fn() => $this->quit());
-
-        foreach ($this->commands as $command) {
-            if(empty($command->customHotKeys))
-                continue;
-
-            foreach ($command->customHotKeys as $hotKey) {
-                $listener->on($hotKey->key, function($key) use ($hotKey, $command) {
-                    if($command->focused && $hotKey->isActive($command)){
-                        $hotKey->execute();
-
-                        // color is set manually here, should we move it to a method in the Command class?
-                        $command->addLine("\e[33mExecuted custom hotkey: $key ($hotKey->name)\e[39m");
-                    }
-                });
-            }
+    public function enterInteractiveMode()
+    {
+        if ($this->currentCommand()->processStopped()) {
+            $this->currentCommand()->restart();
         }
 
+        $this->currentCommand()->setMode(Command::MODE_INTERACTIVE);
+    }
+
+    public function exitInteractiveMode()
+    {
+        $this->currentCommand()->setMode(Command::MODE_PASSIVE);
+    }
+
+    public function nextTab()
+    {
+        $this->currentCommand()->blur();
+        $this->selectedCommand = ($this->selectedCommand + 1) % count($this->commands);
+        $this->currentCommand()->focus();
+    }
+
+    public function previousTab()
+    {
+        $this->currentCommand()->blur();
+        $this->selectedCommand = ($this->selectedCommand - 1 + count($this->commands)) % count($this->commands);
+        $this->currentCommand()->focus();
+    }
+
+    protected function showDashboard(): void
+    {
         $this->currentCommand()->focus($this);
 
-        $this->loop(function () use ($listener) {
-            $this->currentCommand()->catchUpScroll();
-            $this->render();
+        $this->loop($this->renderSingleFrame(...), 25_000);
+    }
 
-            $listener->once();
-            $this->frames->next();
-        }, 25_000);
+    protected function renderSingleFrame()
+    {
+        if ($this->lastSelectedCommand !== $this->selectedCommand) {
+            $this->lastSelectedCommand = $this->selectedCommand;
+            $this->rebindHotkeys();
+        }
 
-        // @TODO reconsider using?
-        // $this->loopWithListener($listener, function () {
-        //     $this->currentCommand()->catchUpScroll();
-        //     $this->render();
-        // });
+        $this->currentCommand()->catchUpScroll();
+
+        $this->render();
+
+        $this->currentCommand()->isInteractive() ? $this->handleInteractiveInput() : $this->listener->once();
+
+        $this->frames->next();
+    }
+
+    protected function handleInteractiveInput()
+    {
+        $read = [STDIN];
+        $write = null;
+        $except = null;
+
+        if ($this->currentCommand()->processStopped()) {
+            $this->exitInteractiveMode();
+            return;
+        }
+
+        // Shorten the wait time since we're expecting keystrokes.
+        if (stream_select($read, $write, $except, 0, 5_000) === 1) {
+            $key = fread(STDIN, 10);
+
+            // Exit interactive mode without stopping the underlying process.
+            if ($key === "\x18") {
+                $this->exitInteractiveMode();
+                return;
+            }
+
+            $this->currentCommand()->sendInput($key);
+        }
     }
 
     public function quit(): void

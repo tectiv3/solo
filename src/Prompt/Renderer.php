@@ -11,11 +11,14 @@ use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Helpers\AnsiAware;
+use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Hotkeys\KeycodeMap;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Laravel\Prompts\Key;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
@@ -192,7 +195,7 @@ class Renderer extends PromptsRenderer
         // Try to scroll the content, which may or may not have an
         // effect, depending on how much content there is.
         $scrolled = $this->scrollbar(
-            // Subtract 1 for the left box border and 1 for the space after it.
+        // Subtract 1 for the left box border and 1 for the space after it.
             $visible, $start, $allowedLines, $wrappedLines->count(), $this->width - 2
         );
 
@@ -206,14 +209,14 @@ class Renderer extends PromptsRenderer
             str($line)
                 // Remove the gray scrollbar and replace it with
                 // our own that matches the theme's box.
-                ->replaceLast($this->gray('│'), $this->theme->boxBorder($this->box('│')))
+                ->replaceLast($this->gray('│'), $this->coloredBox('│'))
 
                 // Replace the handle with the user's preferred handle.
                 ->replaceLast($this->cyan('┃'), $this->theme->boxHandle())
 
                 // Only need to add the left side, because the
                 // right side is made up of the scrollbar.
-                ->prepend($this->theme->boxBorder($this->box('│') . ' '))
+                ->prepend($this->coloredBox('│') . ' ')
 
                 // Output
                 ->pipe($this->line(...));
@@ -221,7 +224,7 @@ class Renderer extends PromptsRenderer
 
         // Box bottom border
         $this->line(
-            $this->theme->boxBorder(
+            $this->colorBox(
                 $this->box('╰') . str_repeat($this->box('─'), $this->width - 2) . $this->box('╯')
             )
         );
@@ -234,60 +237,79 @@ class Renderer extends PromptsRenderer
             $start = 0;
         }
 
+        $interactive = $this->currentCommand->isInteractive() ? ' Interactive ' : '';
+
         $count = "Viewing [$start-$stop] of $total";
         $state = $this->currentCommand->paused ? '(Paused)' : '(Live)';
 
         $stateTreatment = $this->currentCommand->paused ? 'logsPaused' : 'logsLive';
 
         $border = ''
-            . $this->theme->boxBorder($this->box('╭'))
-            // 3 spaces + 3 border pieces = 6
-            . $this->theme->boxBorder(str_repeat($this->box('─'), $this->width - strlen($state) - strlen($count) - 6))
+            . $this->coloredBox('╭')
+            . $this->coloredBox('─')
+            . $this->bgCyan($interactive)
+            . $this->coloredBox('─')
+            . $this->colorBox(str_repeat($this->box('─'),
+                $this->width
+                // 5 hardcoded border pieces, 3 hardcoded spaces
+                - 5 - 3
+                - strlen($state) - strlen($count) - strlen($interactive)
+            ))
             . ' '
             . $this->theme->dim($count)
             . ' '
             . $this->theme->{$stateTreatment}($state)
             . ' '
-            . $this->theme->boxBorder($this->box('─'))
-            . $this->theme->boxBorder($this->box('╮'));
+            . $this->coloredBox('─')
+            . $this->coloredBox('╮');
 
         $this->line($border);
     }
 
     protected function renderHotkeys(): void
     {
-        $this->pinToBottom($this->height, function () {
-            $this->hotkey('←', 'Previous');
-            $this->hotkey('→', 'Next');
+        $localHotkeys = $this->currentCommand->hotkeys();
+        $globalHotkeys = $this->currentCommand->isInteractive() ? [
+            // This key is intercepted so we don't need a handler.
+            Hotkey::make("\x18", fn() => null)
+        ] : Solo::hotkeys();
 
-            $this->currentCommand->paused ? $this->hotkey('f', 'Follow') : $this->hotkey('p', 'Pause ');
+        if (count($localHotkeys)) {
+            collect($localHotkeys)->map(function (Hotkey $hotkey) {
+                $key = is_array($hotkey->keys) ? $hotkey->keys[0] : $hotkey->keys;
+                $key = KeycodeMap::toDisplay($key);
 
-            $this->hotkey('c', 'Clear');
+                $label = 'TODO';
 
-            $this->hotkey('s', $this->currentCommand->processRunning() ? 'Stop ' : 'Start');
+                $this->hotkey($key, $label);
+            });
 
-            $this->hotkey('r', 'Restart');
+            $this->pinToBottom($this->height - 1, function () {
+                $this->line(
+                    $this->centerHorizontally($this->hotkeys(), $this->width)->first()
+                );
+            });
+        }
 
-            foreach ($this->currentCommand->customHotKeys as $hotKey) {
-                if(!$hotKey->isActive($this->currentCommand)){
-                    continue;
-                }
+        $this->clearHotkeys();
 
-                $key = is_array($hotKey->key) ? $hotKey->key[0] : $hotKey->key;
-                $this->hotkey($key, $hotKey->name);
-            }
+        collect($globalHotkeys)->map(function (Hotkey $hotkey) {
+            $key = is_array($hotkey->keys) ? $hotkey->keys[0] : $hotkey->keys;
+            $key = KeycodeMap::toDisplay($key);
 
-            $this->hotkey('q', 'Quit');
+            $label = 'TODO';
 
-            $this->line(
-                $this->centerHorizontally($this->hotkeys(), $this->width)->first()
-            );
+            $this->hotkey($key, $label);
         });
+
+        $this->line(
+            $this->centerHorizontally($this->hotkeys(), $this->width)->first()
+        );
     }
 
     protected function box($part)
     {
-        $box = $this->theme->box();
+        $box = $this->currentCommand->isInteractive() ? $this->theme->boxInteractive() : $this->theme->box();
         // Example box
         // ╭─┬─╮
         // ├─┼─┤
@@ -295,7 +317,7 @@ class Renderer extends PromptsRenderer
         // ╰─┴─╯
 
         $lines = explode("\n", $box);
-        $lines = array_map(fn($line) => mb_str_split($line), $lines);
+        $lines = array_map(fn($line) => mb_str_split(trim($line)), $lines);
 
         return match ($part) {
             '╭' => $lines[0][0],
@@ -313,6 +335,18 @@ class Renderer extends PromptsRenderer
             '┴' => $lines[3][2],
             '╯' => $lines[3][4],
         };
+    }
+
+    protected function coloredBox($piece): string
+    {
+        return $this->colorBox($this->box($piece));
+    }
+
+    protected function colorBox($text): string
+    {
+        return $this->currentCommand->isInteractive()
+            ? $this->theme->boxBorderInteractive($text)
+            : $this->theme->boxBorder($text);
     }
 
     protected function padScrolledContent(Collection $scrolled, int $allowedLines): Collection

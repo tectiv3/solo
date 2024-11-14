@@ -7,11 +7,12 @@
 
 namespace AaronFrancis\Solo\Commands\Concerns;
 
+use AaronFrancis\Solo\Support\PendingProcess;
 use Closure;
 use Illuminate\Process\InvokedProcess;
-use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\InputStream;
 
 trait ManagesProcess
 {
@@ -25,9 +26,19 @@ trait ManagesProcess
 
     protected ?Closure $processModifier = null;
 
+    public InputStream $input;
+
     public function createPendingProcess(): PendingProcess
     {
-        $process = Process::command($this->command)->forever();
+        $this->input ??= new InputStream;
+
+        // We have to make our own so that we can control pty if needed.
+        $process = app(PendingProcess::class)->command($this->command)->forever();
+
+        if ($this->interactive) {
+            $process->pty();
+            $process->input($this->input);
+        }
 
         if ($this->processModifier) {
             call_user_func($this->processModifier, $process);
@@ -41,6 +52,13 @@ trait ManagesProcess
             'LINES' => $this->scrollPaneHeight(),
             ...$process->environment
         ]);
+    }
+
+    public function sendInput(mixed $input)
+    {
+        if (!$this->input->isClosed()) {
+            $this->input->write($input);
+        }
     }
 
     public function withProcess(Closure $cb)
@@ -120,8 +138,6 @@ trait ManagesProcess
             $this->stopInitiatedAt = null;
 
             $this->addLine('Stopped.');
-            $this->callAfterTerminateCallbacks();
-
             return;
         }
 

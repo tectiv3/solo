@@ -8,9 +8,9 @@
 namespace AaronFrancis\Solo\Commands;
 
 use AaronFrancis\Solo\Commands\Concerns\ManagesProcess;
-use AaronFrancis\Solo\Console\CustomHotKey;
 use AaronFrancis\Solo\Helpers\AnsiAware;
-use AaronFrancis\Solo\Prompt\Dashboard;
+use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Support\Screen;
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Chewie\Input\KeyPressListener;
@@ -23,9 +23,16 @@ class Command implements Loopable
 {
     use ManagesProcess, Ticks;
 
+    public const MODE_PASSIVE = 1;
+    public const MODE_INTERACTIVE = 2;
+
+    public int $mode = Command::MODE_PASSIVE;
+
     public bool $focused = false;
 
     public bool $paused = false;
+
+    public bool $interactive = false;
 
     public int $scrollIndex = 0;
 
@@ -37,17 +44,10 @@ class Command implements Loopable
 
     public ?KeyPressListener $keyPressListener = null;
 
-    /**
-     * @param  string  $name
-     * @param  string  $command
-     * @param  bool  $autostart
-     * @param array<CustomHotKey>  $customHotKeys
-     */
     public function __construct(
-        public readonly string $name,
-        public readonly string $command,
+        public ?string $name = null,
+        public ?string $command = null,
         public bool $autostart = true,
-        public array $customHotKeys = [],
     ) {
         $this->clear();
 
@@ -62,6 +62,16 @@ class Command implements Loopable
     public function boot(): void
     {
         //
+    }
+
+    /**
+     * @return array<string, Hotkey>
+     */
+    public function hotkeys(): array
+    {
+        return [
+            //
+        ];
     }
 
     public function setDimensions($width, $height): static
@@ -79,6 +89,13 @@ class Command implements Loopable
         return $this;
     }
 
+    public function interactive(): static
+    {
+        $this->interactive = true;
+
+        return $this;
+    }
+
     public function onTick(): void
     {
         $this->marshalRogueProcess();
@@ -86,6 +103,10 @@ class Command implements Loopable
         $this->onNthTick(
             $this->focused ? 1 : 10, [$this, 'gatherLatestOutput']
         );
+
+        if ($this->processStopped() && count($this->afterTerminateCallbacks)) {
+            $this->callAfterTerminateCallbacks();
+        }
     }
 
     public function isFocused(): bool
@@ -96,6 +117,11 @@ class Command implements Loopable
     public function isBlurred(): bool
     {
         return !$this->isFocused();
+    }
+
+    public function isInteractive(): bool
+    {
+        return $this->mode === self::MODE_INTERACTIVE;
     }
 
     /*
@@ -113,6 +139,10 @@ class Command implements Loopable
         $line = $this->lines->isEmpty() ? '' : $this->lines->pop();
 
         $line .= $text;
+
+        // Carriage return moves the cursor back to zero, while \n inserts
+        // a newline. For our purposes, the carriage return is irrelevant.
+        $line = str_replace("\r\n", PHP_EOL, $line);
 
         $newLines = explode(PHP_EOL, $line);
 
@@ -138,15 +168,23 @@ class Command implements Loopable
         $this->addOutput(Str::finish($line, "\n"));
     }
 
-    public function focus(Dashboard $dashboard): void
+    public function setMode(int $mode): bool
     {
-        if(!empty($this->customHotKeys) && !$this->keyPressListener){
-            $this->keyPressListener = KeyPressListener::for($dashboard);
-            foreach($this->customHotKeys as $customKeybinding){
-                $this->keyPressListener->on($customKeybinding->key, fn() => $customKeybinding->execute());
-            }
+        if (!$this->interactive) {
+            $mode = static::MODE_PASSIVE;
         }
 
+        if ($this->mode === $mode) {
+            return false;
+        }
+
+        $this->mode = $mode;
+
+        return true;
+    }
+
+    public function focus(): void
+    {
         $this->focused = true;
 
         $this->gatherLatestOutput();
@@ -190,12 +228,22 @@ class Command implements Loopable
         ));
     }
 
+    public function pageDown()
+    {
+        $this->scrollDown($this->scrollPaneHeight() - 1);
+    }
+
     public function scrollUp($amount = 1): void
     {
         $this->paused = true;
         $this->scrollIndex = max(
             $this->scrollIndex - $amount, 0
         );
+    }
+
+    public function pageUp()
+    {
+        $this->scrollUp($this->scrollPaneHeight() - 1);
     }
 
     /*
@@ -206,7 +254,7 @@ class Command implements Loopable
     public function scrollPaneHeight(): int
     {
         // 5 = 1 tabs + 1 process + 1 top border + 1 bottom border + 1 hotkeys
-        return $this->height - 5;
+        return $this->height - 5 - (count($this->hotkeys()) ? 1 : 0);
     }
 
     public function scrollPaneWidth(): int
