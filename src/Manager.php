@@ -19,6 +19,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 use ReflectionClass;
@@ -61,26 +62,6 @@ class Manager
             App::getNamespace() . 'Providers\\AppServiceProvider',
             App::getNamespace() . 'Providers\\SoloServiceProvider',
         ];
-    }
-
-    /**
-     * Allow user-defined SoloServiceProvider to be placed in a custom namespace, registering its location as safe.
-     *
-     * @return $this
-     */
-    public function useCustomNamespaceProvider(SoloApplicationServiceProvider $serviceProvider): static
-    {
-        // $serviceProvider must be an instance of the original SoloApplicationServiceProvider: this ensures that
-        // the user is not trying to register as safe an arbitrary class namespace.
-
-        $className = $serviceProvider::class;
-
-        if (! in_array($className, $this->configurationAllowedFrom)) {
-            $this->configurationAllowedFrom[] = $className;
-            $this->commandsAllowedFrom[] = $className;
-        }
-
-        return $this;
     }
 
     /**
@@ -252,7 +233,15 @@ class Manager
 
     protected function ensureSafeConfigurationLocation($func): void
     {
-        if (in_array($this->caller(), $this->configurationAllowedFrom)) {
+        $caller = $this->caller();
+        if (in_array($caller, $this->configurationAllowedFrom)) {
+            return;
+        }
+
+        $withinUserControl = Str::startsWith($caller, App::getNamespace());
+        $instanceOfSolo = is_a($caller, SoloApplicationServiceProvider::class, true);
+
+        if ($withinUserControl && $instanceOfSolo) {
             return;
         }
 
