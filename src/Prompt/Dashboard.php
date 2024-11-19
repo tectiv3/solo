@@ -20,8 +20,6 @@ use Illuminate\Support\Sleep;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
-use function Laravel\Prompts\alert;
-use function Laravel\Prompts\note;
 
 class Dashboard extends Prompt
 {
@@ -55,7 +53,6 @@ class Dashboard extends Prompt
         pcntl_signal(SIGWINCH, [$this, 'handleResize']);
 
         $this->frames = new Frames;
-
 
         $this->commands = collect(Solo::commands())
             ->tap(function (Collection $commands) {
