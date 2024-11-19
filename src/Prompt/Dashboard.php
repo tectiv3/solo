@@ -51,6 +51,8 @@ class Dashboard extends Prompt
         [$this->width, $this->height] = $this->getDimensions();
 
         pcntl_signal(SIGWINCH, [$this, 'handleResize']);
+        pcntl_signal(SIGINT, [$this, 'quit']);
+        pcntl_signal(SIGTERM, [$this, 'quit']);
 
         $this->frames = new Frames;
 
