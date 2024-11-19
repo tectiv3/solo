@@ -61,11 +61,7 @@ class Renderer extends PromptsRenderer
     {
         // We're running the output right up to the edge,
         // so we can't afford phantom newlines.
-        if (Str::endsWith($this->output, "\n")) {
-            return Str::rtrim($this->output, "\n");
-        }
-        
-        return $this->output;
+        return Str::rtrim($this->output, "\n");
     }
 
     protected function renderTabs(): void
