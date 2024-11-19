@@ -15,6 +15,7 @@ use Chewie\Concerns\Loops;
 use Chewie\Concerns\RegistersRenderers;
 use Chewie\Concerns\SetsUpAndResets;
 use Chewie\Input\KeyPressListener;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
@@ -55,21 +56,19 @@ class Dashboard extends Prompt
 
         $this->frames = new Frames;
 
-        $this->commands = collect(Solo::commands())->each(function (Command $command) {
-            $command->setDimensions($this->width, $this->height);
-            $command->autostart();
-        })->all();
 
-        if (count($this->commands) === 0) {
-            alert("No commands to run.");
-            note(
-                'Please check if SoloServiceProvider needs to be registered manually in your application.'.
-                PHP_EOL.
-                'Make sure that SoloServiceProvider adds at least one command.'
-            );
-
-            $this->quit();
-        }
+        $this->commands = collect(Solo::commands())
+            ->tap(function (Collection $commands) {
+                // If they haven't added any commands, just show the About command.
+                if ($commands->isEmpty()) {
+                    $commands->push(Command::make('About', 'php artisan solo:about'));
+                }
+            })
+            ->each(function (Command $command) {
+                $command->setDimensions($this->width, $this->height);
+                $command->autostart();
+            })
+            ->all();
 
         $this->registerLoopables(...$this->commands);
     }
