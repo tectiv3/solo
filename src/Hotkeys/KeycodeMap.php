@@ -19,7 +19,10 @@ class KeycodeMap
 
     public static function toDisplay($code)
     {
-        return Arr::get([...static::map(), static::$custom], $code, $code);
+        return Arr::get([
+            ...static::map(),
+            static::$custom
+        ], $code, $code);
     }
 
     public static function map()

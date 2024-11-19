@@ -20,6 +20,8 @@ class Hotkey
 
     protected Closure $handler;
 
+    protected Closure|string|null $label = null;
+
     protected ?KeyHandler $fromKeyHandler = null;
 
     public static function make(mixed ...$arguments): static
@@ -55,6 +57,18 @@ class Hotkey
         return $this;
     }
 
+    public function label(string|Closure $value)
+    {
+        $this->label = $value;
+
+        return $this;
+    }
+
+    public function makeLabel()
+    {
+        return $this->callWithParams($this->label);
+    }
+
     public function visible()
     {
 
@@ -77,9 +91,13 @@ class Hotkey
         return $this->display(fn() => false);
     }
 
-    public function callWithParams(Closure $closure): mixed
+    public function callWithParams(string|Closure|null $value): mixed
     {
-        $reflected = new ReflectionClosure($closure);
+        if (is_string($value) || is_null($value)) {
+            return $value;
+        }
+
+        $reflected = new ReflectionClosure($value);
 
         $arguments = collect($reflected->getParameters())->map(function (ReflectionParameter $parameter) {
             return match ($parameter->getType()->getName()) {
@@ -91,7 +109,7 @@ class Hotkey
             };
         });
 
-        return call_user_func($closure, ...$arguments->all());
+        return call_user_func($value, ...$arguments->all());
     }
 
 }

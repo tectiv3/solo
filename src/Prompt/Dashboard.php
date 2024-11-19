@@ -19,6 +19,7 @@ use Chewie\Concerns\Loops;
 use Chewie\Concerns\RegistersRenderers;
 use Chewie\Concerns\SetsUpAndResets;
 use Chewie\Input\KeyPressListener;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
@@ -119,7 +120,7 @@ class Dashboard extends Prompt
         $this->listener->clearExisting();
 
         collect(Solo::hotkeys())
-            ->merge($this->currentCommand()->hotkeys())
+            ->merge($this->currentCommand()->allHotkeys())
             ->each(function (Hotkey $hotkey) {
                 $hotkey->init($this->currentCommand(), $this);
                 $this->listener->on($hotkey->keys, $hotkey->handle(...));

@@ -6,7 +6,7 @@
 namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Helpers\AnsiAware;
-use AaronFrancis\Solo\Support\AnsiBuffer;
+use AaronFrancis\Solo\Support\AnsiTracker;
 use AaronFrancis\Solo\Support\Screen;
 use PHPUnit\Framework\Attributes\Test;
 use SplQueue;
@@ -38,6 +38,7 @@ class ScreenTest extends Base
         ], [
             "",
             "",
+            "",
             "New Line after clear",
         ]);
     }
@@ -53,6 +54,83 @@ class ScreenTest extends Base
     }
 
     #[Test]
+    public function byte_splice(): void
+    {
+        // Simulate receiving data in two parts
+        $part1 = "─";
+        $part2 = "\xE2"; // First byte of a 3-byte character
+        $part3 = "\x94\x80"; // Remaining bytes of the character
+
+        $string = "───────\xE2";
+
+        $string = substr($string, 1);
+
+        $chars = mb_str_split($string, 1, 'UTF-8');
+
+        foreach ($chars as $char) {
+            // Get the byte values of the character
+            $bytes = array_values(unpack('C*', $char));
+
+            // Convert the byte values to a hexadecimal string for readability
+            $byteString = implode(' ', array_map(function ($byte) {
+                return sprintf('%02X', $byte);
+            }, $bytes));
+
+            // Output the character and its byte representation
+            echo $char . ": " . $byteString . "(" . $this->isValidUtf8Character($char) . ")" . "\n";
+        }
+
+
+        dd($string);
+    }
+
+    function isValidUtf8Character(string $char): bool
+    {
+        $len = strlen($char);
+
+        if ($len === 0) {
+            // Empty string is not a valid character
+            return false;
+        }
+
+        $byte1 = ord($char[0]);
+
+        if ($byte1 <= 0x7F) {
+            // 1-byte character (ASCII)
+            return $len === 1;
+        } elseif ($byte1 >= 0xC2 && $byte1 <= 0xDF) {
+            // 2-byte character
+            if ($len !== 2) {
+                return false; // Incomplete character
+            }
+            $byte2 = ord($char[1]);
+            return ($byte2 & 0xC0) === 0x80;
+        } elseif ($byte1 >= 0xE0 && $byte1 <= 0xEF) {
+            // 3-byte character
+            if ($len !== 3) {
+                return false; // Incomplete character
+            }
+            $byte2 = ord($char[1]);
+            $byte3 = ord($char[2]);
+            return (($byte2 & 0xC0) === 0x80) && (($byte3 & 0xC0) === 0x80);
+        } elseif ($byte1 >= 0xF0 && $byte1 <= 0xF4) {
+            // 4-byte character
+            if ($len !== 4) {
+                return false; // Incomplete character
+            }
+            $byte2 = ord($char[1]);
+            $byte3 = ord($char[2]);
+            $byte4 = ord($char[3]);
+            return (($byte2 & 0xC0) === 0x80) &&
+                (($byte3 & 0xC0) === 0x80) &&
+                (($byte4 & 0xC0) === 0x80);
+        } else {
+            // Invalid first byte
+            return false;
+        }
+    }
+
+    #[Test]
     public function laravel_prompts_make_model(): void
     {
         $this->assertEmulation([
@@ -63,6 +141,7 @@ class ScreenTest extends Base
             "",
             "",
         ], [
+            "",
             "\e[90m ┌\e[39m \e[36mWhat should the model be named?\e[39m \e[90m─────────────────────────────┐\e[39m",
             "\e[90m │\e[39m \e[2;7mE\e[27m.g. Flight\e[22m                                                  \e[90m│\e[39m",
             "\e[90m └──────────────────────────────────────────────────────────────┘\e[39m",
@@ -210,7 +289,9 @@ class ScreenTest extends Base
             "\e[?25h",
             "Visible Cursor Line",
         ], [
+            "",
             "Hidden Cursor Line",
+            "",
             "Visible Cursor Line",
         ]);
     }
@@ -323,9 +404,10 @@ class ScreenTest extends Base
             "\e[2A\e[1C\e[0J"
         ]));
 
-
         $this->assertSame(
             [[
+                32
+            ], [
                 32, // All characters on line one remain blue
                 32,
                 32,
@@ -335,7 +417,7 @@ class ScreenTest extends Base
             ], [
                 // Line three is completely blanked
             ]],
-            $screen->ansi->buffer
+            $screen->ansi->buffer->buffer
         );
     }
 
@@ -354,6 +436,8 @@ class ScreenTest extends Base
 
         $this->assertSame(
             [[
+
+            ], [
                 // Line 1 is totally blank now
             ], [
                 0,
@@ -366,7 +450,7 @@ class ScreenTest extends Base
                 32,
                 32,
             ]],
-            $screen->ansi->buffer
+            $screen->ansi->buffer->buffer
         );
 
     }
@@ -386,7 +470,7 @@ class ScreenTest extends Base
 
         $this->assertSame(
             [],
-            $screen->ansi->buffer
+            $screen->ansi->buffer->buffer
         );
     }
 
@@ -404,10 +488,12 @@ class ScreenTest extends Base
 
         $this->assertSame(
             [[
+                32
+            ], [
                 32,
                 32,
             ]],
-            $screen->ansi->buffer
+            $screen->ansi->buffer->buffer
         );
 
     }
@@ -425,13 +511,15 @@ class ScreenTest extends Base
 
         $this->assertSame(
             [[
+                32
+            ], [
                 0,
                 0,
                 0,
                 32,
                 32,
             ]],
-            $screen->ansi->buffer
+            $screen->ansi->buffer->buffer
         );
 
     }
@@ -448,12 +536,21 @@ class ScreenTest extends Base
         ]));
 
         $this->assertSame(
-            [[
-                // Whole line is blanked
-            ]],
-            $screen->ansi->buffer
+            [
+                [32],
+                [],
+            ],
+            $screen->ansi->buffer->buffer
         );
-
     }
 
+    #[Test]
+    public function save_and_restore_cursor(): void
+    {
+        $this->assertEmulation([
+            "\e7this is a test\e8haha!",
+        ], [
+            "haha!is a test",
+        ]);
+    }
 }

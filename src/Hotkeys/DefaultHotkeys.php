@@ -23,31 +23,47 @@ class DefaultHotkeys implements HotkeyProvider
         // to directly address hotkeys. This is useful in the
         // VimKeys class to remap the navigation keys.
         return [
-            'interactive' => Hotkey::make('i', KeyHandler::Interactive),
-            'clear' => Hotkey::make('c', KeyHandler::Clear),
+            'clear' => Hotkey::make('c', KeyHandler::Clear)
+                ->label('Clear'),
             'pause' => Hotkey::make('p', KeyHandler::Pause)
+                ->label('Pause')
                 ->display(fn(Command $command) => !$command->paused),
 
             'follow' => Hotkey::make('f', KeyHandler::Follow)
+                ->label('Follow')
                 ->display(fn(Command $command) => $command->paused),
 
-            'start_stop' => Hotkey::make('r', KeyHandler::StartStop),
-            'restart' => Hotkey::make('r', KeyHandler::Restart),
-            'quit' => Hotkey::make(['q', Key::CTRL_C], KeyHandler::Quit),
+            'start_stop' => Hotkey::make('s', KeyHandler::StartStop)
+                ->label(fn(Command $command) => $command->processRunning() ? 'Stop' : 'Start'),
 
-            'previous_tab' => Hotkey::make([Key::LEFT, Key::LEFT_ARROW], KeyHandler::PreviousTab),
-            'next_tab' => Hotkey::make([Key::RIGHT, Key::RIGHT_ARROW], KeyHandler::NextTab),
+            'restart' => Hotkey::make('r', KeyHandler::Restart)
+                ->label('Restart'),
 
-            'scroll_up' => Hotkey::make([Key::UP, Key::UP_ARROW], KeyHandler::ScrollUp),
-            'scroll_down' => Hotkey::make([Key::DOWN, Key::DOWN_ARROW], KeyHandler::ScrollDown),
+            'quit' => Hotkey::make(['q', Key::CTRL_C], KeyHandler::Quit)
+                ->label('Quit'),
+
+            'previous_tab' => Hotkey::make([Key::LEFT, Key::LEFT_ARROW], KeyHandler::PreviousTab)
+                ->label('Previous'),
+
+            'next_tab' => Hotkey::make([Key::RIGHT, Key::RIGHT_ARROW], KeyHandler::NextTab)
+                ->label('Next'),
+
+            'scroll_up' => Hotkey::make([Key::UP, Key::UP_ARROW], KeyHandler::ScrollUp)
+                ->label('Scroll up'),
+
+            'scroll_down' => Hotkey::make([Key::DOWN, Key::DOWN_ARROW], KeyHandler::ScrollDown)
+                ->label('Scroll down'),
 
             'page_up' => Hotkey::make(Key::SHIFT_UP, KeyHandler::PageUp)
+                ->label('Page up')
                 ->hidden(),
 
             'page_down' => Hotkey::make(Key::SHIFT_DOWN, KeyHandler::PageDown)
+                ->label('Page down')
                 ->hidden(),
 
             'dd' => Hotkey::make('d', KeyHandler::DD)
+                ->label('DD')
                 ->hidden(),
         ];
 

@@ -10,12 +10,14 @@ namespace AaronFrancis\Solo\Commands;
 use AaronFrancis\Solo\Commands\Concerns\ManagesProcess;
 use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Hotkeys\KeyHandler;
 use AaronFrancis\Solo\Support\Screen;
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use SplQueue;
 
@@ -64,6 +66,23 @@ class Command implements Loopable
         //
     }
 
+    public function allHotkeys(): array
+    {
+        if ($this->isInteractive()) {
+            return [
+                Hotkey::make("\x18", fn() => null)->label('Exit interactive mode')
+            ];
+        }
+
+        $hotkeys = $this->hotkeys();
+
+        if ($this->canBeInteractive()) {
+            $hotkeys[] = Hotkey::make('i', KeyHandler::Interactive)->label('Interactive mode');
+        }
+
+        return $hotkeys;
+    }
+
     /**
      * @return array<string, Hotkey>
      */
@@ -100,10 +119,6 @@ class Command implements Loopable
     {
         $this->marshalRogueProcess();
 
-        $this->onNthTick(
-            $this->focused ? 1 : 10, [$this, 'gatherLatestOutput']
-        );
-
         if ($this->processStopped() && count($this->afterTerminateCallbacks)) {
             $this->callAfterTerminateCallbacks();
         }
@@ -119,6 +134,11 @@ class Command implements Loopable
         return !$this->isFocused();
     }
 
+    public function canBeInteractive(): bool
+    {
+        return $this->interactive;
+    }
+
     public function isInteractive(): bool
     {
         return $this->mode === self::MODE_INTERACTIVE;
@@ -131,11 +151,15 @@ class Command implements Loopable
     */
     public function dd()
     {
-        dd(iterator_to_array($this->lines));
+        dd($this->lines);
     }
 
     public function addOutput($text)
     {
+        if ($text === '') {
+            return;
+        }
+
         $line = $this->lines->isEmpty() ? '' : $this->lines->pop();
 
         $line .= $text;
@@ -143,6 +167,7 @@ class Command implements Loopable
         // Carriage return moves the cursor back to zero, while \n inserts
         // a newline. For our purposes, the carriage return is irrelevant.
         $line = str_replace("\r\n", PHP_EOL, $line);
+        $line = str_replace("\r", "", $line);
 
         $newLines = explode(PHP_EOL, $line);
 
@@ -161,7 +186,7 @@ class Command implements Loopable
     {
         $last = $this->lines->isEmpty() ? '' : $this->lines->top();
 
-        if ($last !== '') {
+        if ($last !== '' && !Str::endsWith($last, PHP_EOL)) {
             $line = Str::start($line, "\n");
         }
 
@@ -186,8 +211,6 @@ class Command implements Loopable
     public function focus(): void
     {
         $this->focused = true;
-
-        $this->gatherLatestOutput();
     }
 
     public function blur(): void
@@ -253,8 +276,11 @@ class Command implements Loopable
     */
     public function scrollPaneHeight(): int
     {
-        // 5 = 1 tabs + 1 process + 1 top border + 1 bottom border + 1 hotkeys
-        return $this->height - 5 - (count($this->hotkeys()) ? 1 : 0);
+        // Local hotkeys
+        $hotkeys = (count($this->allHotkeys()) || $this->canBeInteractive()) ? 1 : 0;
+
+        // 5 = 1 tabs + 1 process + 1 top border + 1 bottom border + 1 global hotkeys
+        return $this->height - 5 - $hotkeys;
     }
 
     public function scrollPaneWidth(): int
@@ -265,7 +291,10 @@ class Command implements Loopable
 
     public function wrappedLines(): Collection
     {
-        return collect($this->lines)
+//         $lines = $this->lines;
+        $lines = (new Screen)->emulateAnsiCodes($this->lines);
+
+        return collect($lines)
             ->flatMap(function ($line) {
                 return Arr::wrap($this->wrapAndFormat($line));
             })

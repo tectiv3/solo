@@ -5,16 +5,27 @@
 
 namespace AaronFrancis\Solo\Support;
 
-class Buffer
-{
-    public $buffer = [];
+use ArrayAccess;
+use ArrayIterator;
+use ReturnTypeWillChange;
 
-    public function __construct(public bool $usesStrings)
+class Buffer implements ArrayAccess
+{
+    public array $buffer = [];
+
+    public bool $usesStrings;
+
+    public function __construct(bool $usesStrings = false)
     {
-        //
+        $this->usesStrings = $usesStrings;
     }
 
-    public function clearBuffer(
+    public function getBuffer()
+    {
+        return $this->buffer;
+    }
+
+    public function clear(
         int $startRow = 0,
         int $startCol = 0,
         int $endRow = PHP_INT_MAX,
@@ -32,54 +43,104 @@ class Buffer
             if (!array_key_exists($row, $this->buffer)) {
                 continue;
             }
-
             $cols = $this->normalizeClearColumns($row, $startRow, $startCol, $endRow, $endCol);
 
             $line = $this->buffer[$row];
-
-            $length = $this->usesStrings ? mb_strlen($line) : count($this->buffer[$row]) - 1;
-
-            $cols = [
-                max($cols[0], 0),
-                min($cols[1], $length),
-            ];
+            $length = $this->rowLength($row);
 
             if ($cols[0] === 0 && $cols[1] === $length) {
-                // Benchmarked slightly faster to just replace the entire row.
+                // Clearing an entire line. Benchmarked slightly
+                // faster to just replace the entire row.
                 $this->buffer[$row] = $this->usesStrings ? '' : [];
             } elseif ($cols[0] > 0 && $cols[1] === $length) {
+                // Clearing from cols[0] to the end of the line.
                 $this->buffer[$row] = $this->usesStrings
-                    // Chop off the end of the string since we're clearing to the end of the line.
+                    // Chop off the end of the string.
                     ? mb_substr($line, 0, $cols[0], 'UTF-8')
-                    // Chop off the end of the array since we're clearing to the end of the line.
-                    : array_slice($this->buffer[$row], 0, $cols[0]);
+                    // Chop off the end of the array.
+                    : array_slice($line, 0, $cols[0]);
             } else {
-                if ($this->usesStrings) {
-                    $replacement = str_repeat(' ', $cols[1] - $cols[0] + 1);
-                    $beforeStart = mb_substr($line, 0, $cols[0], 'UTF-8');
-                    $afterEnd = mb_substr($line, $cols[1] + 1, null, 'UTF-8');
-
-                    $this->buffer[$row] = $beforeStart . $replacement . $afterEnd;
-                } else {
-                    // Replace the specified columns with zero
-                    $this->buffer[$row] = array_replace(
-                        $this->buffer[$row], array_fill_keys(range(...$cols), 0)
-                    );
-                }
+                // Clearing the middle of a row. Fill with either 0s or spaces.
+                $this->fill(
+                    ($this->usesStrings ? ' ' : 0), $row, $cols[0], $cols[1]
+                );
             }
         }
+    }
+
+    public function expand($rows)
+    {
+        while (count($this->buffer) <= $rows) {
+            $this->buffer[] = $this->usesStrings ? '' : [];
+        }
+    }
+
+    public function fill(mixed $value, int $row, int $startCol, int $endCol)
+    {
+        $this->expand($row);
+
+        $line = $this->buffer[$row];
+
+        if ($this->usesStrings) {
+            $replacement = str_repeat($value, $endCol - $startCol + 1);
+            $beforeStart = mb_substr($line, 0, $startCol, 'UTF-8');
+            $afterEnd = mb_substr($line, $endCol + 1, null, 'UTF-8');
+
+            $this->buffer[$row] = $beforeStart . $replacement . $afterEnd;
+        } else {
+            $this->buffer[$row] = array_replace(
+                $line, array_fill_keys(range($startCol, $endCol), $value)
+            );
+        }
+    }
+
+    public function rowLength($row)
+    {
+        $line = $this->buffer[$row];
+
+        return $this->usesStrings ? mb_strlen($line, 'UTF-8') : count($line) - 1;
     }
 
     protected function normalizeClearColumns(int $currentRow, int $startRow, int $startCol, int $endRow, int $endCol)
     {
         if ($startRow === $endRow) {
-            return [$startCol, $endCol];
+            $cols = [$startCol, $endCol];
         } elseif ($currentRow === $startRow) {
-            return [$startCol, PHP_INT_MAX];
+            $cols = [$startCol, PHP_INT_MAX];
         } elseif ($currentRow === $endRow) {
-            return [0, $endCol];
+            $cols = [0, $endCol];
         } else {
-            return [0, PHP_INT_MAX];
+            $cols = [0, PHP_INT_MAX];
         }
+
+        return [
+            max($cols[0], 0),
+            min($cols[1], $this->rowLength($currentRow)),
+        ];
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        return isset($this->buffer[$offset]);
+    }
+
+    #[ReturnTypeWillChange]
+    public function offsetGet(mixed $offset)
+    {
+        return $this->buffer[$offset] ?? null;
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if (is_null($offset)) {
+            $this->buffer[] = $value;
+        } else {
+            $this->buffer[$offset] = $value;
+        }
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        unset($this->buffer[$offset]);
     }
 }

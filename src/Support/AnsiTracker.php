@@ -8,24 +8,20 @@ namespace AaronFrancis\Solo\Support;
 use InvalidArgumentException;
 use RuntimeException;
 
-class AnsiBuffer
+class AnsiTracker
 {
     /**
      * An array full of arrays full of integers. Each first-level array
      * represents a row on the screen, while each integer represents
      * the active SGR ANSI codes at a position in that line.
-     *
-     * @var array<array<integer>>
      */
-    public array $buffer = [
-        //
-    ];
+    public Buffer $buffer;
 
     /**
      * The currently active SGR ANSI codes, at this moment in time.
      * @var int
      */
-    protected int $mask = 0;
+    protected int $active = 0;
 
     /**
      * The ANSI codes that control text foreground colors.
@@ -53,22 +49,21 @@ class AnsiBuffer
     protected array $resets = [[22, 29]];
 
     /**
-     * The keys are SGR ANSI codes, and the values are bitmask flags used to
-     * track which ANSI codes are enabled. Each flag corresponds to a
-     * unique (and arbitrary) bit position, allowing for efficient
-     * combination and manipulation using bitwise operations.
+     * The keys are ANSI SGR codes and the values are arbitrarily
+     * assigned bit values, allowing for efficient combination
+     * and manipulation using bitwise operations.
      *
      * @link https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
      */
     protected array $codes = [
         // Reset all
-        0 => 1 << 0,
+        0 => 1 << 0, // 1
 
         // Foreground
-        30 => 1 << 1,  // Black
-        31 => 1 << 2,  // Red
-        32 => 1 << 3,  // Green
-        33 => 1 << 4,  // Yellow
+        30 => 1 << 1,  // Black 2
+        31 => 1 << 2,  // Red 4
+        32 => 1 << 3,  // Green 8
+        33 => 1 << 4,  // Yellow 16
         34 => 1 << 5,  // Blue
         35 => 1 << 6,  // Magenta
         36 => 1 << 7,  // Cyan
@@ -102,6 +97,7 @@ class AnsiBuffer
         106 => 1 << 33, // Bright Cyan
         107 => 1 << 34, // Bright White
 
+        // Decoration
         1 => 1 << 35, // Set bold mode
         2 => 1 << 36, // Set dim/faint mode
         3 => 1 << 37, // Set italic mode
@@ -111,6 +107,7 @@ class AnsiBuffer
         8 => 1 << 41, // Set hidden/invisible mode
         9 => 1 << 42, // Set strikethrough mode
 
+        // Decoration resets
         22 => 1 << 43, // Reset bold mode AND dim/faint mode
         23 => 1 << 44, // Reset italic mode
         24 => 1 << 45, // Reset underline mode
@@ -141,107 +138,54 @@ class AnsiBuffer
         if (PHP_INT_SIZE < 8) {
             throw new RuntimeException('AnsiBuffer requires a 64-bit PHP environment.');
         }
+
+        // This buffer uses integers to keep track of active ANSI codes.
+        $this->buffer = new Buffer(usesStrings: false);
     }
 
-    public function clearBuffer(
-        int $startRow = 0,
-        int $startCol = 0,
-        int $endRow = PHP_INT_MAX,
-        int $endCol = PHP_INT_MAX
-    ): void {
-
-        // Short-circuit if we're clearing the whole buffer.
-        if ($startRow === 0 && $startCol === 0 && $endRow === PHP_INT_MAX && $endCol === PHP_INT_MAX) {
-            $this->buffer = [];
-            return;
-        }
-
-        $endRow = min($endRow, count($this->buffer) - 1);
-
-        // @TODO clear full rows?
-
-        for ($row = $startRow; $row <= $endRow; $row++) {
-            if (!array_key_exists($row, $this->buffer)) {
-                continue;
-            }
-
-            if ($startRow === $endRow) {
-                $cols = [$startCol, $endCol];
-            } elseif ($row === $startRow) {
-                $cols = [$startCol, PHP_INT_MAX];
-            } elseif ($row === $endRow) {
-                $cols = [0, $endCol];
-            } else {
-                $cols = [0, PHP_INT_MAX];
-            }
-
-            $cols = [
-                max($cols[0], 0),
-                min($cols[1], count($this->buffer[$row]) - 1),
-            ];
-
-            if ($cols[0] === 0 && $cols[1] === count($this->buffer[$row]) - 1) {
-                // Benchmarked slightly faster to just replace the entire row.
-                $this->buffer[$row] = [];
-            } elseif ($cols[0] > 0 && $cols[1] === count($this->buffer[$row]) - 1) {
-                // Chop off the end of the array since we're clearing to the end of the line.
-                $this->buffer[$row] = array_slice($this->buffer[$row], 0, $cols[0]);
-            } else {
-                // Replace the specified columns with zero
-                $this->buffer[$row] = array_replace(
-                    $this->buffer[$row], array_fill_keys(range(...$cols), 0)
-                );
-            }
-        }
-    }
-
-    public function fillBuffer(int $row, int $startCol, int $endCol): void
+    public function fillBufferWithActiveFlags(int $row, int $startCol, int $endCol): void
     {
-        while (count($this->buffer) <= $row) {
-            $this->buffer[] = [];
-        }
-
-        $this->buffer[$row] = array_replace(
-            $this->buffer[$row], array_fill_keys(range($startCol, $endCol), $this->mask)
-        );
+        $this->buffer->fill($this->active, $row, $startCol, $endCol);
     }
 
-    public function getMask(): int
+    public function getActive(): int
     {
-        return $this->mask;
+        return $this->active;
     }
 
-    public function getMaskAsAnsi(): string
+    public function getActiveAsAnsi(): string
     {
-        return $this->ansiStringFromMask($this->mask);
+        return $this->ansiStringFromBits($this->active);
     }
 
     public function compressedAnsiBuffer(): array
     {
-        $previousMask = 0;
+        $previousBits = 0;
 
-        return array_map(function ($line) use (&$previousMask) {
+        $compressed = array_map(function ($line) use (&$previousBits) {
             // We return false for any duplicates, so array_filter removes those leaving us with
             // a sparsely populated array with missing numeric keys (which is what we want.)
-            return array_filter(array_map(function ($mask) use (&$previousMask) {
+            return array_filter(array_map(function ($bits) use (&$previousBits) {
                 // Since we're compressing for output, we don't need an ANSI code for every
                 // character, as they are persistent. This bitwise operation gives us
-                // only the flags that weren't present in the previous mask.
-                $unique = $mask & ~$previousMask;
+                // only the flags that weren't present in the previous bits.
+                $unique = $bits & ~$previousBits;
 
                 if ($unique) {
-                    $previousMask = $mask;
+                    $previousBits = $bits;
                 }
 
-                return $unique ? $this->ansiStringFromMask($unique) : false;
+                return $unique ? $this->ansiStringFromBits($unique) : false;
             }, $line));
-        }, $this->buffer);
+        }, $this->buffer->getBuffer());
+
+        return $compressed;
     }
 
-    public function ansiCodesFromMask(int $mask): array
+    public function ansiCodesFromBits(int $bits): array
     {
         // Short-circuit
-        if ($mask === 0) {
+        if ($bits === 0) {
             return [];
         }
 
@@ -249,11 +193,11 @@ class AnsiBuffer
 
         foreach ($this->codes as $code => $bit) {
             // No point in checking further as they'll all be false.
-            if ($bit > $mask) {
+            if ($bit > $bits) {
                 break;
             }
 
-            if (($mask & $bit) === $bit) {
+            if (($bits & $bit) === $bit) {
                 $active[] = $code;
             }
         }
@@ -268,10 +212,10 @@ class AnsiBuffer
         return count($codes) ? ("\e[" . implode(';', $codes) . 'm') : '';
     }
 
-    public function ansiStringFromMask(int $mask): string
+    public function ansiStringFromBits(int $bits): string
     {
         return $this->ansiStringFromCodes(
-            $this->ansiCodesFromMask($mask)
+            $this->ansiCodesFromBits($bits)
         );
     }
 
@@ -285,7 +229,8 @@ class AnsiBuffer
     public function addAnsiCode(int $code)
     {
         if (!array_key_exists($code, $this->codes)) {
-            throw new InvalidArgumentException("Invalid ANSI code: $code");
+            return;
+            // throw new InvalidArgumentException("Invalid ANSI code: $code");
         }
 
         // Reset all styles.
@@ -307,7 +252,7 @@ class AnsiBuffer
         // code that disables that specific decoration.
         if ($this->codeInRange($code, $this->decoration)) {
             $unset = $this->codes[$this->decorationResets[$code]];
-            $this->mask &= ~$unset;
+            $this->active &= ~$unset;
         }
 
         // If we're unsetting a decoration, we need to remove
@@ -319,10 +264,10 @@ class AnsiBuffer
                     $unset |= $this->codes[$decoration];
                 }
             }
-            $this->mask &= ~$unset;
+            $this->active &= ~$unset;
         }
 
-        $this->mask |= $this->codes[$code];
+        $this->active |= $this->codes[$code];
     }
 
     protected function resetForeground()
@@ -378,7 +323,7 @@ class AnsiBuffer
         // Handle cases where the length equals the integer size
         if ($length >= $totalBits) {
             // Clear all bits
-            $this->mask = 0;
+            $this->active = 0;
             return;
         }
 
@@ -386,7 +331,7 @@ class AnsiBuffer
         $mask = ~(((1 << $length) - 1) << $start);
 
         // Apply the mask to clear the specified bit range
-        $this->mask &= $mask;
+        $this->active &= $mask;
     }
 
 }

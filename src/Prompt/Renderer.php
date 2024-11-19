@@ -13,6 +13,7 @@ use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Hotkeys\KeycodeMap;
+use AaronFrancis\Solo\Hotkeys\KeyHandler;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;
@@ -268,43 +269,17 @@ class Renderer extends PromptsRenderer
 
     protected function renderHotkeys(): void
     {
-        $localHotkeys = $this->currentCommand->hotkeys();
-        $globalHotkeys = $this->currentCommand->isInteractive() ? [
-            // This key is intercepted so we don't need a handler.
-            Hotkey::make("\x18", fn() => null)
-        ] : Solo::hotkeys();
+        $localHotkeys = $this->currentCommand->allHotkeys();
 
         if (count($localHotkeys)) {
-            collect($localHotkeys)->map(function (Hotkey $hotkey) {
-                $key = is_array($hotkey->keys) ? $hotkey->keys[0] : $hotkey->keys;
-                $key = KeycodeMap::toDisplay($key);
-
-                $label = 'TODO';
-
-                $this->hotkey($key, $label);
-            });
-
-            $this->pinToBottom($this->height - 1, function () {
-                $this->line(
-                    $this->centerHorizontally($this->hotkeys(), $this->width)->first()
-                );
-            });
+            $this->renderHotkeySubset($localHotkeys);
         }
 
         $this->clearHotkeys();
 
-        collect($globalHotkeys)->map(function (Hotkey $hotkey) {
-            $key = is_array($hotkey->keys) ? $hotkey->keys[0] : $hotkey->keys;
-            $key = KeycodeMap::toDisplay($key);
+        $globalHotkeys = $this->currentCommand->isInteractive() ? [] : Solo::hotkeys();
 
-            $label = 'TODO';
-
-            $this->hotkey($key, $label);
-        });
-
-        $this->line(
-            $this->centerHorizontally($this->hotkeys(), $this->width)->first()
-        );
+        $this->renderHotkeySubset($globalHotkeys);
     }
 
     protected function box($part)
@@ -448,6 +423,22 @@ class Renderer extends PromptsRenderer
         }
 
         return [++$left, --$right];
+    }
+
+    protected function renderHotkeySubset(array $hotkeys): void
+    {
+        collect($hotkeys)->map(function (Hotkey $hotkey) {
+            $hotkey->init($this->currentCommand, $this->dashboard);
+
+            $key = is_array($hotkey->keys) ? $hotkey->keys[0] : $hotkey->keys;
+            $key = KeycodeMap::toDisplay($key);
+
+            $this->hotkey($key, $hotkey->makeLabel() ?? 'TODO');
+        });
+
+        $this->line(
+            $this->centerHorizontally($this->hotkeys(), $this->width)->first()
+        );
     }
 }
 

@@ -3,30 +3,44 @@
 namespace AaronFrancis\Solo\Support;
 
 use Exception;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HigherOrderCollectionProxy;
 use SplQueue;
 
 class Screen
 {
     const ANSI_CODE_REGEX = '/
     (
-        \e\[          # Escape code      
-        [0-9;?]*      # Params
-        [a-zA-Z]      # Command    
+        \e\[
+            [0-9;?]*      # Parameters: digits, semicolons, question marks
+            [a-zA-Z]      # Command: a single letter
+        |
+        \e[78]            # Standalone ESC 7 or ESC 8
     )
 /x';
 
     const ANSI_CODE_PARTS_REGEX = '/
         (?P<params>   
-            [0-9;?]*  # Capture the params
+            [0-9;?]*    # Capture the params
         )     
         (?P<command>  
-            [a-zA-Z]  # Capture the command
+            [a-zA-Z78]  # Capture the command (alphabetic characters and 7,8)
         )    
 /x';
 
-    public AnsiBuffer $ansi;
+    public AnsiTracker $ansi;
 
-    public array $buffer = [];
+    public Buffer $buffer;
+
+    /**
+     * A higher-order collection of both the Screen and ANSI buffers
+     * so we can call methods on both of them at once. The type-
+     * hint doesn't match the actual property type on purpose.
+     * @var Buffer
+     * @noinspection PhpDocFieldTypeMismatchInspection
+     */
+    public HigherOrderCollectionProxy $bothBuffers;
 
     public int $cursorRow = 0;
 
@@ -34,9 +48,14 @@ class Screen
 
     protected bool $unflushedAnsi = false;
 
+    protected array $stashedCursor = [];
+
     public function __construct()
     {
-        $this->ansi = new AnsiBuffer;
+        $this->ansi = new AnsiTracker;
+        $this->buffer = new Buffer(usesStrings: true);
+
+        $this->bothBuffers = collect([$this->ansi->buffer, $this->buffer])->each;
     }
 
     public function containsAnsiMoveCodes(SplQueue $lines): bool
@@ -58,9 +77,12 @@ class Screen
             $lines->next();
         }
 
+        // Get the most minimal representation of the ANSI
+        // buffer possible, eliminating all duplicates.
         $ansi = $this->ansi->compressedAnsiBuffer();
 
-        $buffer = $this->buffer;
+        // A copy of the screen buffer.
+        $buffer = $this->buffer->getBuffer();
 
         foreach ($buffer as $k => &$line) {
             // At this point, the keys represent the column where the ANSI code should
@@ -79,7 +101,11 @@ class Screen
 
         unset($line);
 
-        return array_to_splqueue($buffer);
+        $queue = new SplQueue();
+        foreach ($buffer as $element) {
+            $queue->enqueue($element);
+        }
+        return $queue;
     }
 
     public function processLine(string $line): void
@@ -92,19 +118,22 @@ class Screen
 
         $i = 0;
 
-        $hasPrintableCharacters = false;
-        $hasAnsiCodes = false;
-
         while ($i < count($parts)) {
             $part = $parts[$i];
 
-            if (str_starts_with($part, "\e[")) {
-                $hasAnsiCodes = true;
+            if (str_starts_with($part, "\e")) {
                 // Split out the ANSI code by its command and optional parameters.
                 preg_match(self::ANSI_CODE_PARTS_REGEX, $part, $matches);
-                $this->handleAnsiCode($matches['command'], $matches['params']);
+
+                if (Arr::has($matches, ['command', 'params'])) {
+                    $this->handleAnsiCode($matches['command'], $matches['params']);
+                } else {
+                    Log::error('Unknown ANSI match:', [
+                        'line' => $line,
+                        'part' => $part,
+                    ]);
+                }
             } else {
-                $hasPrintableCharacters = true;
                 $this->write($part);
             }
 
@@ -118,18 +147,13 @@ class Screen
         // written in. We fix that here by checking the flag.
         if ($this->unflushedAnsi) {
             // Add the ANSI at the exact point of the cursor.
-            $this->ansi->fillBuffer(
+            $this->ansi->fillBufferWithActiveFlags(
                 row: $this->cursorRow, startCol: $this->cursorCol, endCol: $this->cursorCol,
             );
         }
 
-        // Some lines are just blank which means they don't have any printable
-        // character, but we still want to add a newline. What we don't want
-        // to add a newline for is lines that contain purely ANSI codes.
-        if ($hasPrintableCharacters || !$hasAnsiCodes) {
-            $this->moveCursorRow(relative: 1);
-            $this->moveCursorCol(absolute: 0);
-        }
+        $this->moveCursorRow(relative: 1);
+        $this->moveCursorCol(absolute: 0);
     }
 
     protected function handleAnsiCode($command, $param)
@@ -184,23 +208,24 @@ class Screen
             $this->handleEraseInLine($paramDefaultZero);
 
         } elseif ('l' === $command || 'h' === $command) {
-            // Show/hide cursor. We simply ignore them.
+            // Show/hide cursor. We simply ignore these.
 
         } elseif ('m' === $command) {
             // Colors / graphics mode
             $this->handleSGR($param);
-
-        } else {
-            // @TODO? Throw an error?
+        } elseif ('7' === $command) {
+            $this->saveCursor();
+        } elseif ('8' === $command) {
+            $this->restoreCursor();
         }
+
+
+        // @TODO Unhandled ansi command. Throw an error? Log it?
     }
 
     public function write(string $text): void
     {
-        // Ensure the buffer has enough lines up to cursorRow
-        while (count($this->buffer) <= $this->cursorRow) {
-            $this->buffer[] = '';
-        }
+        $this->buffer->expand($this->cursorRow);
 
         // Get the current line content
         $lineContent = $this->buffer[$this->cursorRow];
@@ -227,86 +252,40 @@ class Screen
 
         // Fill the ANSI buffer with currently active flags, based
         // on where the cursor started and where it ended.
-        $this->ansi->fillBuffer($this->cursorRow, $startCol, $this->cursorCol - 1);
+        $this->ansi->fillBufferWithActiveFlags($this->cursorRow, $startCol, $this->cursorCol - 1);
 
-        // We no longer have ANSI codes that haven't been written into
-        // the ANSI buffer, so disable the flag.
+        // We no longer have ANSI codes that haven't been written
+        // into the ANSI buffer, so flip the flag.
         $this->unflushedAnsi = false;
     }
 
-    public function clearBuffer(
-        int $startRow = 0,
-        int $startCol = 0,
-        int $endRow = PHP_INT_MAX,
-        int $endCol = PHP_INT_MAX
-    ): void {
-        $this->ansi->clearBuffer(
-            startRow: $startRow, startCol: $startCol,
-            endRow: $endRow, endCol: $endCol,
-        );
+    public function saveCursor()
+    {
+        $this->stashedCursor = [$this->cursorCol, $this->cursorRow];
+    }
 
-        // Short-circuit if we're clearing the whole buffer.
-        if ($startRow === 0 && $startCol === 0 && $endRow === PHP_INT_MAX && $endCol === PHP_INT_MAX) {
-            $this->buffer = [];
-            return;
-        }
-
-        $endRow = min($endRow, count($this->buffer) - 1);
-
-        for ($row = $startRow; $row <= $endRow; $row++) {
-            if (!array_key_exists($row, $this->buffer)) {
-                continue;
-            }
-
-            if ($startRow === $endRow) {
-                $cols = [$startCol, $endCol];
-            } elseif ($row === $startRow) {
-                $cols = [$startCol, PHP_INT_MAX];
-            } elseif ($row === $endRow) {
-                $cols = [0, $endCol];
-            } else {
-                $cols = [0, PHP_INT_MAX];
-            }
-
-            $line = $this->buffer[$row];
-            $length = mb_strlen($line);
-
-            $cols = [
-                max($cols[0], 0),
-                min($cols[1], $length),
-            ];
-
-            if ($cols[0] === 0 && $cols[1] === $length) {
-                // Benchmarked slightly faster to just replace the entire row.
-                $this->buffer[$row] = '';
-            } elseif ($cols[0] > 0 && $cols[1] === $length) {
-                // Chop off the end of the string since we're clearing to the end of the line.
-                $this->buffer[$row] = mb_substr($line, 0, $cols[0], 'UTF-8');
-            } else {
-                $replacement = str_repeat(' ', $cols[1] - $cols[0] + 1);
-                $beforeStart = mb_substr($line, 0, $cols[0], 'UTF-8');
-                $afterEnd = mb_substr($line, $cols[1] + 1, null, 'UTF-8');
-
-                $this->buffer[$row] = $beforeStart . $replacement . $afterEnd;
-            }
+    public function restoreCursor()
+    {
+        if ($this->stashedCursor) {
+            [$col, $row] = $this->stashedCursor;
+            $this->moveCursorCol(absolute: $col);
+            $this->moveCursorRow(absolute: $row);
+            $this->stashedCursor = [];
         }
     }
 
-    public function moveCursorCol($absolute = null, $relative = null)
+    public function moveCursorCol(?int $absolute = null, ?int $relative = null)
     {
         $this->moveCursor('x', $absolute, $relative);
     }
 
-    public function moveCursorRow($absolute = null, $relative = null)
+    public function moveCursorRow(?int $absolute = null, ?int $relative = null)
     {
         $this->moveCursor('y', $absolute, $relative);
-
-        while (count($this->buffer) < $this->cursorRow) {
-            $this->buffer[] = '';
-        }
+        $this->buffer->expand($this->cursorRow - 1);
     }
 
-    protected function moveCursor(string $direction, $absolute = null, $relative = null): void
+    protected function moveCursor(string $direction, ?int $absolute = null, ?int $relative = null): void
     {
         $this->ensureCursorParams($absolute, $relative);
 
@@ -337,7 +316,7 @@ class Screen
     /**
      * Handle SGR (Select Graphic Rendition) ANSI codes for colors and styles.
      */
-    protected function handleSGR($params): void
+    protected function handleSGR(string $params): void
     {
         $this->unflushedAnsi = true;
 
@@ -351,19 +330,19 @@ class Screen
     {
         if ($param === 0) {
             // \e[0J - Erase from cursor until end of screen
-            $this->clearBuffer(
+            $this->bothBuffers->clear(
                 startRow: $this->cursorRow,
                 startCol: $this->cursorCol
             );
         } elseif ($param === 1) {
             // \e[1J - Erase from cursor until beginning of screen
-            $this->clearBuffer(
+            $this->bothBuffers->clear(
                 endRow: $this->cursorRow,
                 endCol: $this->cursorCol
             );
         } elseif ($param === 2) {
             // \e[2J - Erase entire screen
-            $this->clearBuffer();
+            $this->bothBuffers->clear();
         }
     }
 
@@ -371,7 +350,7 @@ class Screen
     {
         if ($param === 0) {
             // \e[0K - Erase from cursor to end of line
-            $this->clearBuffer(
+            $this->bothBuffers->clear(
                 startRow: $this->cursorRow,
                 startCol: $this->cursorCol,
                 endRow: $this->cursorRow
@@ -379,14 +358,14 @@ class Screen
 
         } elseif ($param == 1) {
             // \e[1K - Erase start of line to the cursor
-            $this->clearBuffer(
+            $this->bothBuffers->clear(
                 startRow: $this->cursorRow,
                 endRow: $this->cursorRow,
                 endCol: $this->cursorCol
             );
         } elseif ($param === 2) {
             //\e[2K - Erase the entire line
-            $this->clearBuffer(
+            $this->bothBuffers->clear(
                 startRow: $this->cursorRow,
                 endRow: $this->cursorRow
             );

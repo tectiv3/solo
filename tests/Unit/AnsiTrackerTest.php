@@ -6,34 +6,34 @@
 namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Helpers\AnsiAware;
-use AaronFrancis\Solo\Support\AnsiBuffer;
+use AaronFrancis\Solo\Support\AnsiTracker;
 use AaronFrancis\Solo\Support\Screen;
 use Illuminate\Support\Benchmark;
 use PHPUnit\Framework\Attributes\Test;
 use SplQueue;
 
-class AnsiBufferTest extends Base
+class AnsiTrackerTest extends Base
 {
     #[Test]
     public function add_foreground_colors(): void
     {
-        $ansi = new AnsiBuffer;
+        $ansi = new AnsiTracker;
 
         // Black
         $ansi->addAnsiCode(30);
 
-        $this->assertEquals("\e[30m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[30m", $ansi->getActiveAsAnsi());
 
         // Red
         $ansi->addAnsiCode(31);
 
-        $this->assertEquals("\e[31m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[31m", $ansi->getActiveAsAnsi());
     }
 
     #[Test]
     public function default_foreground(): void
     {
-        $ansi = new AnsiBuffer;
+        $ansi = new AnsiTracker;
 
         // FG
         $ansi->addAnsiCode(30);
@@ -42,13 +42,13 @@ class AnsiBufferTest extends Base
         // Reset FG only
         $ansi->addAnsiCode(39);
 
-        $this->assertEquals("\e[39;40m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[39;40m", $ansi->getActiveAsAnsi());
     }
 
     #[Test]
     public function default_background(): void
     {
-        $ansi = new AnsiBuffer;
+        $ansi = new AnsiTracker;
 
         // FG
         $ansi->addAnsiCode(30);
@@ -57,52 +57,52 @@ class AnsiBufferTest extends Base
         // Reset BG only
         $ansi->addAnsiCode(49);
 
-        $this->assertEquals("\e[30;49m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[30;49m", $ansi->getActiveAsAnsi());
     }
 
     #[Test]
     public function reset_decorations(): void
     {
-        $ansi = new AnsiBuffer;
+        $ansi = new AnsiTracker;
 
         // Bold
         $ansi->addAnsiCode(1);
-        $this->assertEquals("\e[1m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[1m", $ansi->getActiveAsAnsi());
 
         // unset bold
         $ansi->addAnsiCode(22);
-        $this->assertEquals("\e[22m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[22m", $ansi->getActiveAsAnsi());
 
         // Bold
         $ansi->addAnsiCode(1);
         // Italic
         $ansi->addAnsiCode(3);
-        $this->assertEquals("\e[1;3m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[1;3m", $ansi->getActiveAsAnsi());
 
         // unset bold
         $ansi->addAnsiCode(22);
-        $this->assertEquals("\e[3;22m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[3;22m", $ansi->getActiveAsAnsi());
     }
 
     #[Test]
     public function reset_bold_and_dim(): void
     {
-        $ansi = new AnsiBuffer;
+        $ansi = new AnsiTracker;
 
         // Bold
         $ansi->addAnsiCode(1);
         $ansi->addAnsiCode(2);
-        $this->assertEquals("\e[1;2m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[1;2m", $ansi->getActiveAsAnsi());
 
         // unset both
         $ansi->addAnsiCode(22);
-        $this->assertEquals("\e[22m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[22m", $ansi->getActiveAsAnsi());
     }
 
     #[Test]
     public function reset_all(): void
     {
-        $ansi = new AnsiBuffer;
+        $ansi = new AnsiTracker;
 
         // Black fg
         $ansi->addAnsiCode(30);
@@ -111,18 +111,18 @@ class AnsiBufferTest extends Base
         // Italic
         $ansi->addAnsiCode(3);
 
-        $this->assertEquals("\e[3;30;44m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[3;30;44m", $ansi->getActiveAsAnsi());
 
         $ansi->addAnsiCode(0);
 
-        $this->assertEquals("\e[0m", $ansi->getMaskAsAnsi());
+        $this->assertEquals("\e[0m", $ansi->getActiveAsAnsi());
     }
 
     #[Test]
     public function clear_test(): void
     {
-        $ansi = new AnsiBuffer;
-        $ansi->buffer = [
+        $ansi = new AnsiTracker;
+        $ansi->buffer->buffer = [
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
@@ -130,14 +130,14 @@ class AnsiBufferTest extends Base
             [1, 1, 1, 1, 1],
         ];
 
-        $ansi->clearBuffer(
+        $ansi->buffer->clear(
             startRow: 1,
             startCol: 3,
             endRow: 3,
             endCol: 2
         );
 
-        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer);
+        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
             "1,1,1,1,1",
@@ -151,8 +151,8 @@ class AnsiBufferTest extends Base
     #[Test]
     public function clear_beyond_cols_test(): void
     {
-        $ansi = new AnsiBuffer;
-        $ansi->buffer = [
+        $ansi = new AnsiTracker;
+        $ansi->buffer->buffer = [
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
@@ -160,9 +160,9 @@ class AnsiBufferTest extends Base
             [1, 1, 1, 1, 1],
         ];
 
-        $ansi->clearBuffer(startRow: 1, startCol: -3, endRow: 3, endCol: 50);
+        $ansi->buffer->clear(startRow: 1, startCol: -3, endRow: 3, endCol: 50);
 
-        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer);
+        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
             "1,1,1,1,1",
@@ -176,8 +176,8 @@ class AnsiBufferTest extends Base
     #[Test]
     public function clear_beyond_rows_test(): void
     {
-        $ansi = new AnsiBuffer;
-        $ansi->buffer = [
+        $ansi = new AnsiTracker;
+        $ansi->buffer->buffer = [
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
@@ -185,9 +185,9 @@ class AnsiBufferTest extends Base
             [1, 1, 1, 1, 1],
         ];
 
-        $ansi->clearBuffer(startRow: 10, startCol: 1, endRow: 13, endCol: 10);
+        $ansi->buffer->clear(startRow: 10, startCol: 1, endRow: 13, endCol: 10);
 
-        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer);
+        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
             "1,1,1,1,1",
@@ -201,8 +201,8 @@ class AnsiBufferTest extends Base
     #[Test]
     public function same_line_clear(): void
     {
-        $ansi = new AnsiBuffer;
-        $ansi->buffer = [
+        $ansi = new AnsiTracker;
+        $ansi->buffer->buffer = [
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1],
@@ -210,9 +210,9 @@ class AnsiBufferTest extends Base
             [1, 1, 1, 1, 1],
         ];
 
-        $ansi->clearBuffer(startRow: 1, startCol: 1, endRow: 1, endCol: 2);
+        $ansi->buffer->clear(startRow: 1, startCol: 1, endRow: 1, endCol: 2);
 
-        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer);
+        $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
             "1,1,1,1,1",

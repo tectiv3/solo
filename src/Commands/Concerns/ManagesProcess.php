@@ -7,12 +7,21 @@
 
 namespace AaronFrancis\Solo\Commands\Concerns;
 
+use AaronFrancis\Solo\Support\Output;
 use AaronFrancis\Solo\Support\PendingProcess;
+use AaronFrancis\Solo\Support\SafeBytes;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Sleep;
+use Illuminate\Support\Str;
+use PHPUnit\Event\Runtime\PHP;
 use Symfony\Component\Process\InputStream;
+use Symfony\Component\Process\Pipes\PipesInterface;
+use Symfony\Component\Process\Pipes\UnixPipes;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 trait ManagesProcess
 {
@@ -28,12 +37,20 @@ trait ManagesProcess
 
     public InputStream $input;
 
+    protected string $multibyteBuffer = '';
+
     public function createPendingProcess(): PendingProcess
     {
         $this->input ??= new InputStream;
 
+        $command = explode(' ', $this->command);
+
         // We have to make our own so that we can control pty if needed.
-        $process = app(PendingProcess::class)->command($this->command)->forever();
+        $process = app(PendingProcess::class)
+            ->command($command)
+            ->forever()
+            ->timeout(0)
+            ->idleTimeout(0);
 
         if ($this->interactive) {
             $process->pty();
@@ -79,7 +96,9 @@ trait ManagesProcess
 
     public function start(): void
     {
-        $this->process = $this->createPendingProcess()->start();
+        $this->process = $this->createPendingProcess()->start(
+            null, fn($type, $buffer) => $this->addOutput($buffer)
+        );
     }
 
     public function stop(): void
@@ -177,12 +196,23 @@ trait ManagesProcess
         $this->afterTerminateCallbacks = [];
     }
 
-    protected function gatherLatestOutput(): void
-    {
-        if (!$latest = $this->process?->latestOutput()) {
-            return;
-        }
+//    protected function handleOutput($type, $buffer): void
+//    {
+//        return;
+//
+//        $output = $this->multibyteBuffer . $buffer;
+//        $this->multibyteBuffer = '';
+//
+//        // If it ends in an EOL, we know there's no byte splice.
+//        if (str_ends_with($output, PHP_EOL)) {
+//            $this->addOutput($output);
+//            return;
+//        }
+//
+//        // Check for byte splice
+//        [$output, $this->multibyteBuffer] = SafeBytes::parse($output);
+//
+//        $this->addOutput($output);
+//    }
 
-        $this->addOutput($latest);
-    }
 }
