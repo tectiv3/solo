@@ -26,6 +26,7 @@ class Command implements Loopable
     use ManagesProcess, Ticks;
 
     public const MODE_PASSIVE = 1;
+
     public const MODE_INTERACTIVE = 2;
 
     public int $mode = Command::MODE_PASSIVE;
@@ -167,7 +168,7 @@ class Command implements Loopable
         // Carriage return moves the cursor back to zero, while \n inserts
         // a newline. For our purposes, the carriage return is irrelevant.
         $line = str_replace("\r\n", PHP_EOL, $line);
-        $line = str_replace("\r", "", $line);
+        $line = str_replace("\r", '', $line);
 
         $newLines = explode(PHP_EOL, $line);
 
@@ -291,7 +292,7 @@ class Command implements Loopable
 
     public function wrappedLines(): Collection
     {
-//         $lines = $this->lines;
+        //         $lines = $this->lines;
         $lines = (new Screen)->emulateAnsiCodes($this->lines);
 
         return collect($lines)

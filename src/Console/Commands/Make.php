@@ -13,8 +13,8 @@ use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
 use Symfony\Component\Process\InputStream;
 use Throwable;
-use function Laravel\Prompts\search;
 
+use function Laravel\Prompts\search;
 
 class Make extends Command
 {
@@ -72,18 +72,18 @@ class Make extends Command
                 echo $buffer;
             });
 
-        $this->line("  " . $this->bgBlue($this->white(" INFO ")) . " Starting `php artisan make:$type`");
+        $this->line('  ' . $this->bgBlue($this->white(' INFO ')) . " Starting `php artisan make:$type`");
 
         $this->proxyInput();
 
-        $this->line("  " . $this->bgBlue($this->white(" INFO ")) . " Finished `php artisan make:$type`");
+        $this->line('  ' . $this->bgBlue($this->white(' INFO ')) . " Finished `php artisan make:$type`");
 
-        $this->line("");
+        $this->line('');
 
         $this->line(
-            "  "
-            . $this->bgBlue($this->white(" MAKE "))
-            . " Make another class. "
+            '  '
+            . $this->bgBlue($this->white(' MAKE '))
+            . ' Make another class. '
             . $this->dim('(⌃c to quit)')
         );
 

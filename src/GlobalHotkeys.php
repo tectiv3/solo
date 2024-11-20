@@ -7,9 +7,5 @@ namespace AaronFrancis\Solo;
 
 class GlobalHotkeys
 {
-    public static function register()
-    {
-
-    }
-
+    public static function register() {}
 }

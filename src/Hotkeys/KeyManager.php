@@ -5,7 +5,4 @@
 
 namespace AaronFrancis\Solo\Hotkeys;
 
-class KeyManager
-{
-
-}
+class KeyManager {}

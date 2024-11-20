@@ -119,7 +119,7 @@ class LightTheme implements Theme
         EOT;
     }
 
-    public function boxInteractive():string
+    public function boxInteractive(): string
     {
         return <<<EOT
         ╔═╦═╗

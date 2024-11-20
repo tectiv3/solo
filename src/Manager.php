@@ -12,7 +12,7 @@ use AaronFrancis\Solo\Commands\UnsafeCommand;
 use AaronFrancis\Solo\Contracts\HotkeyProvider;
 use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Hotkeys\DefaultHotkeys;
-use AaronFrancis\Solo\Hotkeys\VimHotkeys;
+use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Prompt\Renderer;
 use AaronFrancis\Solo\Themes\DarkTheme;
 use AaronFrancis\Solo\Themes\LightTheme;
@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Facade;
 use InvalidArgumentException;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 use ReflectionClass;
-use \AaronFrancis\Solo\Hotkeys\Hotkey;
 
 class Manager
 {
@@ -120,6 +119,7 @@ class Manager
 
     /**
      * @return array<Hotkey>
+     *
      * @throws Exception
      */
     public function hotkeys(): array
@@ -127,7 +127,7 @@ class Manager
         $hotkeys = Config::get('solo.hotkeys') ?? DefaultHotkeys::class;
 
         if (!is_a($hotkeys, HotkeyProvider::class, allow_string: true)) {
-            throw new InvalidArgumentException("Hotkeys must implement [" . HotkeyProvider::class . "]");
+            throw new InvalidArgumentException('Hotkeys must implement [' . HotkeyProvider::class . ']');
         }
 
         return (new $hotkeys)->keys();

@@ -7,11 +7,8 @@
 
 namespace AaronFrancis\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Support\SafeBytes;
-use Laravel\Prompts\Concerns\Colors;
 use PHPUnit\Framework\Attributes\Test;
-use Symfony\Component\String\ByteString;
 
 class ByteSpliceTest extends Base
 {
@@ -56,7 +53,6 @@ class ByteSpliceTest extends Base
         $this->assertEquals([$string, ''], SafeBytes::parse($string));
     }
 
-
     #[Test]
     public function only_spliced(): void
     {
@@ -75,7 +71,6 @@ class ByteSpliceTest extends Base
 
         $this->assertEquals(['─────────────────────', $spliced], SafeBytes::parse($string));
     }
-
 
     #[Test]
     public function spliced_three(): void
@@ -96,5 +91,4 @@ class ByteSpliceTest extends Base
 
         $this->assertEquals(['─────────────────────', $spliced], SafeBytes::parse($string));
     }
-
 }

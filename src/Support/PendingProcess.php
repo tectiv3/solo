@@ -6,7 +6,6 @@
 namespace AaronFrancis\Solo\Support;
 
 use Illuminate\Process\PendingProcess as BasePendingProcess;
-use Symfony\Component\Process\Process;
 
 class PendingProcess extends BasePendingProcess
 {

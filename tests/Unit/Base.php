@@ -9,9 +9,7 @@ namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Providers\SoloServiceProvider;
 use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
-use ArrayAccess;
 use Orchestra\Testbench\TestCase;
-use SplQueue;
 
 abstract class Base extends TestCase
 {
@@ -21,10 +19,7 @@ abstract class Base extends TestCase
      * @param  \Illuminate\Foundation\Application  $app
      * @return void
      */
-    protected function getEnvironmentSetup($app)
-    {
-
-    }
+    protected function getEnvironmentSetup($app) {}
 
     protected function getPackageProviders($app)
     {

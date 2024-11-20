@@ -9,17 +9,13 @@ namespace AaronFrancis\Solo\Prompt;
 
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Hotkeys\DefaultHotkeys;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Hotkeys\KeyHandler;
-use AaronFrancis\Solo\Hotkeys\VimHotkeys;
 use AaronFrancis\Solo\Support\Frames;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;
 use Chewie\Concerns\RegistersRenderers;
 use Chewie\Concerns\SetsUpAndResets;
 use Chewie\Input\KeyPressListener;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Key;
@@ -197,6 +193,7 @@ class Dashboard extends Prompt
 
         if ($this->currentCommand()->processStopped()) {
             $this->exitInteractiveMode();
+
             return;
         }
 
@@ -207,6 +204,7 @@ class Dashboard extends Prompt
             // Exit interactive mode without stopping the underlying process.
             if ($key === "\x18") {
                 $this->exitInteractiveMode();
+
                 return;
             }
 
@@ -295,4 +293,3 @@ class Dashboard extends Prompt
         return null;
     }
 }
-

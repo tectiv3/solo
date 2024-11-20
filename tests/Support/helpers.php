@@ -2,7 +2,6 @@
 /**
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
-
 if (!function_exists('array_to_splqueue')) {
     /**
      * Converts an array or ArrayAccess object to an SplQueue.
@@ -12,10 +11,11 @@ if (!function_exists('array_to_splqueue')) {
      */
     function array_to_splqueue(array|ArrayAccess $array): SplQueue
     {
-        $queue = new SplQueue();
+        $queue = new SplQueue;
         foreach ($array as $element) {
             $queue->enqueue($element);
         }
+
         return $queue;
     }
 }

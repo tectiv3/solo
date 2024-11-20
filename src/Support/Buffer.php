@@ -6,7 +6,6 @@
 namespace AaronFrancis\Solo\Support;
 
 use ArrayAccess;
-use ArrayIterator;
 use ReturnTypeWillChange;
 
 class Buffer implements ArrayAccess
@@ -34,6 +33,7 @@ class Buffer implements ArrayAccess
         // Short-circuit if we're clearing the whole buffer.
         if ($startRow === 0 && $startCol === 0 && $endRow === PHP_INT_MAX && $endCol === PHP_INT_MAX) {
             $this->buffer = [];
+
             return;
         }
 

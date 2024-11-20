@@ -8,18 +8,15 @@
 namespace AaronFrancis\Solo\Commands\Concerns;
 
 use AaronFrancis\Solo\Support\PendingProcess;
-use AaronFrancis\Solo\Support\SafeBytes;
 use AaronFrancis\Solo\Support\ProcessTracker;
+use AaronFrancis\Solo\Support\SafeBytes;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use PHPUnit\Event\Runtime\PHP;
 use Symfony\Component\Process\InputStream;
-use Symfony\Component\Process\Process as SymfonyProcess;
 
 trait ManagesProcess
 {
@@ -161,6 +158,7 @@ trait ManagesProcess
             ProcessTracker::kill($this->children);
 
             $this->addLine('Stopped.');
+
             return;
         }
 
@@ -200,23 +198,23 @@ trait ManagesProcess
         $this->afterTerminateCallbacks = [];
     }
 
-//    protected function handleOutput($type, $buffer): void
-//    {
-//        return;
-//
-//        $output = $this->multibyteBuffer . $buffer;
-//        $this->multibyteBuffer = '';
-//
-//        // If it ends in an EOL, we know there's no byte splice.
-//        if (str_ends_with($output, PHP_EOL)) {
-//            $this->addOutput($output);
-//            return;
-//        }
-//
-//        // Check for byte splice
-//        [$output, $this->multibyteBuffer] = SafeBytes::parse($output);
-//
-//        $this->addOutput($output);
-//    }
+    //    protected function handleOutput($type, $buffer): void
+    //    {
+    //        return;
+    //
+    //        $output = $this->multibyteBuffer . $buffer;
+    //        $this->multibyteBuffer = '';
+    //
+    //        // If it ends in an EOL, we know there's no byte splice.
+    //        if (str_ends_with($output, PHP_EOL)) {
+    //            $this->addOutput($output);
+    //            return;
+    //        }
+    //
+    //        // Check for byte splice
+    //        [$output, $this->multibyteBuffer] = SafeBytes::parse($output);
+    //
+    //        $this->addOutput($output);
+    //    }
 
 }

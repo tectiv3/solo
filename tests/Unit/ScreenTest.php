@@ -5,8 +5,6 @@
 
 namespace AaronFrancis\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Helpers\AnsiAware;
-use AaronFrancis\Solo\Support\AnsiTracker;
 use AaronFrancis\Solo\Support\Screen;
 use PHPUnit\Framework\Attributes\Test;
 use SplQueue;
@@ -18,11 +16,11 @@ class ScreenTest extends Base
         $screen = new Screen;
         $output = $screen->emulateAnsiCodes(array_to_splqueue($input));
 
-//        dd($output);
-//        $str = implode(PHP_EOL, $input);
-//        dump("echo $'$str'");
+        //        dd($output);
+        //        $str = implode(PHP_EOL, $input);
+        //        dump("echo $'$str'");
         //dd($expect, splqueue_to_array($output));
-//        dd($screen->ansi->buffer);
+        //        dd($screen->ansi->buffer);
 
         $this->assertSame($expect, splqueue_to_array($output));
     }
@@ -31,15 +29,15 @@ class ScreenTest extends Base
     public function clear_screen_test()
     {
         $this->assertEmulation([
-            "Hello World",
-            "Hello World",
+            'Hello World',
+            'Hello World',
             "\e[2J",
-            "New Line after clear",
+            'New Line after clear',
         ], [
-            "",
-            "",
-            "",
-            "New Line after clear",
+            '',
+            '',
+            '',
+            'New Line after clear',
         ]);
     }
 
@@ -57,7 +55,7 @@ class ScreenTest extends Base
     public function byte_splice(): void
     {
         // Simulate receiving data in two parts
-        $part1 = "─";
+        $part1 = '─';
         $part2 = "\xE2"; // First byte of a 3-byte character
         $part3 = "\x94\x80"; // Remaining bytes of the character
 
@@ -77,14 +75,13 @@ class ScreenTest extends Base
             }, $bytes));
 
             // Output the character and its byte representation
-            echo $char . ": " . $byteString . "(" . $this->isValidUtf8Character($char) . ")" . "\n";
+            echo $char . ': ' . $byteString . '(' . $this->isValidUtf8Character($char) . ')' . "\n";
         }
-
 
         dd($string);
     }
 
-    function isValidUtf8Character(string $char): bool
+    public function isValidUtf8Character(string $char): bool
     {
         $len = strlen($char);
 
@@ -104,6 +101,7 @@ class ScreenTest extends Base
                 return false; // Incomplete character
             }
             $byte2 = ord($char[1]);
+
             return ($byte2 & 0xC0) === 0x80;
         } elseif ($byte1 >= 0xE0 && $byte1 <= 0xEF) {
             // 3-byte character
@@ -112,6 +110,7 @@ class ScreenTest extends Base
             }
             $byte2 = ord($char[1]);
             $byte3 = ord($char[2]);
+
             return (($byte2 & 0xC0) === 0x80) && (($byte3 & 0xC0) === 0x80);
         } elseif ($byte1 >= 0xF0 && $byte1 <= 0xF4) {
             // 4-byte character
@@ -121,6 +120,7 @@ class ScreenTest extends Base
             $byte2 = ord($char[1]);
             $byte3 = ord($char[2]);
             $byte4 = ord($char[3]);
+
             return (($byte2 & 0xC0) === 0x80) &&
                 (($byte3 & 0xC0) === 0x80) &&
                 (($byte4 & 0xC0) === 0x80);
@@ -138,15 +138,15 @@ class ScreenTest extends Base
             "\e[90m ┌\e[39m \e[36mWhat should the model be named?\e[39m \e[90m─────────────────────────────┐\e[39m",
             "\e[90m │\e[39m \e[2m\e[7mE\e[27m.g. Flight\e[22m                                                  \e[90m│\e[39m",
             "\e[90m └──────────────────────────────────────────────────────────────┘\e[39m",
-            "",
-            "",
+            '',
+            '',
         ], [
-            "",
+            '',
             "\e[90m ┌\e[39m \e[36mWhat should the model be named?\e[39m \e[90m─────────────────────────────┐\e[39m",
             "\e[90m │\e[39m \e[2;7mE\e[27m.g. Flight\e[22m                                                  \e[90m│\e[39m",
             "\e[90m └──────────────────────────────────────────────────────────────┘\e[39m",
-            "",
-            "",
+            '',
+            '',
         ]);
     }
 
@@ -154,13 +154,13 @@ class ScreenTest extends Base
     public function test_simple_line_without_ansi_codes(): void
     {
         $this->assertEmulation([
-            "Hello, World!",
-            "",
-            "Part two!"
+            'Hello, World!',
+            '',
+            'Part two!'
         ], [
-            "Hello, World!",
-            "",
-            "Part two!",
+            'Hello, World!',
+            '',
+            'Part two!',
         ]);
     }
 
@@ -178,11 +178,11 @@ class ScreenTest extends Base
     public function test_cursor_horizontal_absolute(): void
     {
         $this->assertEmulation([
-            "Start",
+            'Start',
             "\e[5GHello",
         ], [
-            "Start",
-            "    Hello",// Moved to column 5
+            'Start',
+            '    Hello', // Moved to column 5
         ]);
     }
 
@@ -191,14 +191,14 @@ class ScreenTest extends Base
     {
         // Input lines with ANSI escape code \e[5C to move cursor forward 5 columns and insert "Forward"
         $this->assertEmulation([
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
             // Move forward 5 columns on Line 3 and insert "Forward"
             "Line 3: Goodbye!\e[5CForward",
         ], [
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: Goodbye!     Forward",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: Goodbye!     Forward',
         ]);
     }
 
@@ -206,13 +206,13 @@ class ScreenTest extends Base
     {
         // Input lines with ANSI escape code \e[3D to move cursor backward 3 columns and insert "Back"
         $this->assertEmulation([
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
             "Line 3: Goodbye!\e[3DBack", // Move backward 3 columns on Line 3 and insert "Back"
         ], [
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: GoodbBack", // "Back" inserted starting 3 columns before the end
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: GoodbBack', // "Back" inserted starting 3 columns before the end
         ]);
     }
 
@@ -221,14 +221,14 @@ class ScreenTest extends Base
     {
         // Input lines with ANSI escape code \e[H to move cursor to home and insert "Home"
         $this->assertEmulation([
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: Goodbye!",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: Goodbye!',
             "\e[HHome", // Move cursor to home position and insert "Home"
         ], [
-            "Home 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: Goodbye!",
+            'Home 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: Goodbye!',
         ]);
     }
 
@@ -236,14 +236,14 @@ class ScreenTest extends Base
     public function test_cursor_up(): void
     {
         $this->assertEmulation([
-            "Line 1",
-            "Line 2",
-            "Line 3",
+            'Line 1',
+            'Line 2',
+            'Line 3',
             "\e[2AInserted Line",
         ], [
-            "Line 1",
-            "Inserted Line",
-            "Line 3",
+            'Line 1',
+            'Inserted Line',
+            'Line 3',
         ]);
     }
 
@@ -252,14 +252,14 @@ class ScreenTest extends Base
     {
         // Input lines with ANSI escape code \e[0J
         $this->assertEmulation([
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
             // Move cursor to column 2 on Line 3
             "Line 3: Goodbye!\e[2G\e[0J",
         ], [
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "L", // 'L' is at column 1, cursor moved to column 2, so 'Line 3' becomes 'L'
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'L', // 'L' is at column 1, cursor moved to column 2, so 'Line 3' becomes 'L'
         ]);
     }
 
@@ -268,15 +268,15 @@ class ScreenTest extends Base
     {
         // Input lines with ANSI escape code \e[1J
         $this->assertEmulation([
-            "Line 1: Hello, World!",
+            'Line 1: Hello, World!',
             "Line 2: This is a test.\e[10G\e[1J", // Move cursor to column 10 on Line 2 and erase
-            "Line 3: Goodbye!",
+            'Line 3: Goodbye!',
         ], [
             // Line 1 is cleared
-            "",
+            '',
             // Line 2: 10 spaces to account for clearing up to cursor, which is at column 10
-            "          is is a test.",
-            "Line 3: Goodbye!",
+            '          is is a test.',
+            'Line 3: Goodbye!',
         ]);
     }
 
@@ -285,14 +285,14 @@ class ScreenTest extends Base
     {
         $this->assertEmulation([
             "\e[?25l",
-            "Hidden Cursor Line",
+            'Hidden Cursor Line',
             "\e[?25h",
-            "Visible Cursor Line",
+            'Visible Cursor Line',
         ], [
-            "",
-            "Hidden Cursor Line",
-            "",
-            "Visible Cursor Line",
+            '',
+            'Hidden Cursor Line',
+            '',
+            'Visible Cursor Line',
         ]);
     }
 
@@ -300,14 +300,14 @@ class ScreenTest extends Base
     public function test_combined_ansi_codes(): void
     {
         $this->assertEmulation([
-            "Line 1",
-            "Line 2",
-            "Line 3",
+            'Line 1',
+            'Line 2',
+            'Line 3',
             "\e[1A\e[5GInserted", // Move up 1 line and to column 5
         ], [
-            "Line 1",
-            "Line 2",
-            "LineInserted",
+            'Line 1',
+            'Line 2',
+            'LineInserted',
         ]);
     }
 
@@ -316,16 +316,16 @@ class ScreenTest extends Base
     {
         // Input lines with ANSI escape code \e[1B and insert "Inserted Line"
         $this->assertEmulation([
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: Goodbye!",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: Goodbye!',
             "\e[1B\e[5GInserted Line", // Move down 1 line and to column 5, then insert text
         ], [
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: Goodbye!",
-            "",
-            "    Inserted Line", // "Inserted Line" starts at column 5 on Line 4
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: Goodbye!',
+            '',
+            '    Inserted Line', // "Inserted Line" starts at column 5 on Line 4
         ]);
     }
 
@@ -334,10 +334,10 @@ class ScreenTest extends Base
     {
         // Attempt to move up 5 lines from line 2
         $this->assertEmulation([
-            "Line 1",
+            'Line 1',
             "\e[5AAbove Start",
         ], [
-            "Above Start"
+            'Above Start'
         ]);
     }
 
@@ -347,7 +347,7 @@ class ScreenTest extends Base
         $this->assertEmulation([
             "hello world\e[4G\e[1K",
         ], [
-            "    o world"
+            '    o world'
         ]);
     }
 
@@ -357,7 +357,7 @@ class ScreenTest extends Base
         $this->assertEmulation([
             "hello world\e[4G\e[2K",
         ], [
-            ""
+            ''
         ]);
     }
 
@@ -367,7 +367,7 @@ class ScreenTest extends Base
         $this->assertEmulation([
             "hello world\e[4G\e[0K",
         ], [
-            "hel"
+            'hel'
         ]);
     }
 
@@ -398,9 +398,9 @@ class ScreenTest extends Base
 
         $screen->emulateAnsiCodes(array_to_splqueue([
             "\e[34m",
-            "abcd",
-            "efgh",
-            "ijkl",
+            'abcd',
+            'efgh',
+            'ijkl',
             "\e[2A\e[1C\e[0J"
         ]));
 
@@ -428,9 +428,9 @@ class ScreenTest extends Base
 
         $screen->emulateAnsiCodes(array_to_splqueue([
             "\e[34m",
-            "abcd",
-            "efgh",
-            "ijkl",
+            'abcd',
+            'efgh',
+            'ijkl',
             "\e[2A\e[2C\e[1J"
         ]));
 
@@ -462,9 +462,9 @@ class ScreenTest extends Base
 
         $screen->emulateAnsiCodes(array_to_splqueue([
             "\e[34m",
-            "abcd",
-            "efgh",
-            "ijkl",
+            'abcd',
+            'efgh',
+            'ijkl',
             "\e[2A\e[2C\e[2J"
         ]));
 
@@ -474,7 +474,6 @@ class ScreenTest extends Base
         );
     }
 
-
     #[Test]
     public function erase_in_line_0(): void
     {
@@ -482,7 +481,7 @@ class ScreenTest extends Base
 
         $screen->emulateAnsiCodes(array_to_splqueue([
             "\e[34m",
-            "abcde",
+            'abcde',
             "\e[1A\e[2C\e[0K"
         ]));
 
@@ -505,7 +504,7 @@ class ScreenTest extends Base
 
         $screen->emulateAnsiCodes(array_to_splqueue([
             "\e[34m",
-            "abcde",
+            'abcde',
             "\e[1A\e[2C\e[1K"
         ]));
 
@@ -531,7 +530,7 @@ class ScreenTest extends Base
 
         $screen->emulateAnsiCodes(array_to_splqueue([
             "\e[34m",
-            "abcde",
+            'abcde',
             "\e[1A\e[2C\e[2K"
         ]));
 
@@ -550,7 +549,7 @@ class ScreenTest extends Base
         $this->assertEmulation([
             "\e7this is a test\e8haha!",
         ], [
-            "haha!is a test",
+            'haha!is a test',
         ]);
     }
 }

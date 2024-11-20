@@ -1,7 +1,5 @@
 <?php
 
-use \AaronFrancis\Solo\Hotkeys\DefaultHotkeys;
-
 return [
     /*
     |--------------------------------------------------------------------------

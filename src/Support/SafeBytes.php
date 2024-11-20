@@ -61,6 +61,7 @@ class SafeBytes
                 return false; // Incomplete character
             }
             $byte2 = ord($char[1]);
+
             return ($byte2 & 0xC0) === 0x80;
         } elseif ($byte1 >= 0xE0 && $byte1 <= 0xEF) {
             // 3-byte character
@@ -69,6 +70,7 @@ class SafeBytes
             }
             $byte2 = ord($char[1]);
             $byte3 = ord($char[2]);
+
             return (($byte2 & 0xC0) === 0x80) && (($byte3 & 0xC0) === 0x80);
         } elseif ($byte1 >= 0xF0 && $byte1 <= 0xF4) {
             // 4-byte character
@@ -78,6 +80,7 @@ class SafeBytes
             $byte2 = ord($char[1]);
             $byte3 = ord($char[2]);
             $byte4 = ord($char[3]);
+
             return (($byte2 & 0xC0) === 0x80) &&
                 (($byte3 & 0xC0) === 0x80) &&
                 (($byte4 & 0xC0) === 0x80);
@@ -86,5 +89,4 @@ class SafeBytes
             return false;
         }
     }
-
 }

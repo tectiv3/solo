@@ -5,9 +5,6 @@
 
 namespace AaronFrancis\Solo\Hotkeys;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Prompt\Dashboard;
-use Chewie\Input\KeyPressListener;
 use Laravel\Prompts\Key;
 
 class VimHotkeys extends DefaultHotkeys
@@ -27,7 +24,6 @@ class VimHotkeys extends DefaultHotkeys
 
         return $map;
     }
-
 
     /**
      * @return array<string, Hotkey>

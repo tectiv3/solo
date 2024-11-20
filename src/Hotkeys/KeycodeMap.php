@@ -54,19 +54,17 @@ class KeycodeMap
             ...array_fill_keys(Key::HOME, '⇱'),
             ...array_fill_keys(Key::END, '⇲'),
 
-            "\x18" => "⌃x",
-            Key::CTRL_C => "⌃c",
-            Key::CTRL_P => "⌃p",
-            Key::CTRL_N => "⌃n",
-            Key::CTRL_F => "⌃f",
-            Key::CTRL_B => "⌃b",
-            Key::CTRL_H => "⌃h",
-            Key::CTRL_A => "⌃a",
-            Key::CTRL_D => "⌃d",
-            Key::CTRL_E => "⌃e",
-            Key::CTRL_U => "⌃u",
+            "\x18" => '⌃x',
+            Key::CTRL_C => '⌃c',
+            Key::CTRL_P => '⌃p',
+            Key::CTRL_N => '⌃n',
+            Key::CTRL_F => '⌃f',
+            Key::CTRL_B => '⌃b',
+            Key::CTRL_H => '⌃h',
+            Key::CTRL_A => '⌃a',
+            Key::CTRL_D => '⌃d',
+            Key::CTRL_E => '⌃e',
+            Key::CTRL_U => '⌃u',
         ];
     }
-
-
 }

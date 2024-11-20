@@ -7,13 +7,10 @@ namespace AaronFrancis\Solo\Hotkeys;
 
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Contracts\HotkeyProvider;
-use AaronFrancis\Solo\Prompt\Dashboard;
-use Chewie\Input\KeyPressListener;
 use Laravel\Prompts\Key;
 
 class DefaultHotkeys implements HotkeyProvider
 {
-
     /**
      * @return array<string, Hotkey>
      */

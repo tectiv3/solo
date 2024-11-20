@@ -19,32 +19,35 @@ class AnsiTracker
 
     /**
      * The currently active SGR ANSI codes, at this moment in time.
-     * @var int
      */
     protected int $active = 0;
 
     /**
      * The ANSI codes that control text foreground colors.
-     * @var array<array<integer>>
+     *
+     * @var array<array<int>>
      */
     protected array $foreground = [[30, 39], [90, 97]];
 
     /**
      * The ANSI codes that control text background colors.
-     * @var array<array<integer>>
+     *
+     * @var array<array<int>>
      */
     protected array $background = [[40, 49], [100, 107]];
 
     /**
      * The ANSI codes that control text decoration,
      * like underline, bold, italic, etc.
-     * @var array<array<integer>>
+     *
+     * @var array<array<int>>
      */
     protected array $decoration = [[1, 9]];
 
     /**
      * The ANSI codes that control decoration resets.
-     * @var array<array<integer>>
+     *
+     * @var array<array<int>>
      */
     protected array $resets = [[22, 29]];
 
@@ -120,6 +123,7 @@ class AnsiTracker
     /**
      * Each key is an ANSI code that turns a certain decoration on, while
      * the value is an ANSI code that turns that decoration off.
+     *
      * @var int[]
      */
     protected array $decorationResets = [
@@ -285,7 +289,7 @@ class AnsiTracker
         foreach ($ranges as $range) {
             if ($code >= $range[0] && $code <= $range[1]) {
                 return true;
-            };
+            }
         }
 
         return false;
@@ -305,11 +309,11 @@ class AnsiTracker
     {
         // Validate bit positions
         if ($start < 0 || $end < 0) {
-            throw new InvalidArgumentException("Bit positions must be non-negative.");
+            throw new InvalidArgumentException('Bit positions must be non-negative.');
         }
 
         if ($start > $end) {
-            throw new InvalidArgumentException("Start bit must be less than or equal to end bit.");
+            throw new InvalidArgumentException('Start bit must be less than or equal to end bit.');
         }
 
         $totalBits = 64;
@@ -324,6 +328,7 @@ class AnsiTracker
         if ($length >= $totalBits) {
             // Clear all bits
             $this->active = 0;
+
             return;
         }
 
@@ -333,5 +338,4 @@ class AnsiTracker
         // Apply the mask to clear the specified bit range
         $this->active &= $mask;
     }
-
 }

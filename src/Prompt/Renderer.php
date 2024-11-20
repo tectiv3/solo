@@ -13,13 +13,11 @@ use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Hotkeys\KeycodeMap;
-use AaronFrancis\Solo\Hotkeys\KeyHandler;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Laravel\Prompts\Key;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
@@ -196,7 +194,7 @@ class Renderer extends PromptsRenderer
         // Try to scroll the content, which may or may not have an
         // effect, depending on how much content there is.
         $scrolled = $this->scrollbar(
-        // Subtract 1 for the left box border and 1 for the space after it.
+            // Subtract 1 for the left box border and 1 for the space after it.
             $visible, $start, $allowedLines, $wrappedLines->count(), $this->width - 2
         );
 

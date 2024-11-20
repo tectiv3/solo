@@ -11,19 +11,12 @@ use Chewie\Input\KeyPressListener;
 
 class Hotkey
 {
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     public function bind(KeyPressListener $listener)
     {
         $listener->on();
     }
 
-
-    public function handle(Dashboard $prompt, Command $command)
-    {
-
-    }
+    public function handle(Dashboard $prompt, Command $command) {}
 }

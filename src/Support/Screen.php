@@ -37,7 +37,9 @@ class Screen
      * A higher-order collection of both the Screen and ANSI buffers
      * so we can call methods on both of them at once. The type-
      * hint doesn't match the actual property type on purpose.
+     *
      * @var Buffer
+     *
      * @noinspection PhpDocFieldTypeMismatchInspection
      */
     public HigherOrderCollectionProxy $bothBuffers;
@@ -65,6 +67,7 @@ class Screen
                 return true;
             }
         }
+
         return false;
     }
 
@@ -101,10 +104,11 @@ class Screen
 
         unset($line);
 
-        $queue = new SplQueue();
+        $queue = new SplQueue;
         foreach ($buffer as $element) {
             $queue->enqueue($element);
         }
+
         return $queue;
     }
 
@@ -164,61 +168,60 @@ class Screen
         $paramDefaultZero = ($param !== '' && is_numeric($param)) ? intval($param) : 0;
         $paramDefaultOne = ($param !== '' && is_numeric($param)) ? intval($param) : 1;
 
-        if ('A' === $command) {
+        if ($command === 'A') {
             // Cursor up
             $this->moveCursorRow(relative: -$paramDefaultOne);
 
-        } elseif ('B' === $command) {
+        } elseif ($command === 'B') {
             // Cursor down
             $this->moveCursorRow(relative: $paramDefaultOne);
 
-        } elseif ('C' === $command) {
+        } elseif ($command === 'C') {
             // Cursor forward
             $this->moveCursorCol(relative: $paramDefaultOne);
 
-        } elseif ('D' === $command) {
+        } elseif ($command === 'D') {
             // Cursor backward
             $this->moveCursorCol(relative: -$paramDefaultOne);
 
-        } elseif ('E' === $command) {
+        } elseif ($command === 'E') {
             // Cursor to beginning of next line, a number of lines down
             $this->moveCursorRow(relative: $paramDefaultOne);
             $this->moveCursorCol(absolute: 0);
 
-        } elseif ('F' === $command) {
+        } elseif ($command === 'F') {
             // Cursor to beginning of next line, a number of lines up
             $this->moveCursorRow(relative: -$paramDefaultOne);
             $this->moveCursorCol(absolute: 0);
 
-        } elseif ('G' === $command) {
+        } elseif ($command === 'G') {
             // Cursor to column #, accounting for one-based indexing.
             $this->moveCursorCol($paramDefaultOne - 1);
 
-        } elseif ('H' === $command) {
+        } elseif ($command === 'H') {
             // Cursor home
             $this->moveCursorRow(absolute: 0);
             $this->moveCursorCol(absolute: 0);
 
-        } elseif ('J' === $command) {
+        } elseif ($command === 'J') {
             // Erase display
             $this->handleEraseDisplay($paramDefaultZero);
 
-        } elseif ('K' === $command) {
+        } elseif ($command === 'K') {
             // Erase in line
             $this->handleEraseInLine($paramDefaultZero);
 
-        } elseif ('l' === $command || 'h' === $command) {
+        } elseif ($command === 'l' || $command === 'h') {
             // Show/hide cursor. We simply ignore these.
 
-        } elseif ('m' === $command) {
+        } elseif ($command === 'm') {
             // Colors / graphics mode
             $this->handleSGR($param);
-        } elseif ('7' === $command) {
+        } elseif ($command === '7') {
             $this->saveCursor();
-        } elseif ('8' === $command) {
+        } elseif ($command === '8') {
             $this->restoreCursor();
         }
-
 
         // @TODO Unhandled ansi command. Throw an error? Log it?
     }
@@ -305,11 +308,11 @@ class Screen
     protected function ensureCursorParams($absolute, $relative): void
     {
         if (!is_null($absolute) && !is_null($relative)) {
-            throw new Exception("Use either relative or absolute, but not both.");
+            throw new Exception('Use either relative or absolute, but not both.');
         }
 
         if (is_null($absolute) && is_null($relative)) {
-            throw new Exception("Relative and absolute cannot both be blank.");
+            throw new Exception('Relative and absolute cannot both be blank.');
         }
     }
 

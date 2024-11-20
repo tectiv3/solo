@@ -26,9 +26,9 @@ class EnhancedTailCommand extends Command
                 $index = $this->findNonVendorFrame($this->scrollIndex + floor($this->scrollPaneHeight() / 2));
 
                 dd($this->wrappedLines());
-//                if ($index !== false) {
-//                    $this->lines[$index] = '___scrollpos___';
-//                }
+                //                if ($index !== false) {
+                //                    $this->lines[$index] = '___scrollpos___';
+                //                }
             })
         ];
     }

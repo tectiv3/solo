@@ -6,7 +6,6 @@ use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Prompt\Dashboard;
 use Chewie\Input\KeyPressListener;
 use Closure;
-use Laravel\Prompts\Key;
 use Laravel\SerializableClosure\Support\ReflectionClosure;
 use ReflectionParameter;
 
@@ -69,15 +68,9 @@ class Hotkey
         return $this->callWithParams($this->label);
     }
 
-    public function visible()
-    {
+    public function visible() {}
 
-    }
-
-    public function active()
-    {
-
-    }
+    public function active() {}
 
     public function display(?Closure $cb): static
     {
@@ -111,5 +104,4 @@ class Hotkey
 
         return call_user_func($value, ...$arguments->all());
     }
-
 }

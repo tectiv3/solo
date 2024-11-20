@@ -5,12 +5,9 @@
 
 namespace AaronFrancis\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Support\AnsiTracker;
-use AaronFrancis\Solo\Support\Screen;
 use Illuminate\Support\Benchmark;
 use PHPUnit\Framework\Attributes\Test;
-use SplQueue;
 
 class AnsiTrackerTest extends Base
 {
@@ -140,11 +137,11 @@ class AnsiTrackerTest extends Base
         $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
-            "1,1,1,1,1",
-            "1,1,1",
-            "",
-            "0,0,0,1,1",
-            "1,1,1,1,1",
+            '1,1,1,1,1',
+            '1,1,1',
+            '',
+            '0,0,0,1,1',
+            '1,1,1,1,1',
         ], $buffer);
     }
 
@@ -165,11 +162,11 @@ class AnsiTrackerTest extends Base
         $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
-            "1,1,1,1,1",
-            "",
-            "",
-            "",
-            "1,1,1,1,1",
+            '1,1,1,1,1',
+            '',
+            '',
+            '',
+            '1,1,1,1,1',
         ], $buffer);
     }
 
@@ -190,11 +187,11 @@ class AnsiTrackerTest extends Base
         $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
-            "1,1,1,1,1",
-            "1,1,1,1,1",
-            "1,1,1,1,1",
-            "1,1,1,1,1",
-            "1,1,1,1,1",
+            '1,1,1,1,1',
+            '1,1,1,1,1',
+            '1,1,1,1,1',
+            '1,1,1,1,1',
+            '1,1,1,1,1',
         ], $buffer);
     }
 
@@ -215,25 +212,24 @@ class AnsiTrackerTest extends Base
         $buffer = array_map(fn($line) => implode(',', $line), $ansi->buffer->buffer);
 
         $this->assertSame([
-            "1,1,1,1,1",
-            "1,0,0,1,1",
-            "1,1,1,1,1",
-            "1,1,1,1,1",
-            "1,1,1,1,1",
+            '1,1,1,1,1',
+            '1,0,0,1,1',
+            '1,1,1,1,1',
+            '1,1,1,1,1',
+            '1,1,1,1,1',
         ], $buffer);
     }
 
-//    #[Test]
-//    public function speed(): void
-//    {
-//        $ansi = new AnsiBuffer;
-//
-//        $mask = (1 << 0) + (1 << 3);
-//
-//        Benchmark::dd(function () use ($ansi, $mask) {
-//            $ansi->ansiCodesFromMask($mask);
-//        }, 20000);
-//    }
-
+    //    #[Test]
+    //    public function speed(): void
+    //    {
+    //        $ansi = new AnsiBuffer;
+    //
+    //        $mask = (1 << 0) + (1 << 3);
+    //
+    //        Benchmark::dd(function () use ($ansi, $mask) {
+    //            $ansi->ansiCodesFromMask($mask);
+    //        }, 20000);
+    //    }
 
 }

@@ -63,5 +63,4 @@ interface Theme
     public function boxBorderInteractive(string $text): string;
 
     public function boxHandle(): string;
-
 }
