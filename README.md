@@ -11,6 +11,8 @@
 > [!WARNING]  
 > This is still beta software. Use with caution.
 
+> This package require ext-pcntl
+
 ## About 
 
 Solo for Laravel is a package to run multiple commands at once, to aid in local development. After installing, you can open the SoloServiceProvider to add or remove commands.

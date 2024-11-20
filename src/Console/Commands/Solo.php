@@ -9,6 +9,7 @@ namespace AaronFrancis\Solo\Console\Commands;
 
 use AaronFrancis\Solo\Prompt\Dashboard;
 use Illuminate\Console\Command;
+use Symfony\Component\Process\Process;
 
 class Solo extends Command
 {
@@ -18,6 +19,23 @@ class Solo extends Command
 
     public function handle(): void
     {
+        $this->monitor();
+
         Dashboard::start();
+    }
+
+    protected function monitor()
+    {
+        $process = new Process(['php', 'artisan', 'solo:monitor', getmypid()]);
+
+        // Ensure the process runs in the background and doesn't tie to the parent
+        $process->setOptions([
+            'create_new_console' => true,
+            'create_process_group' => true,
+        ]);
+
+        $process->disableOutput();
+
+        $process->start();
     }
 }
