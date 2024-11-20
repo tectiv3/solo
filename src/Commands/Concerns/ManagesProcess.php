@@ -7,6 +7,7 @@
 
 namespace AaronFrancis\Solo\Commands\Concerns;
 
+use AaronFrancis\Solo\Support\ProcessTracker;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Process\PendingProcess;
@@ -24,6 +25,8 @@ trait ManagesProcess
     protected ?Carbon $stopInitiatedAt;
 
     protected ?Closure $processModifier = null;
+
+    protected $children = [];
 
     public function createPendingProcess(): PendingProcess
     {
@@ -72,6 +75,8 @@ trait ManagesProcess
         $this->stopping = true;
 
         if ($this->processRunning()) {
+            $this->children = ProcessTracker::children($this->process->id());
+
             // Keep track of when we tried to stop.
             $this->stopInitiatedAt ??= Carbon::now();
 
@@ -119,6 +124,8 @@ trait ManagesProcess
         if ($this->stopping && $this->processStopped()) {
             $this->stopping = false;
             $this->stopInitiatedAt = null;
+
+            ProcessTracker::kill($this->children);
 
             $this->addLine('Stopped.');
             $this->callAfterTerminateCallbacks();
