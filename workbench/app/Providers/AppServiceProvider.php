@@ -11,6 +11,7 @@ use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo;
 use Illuminate\Support\ProcessUtils;
 use Illuminate\Support\ServiceProvider;
+
 use function Orchestra\Testbench\package_path;
 
 class AppServiceProvider extends ServiceProvider
