@@ -18,6 +18,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 use ReflectionClass;
@@ -46,17 +47,12 @@ class Manager
     /**
      * @var array<class-string>
      */
-    protected array $configurationAllowedFrom = [];
-
-    /**
-     * @var array<class-string>
-     */
     protected array $commandsAllowedFrom = [];
 
     public function __construct()
     {
         // The only classes that are guaranteed to be fully in the user's control.
-        $this->configurationAllowedFrom = $this->commandsAllowedFrom = [
+        $this->commandsAllowedFrom = [
             App::getNamespace() . 'Providers\\AppServiceProvider',
             App::getNamespace() . 'Providers\\SoloServiceProvider',
         ];
@@ -231,14 +227,15 @@ class Manager
 
     protected function ensureSafeConfigurationLocation($func): void
     {
-        if (in_array($this->caller(), $this->configurationAllowedFrom)) {
+        $caller = $this->caller();
+        $namespace = App::getNamespace();
+
+        if (Str::startsWith($caller, $namespace)) {
             return;
         }
 
-        $locations = implode(' ', $this->configurationAllowedFrom);
-
         throw new Exception(
-            "`$func` may only be called from one of the following classes: [$locations]"
+            "`$func` may only be called from the [$namespace] namespace."
         );
     }
 }
