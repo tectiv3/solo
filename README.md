@@ -73,9 +73,9 @@ namespace App\Providers;
 
 use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class SoloServiceProvider extends SoloApplicationServiceProvider
+class SoloServiceProvider extends ServiceProvider
 {
     public function register()
     {
