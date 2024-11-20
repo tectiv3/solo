@@ -7,9 +7,9 @@
 
 namespace AaronFrancis\Solo\Commands\Concerns;
 
-use AaronFrancis\Solo\Support\Output;
 use AaronFrancis\Solo\Support\PendingProcess;
 use AaronFrancis\Solo\Support\SafeBytes;
+use AaronFrancis\Solo\Support\ProcessTracker;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
@@ -19,8 +19,6 @@ use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use PHPUnit\Event\Runtime\PHP;
 use Symfony\Component\Process\InputStream;
-use Symfony\Component\Process\Pipes\PipesInterface;
-use Symfony\Component\Process\Pipes\UnixPipes;
 use Symfony\Component\Process\Process as SymfonyProcess;
 
 trait ManagesProcess
@@ -38,6 +36,8 @@ trait ManagesProcess
     public InputStream $input;
 
     protected string $multibyteBuffer = '';
+
+    protected $children = [];
 
     public function createPendingProcess(): PendingProcess
     {
@@ -108,6 +108,8 @@ trait ManagesProcess
         $this->stopping = true;
 
         if ($this->processRunning()) {
+            $this->children = ProcessTracker::children($this->process->id());
+
             // Keep track of when we tried to stop.
             $this->stopInitiatedAt ??= Carbon::now();
 
@@ -155,6 +157,8 @@ trait ManagesProcess
         if ($this->stopping && $this->processStopped()) {
             $this->stopping = false;
             $this->stopInitiatedAt = null;
+
+            ProcessTracker::kill($this->children);
 
             $this->addLine('Stopped.');
             return;

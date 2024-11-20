@@ -20,6 +20,7 @@ use Chewie\Concerns\RegistersRenderers;
 use Chewie\Concerns\SetsUpAndResets;
 use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
@@ -61,13 +62,23 @@ class Dashboard extends Prompt
         [$this->width, $this->height] = $this->getDimensions();
 
         pcntl_signal(SIGWINCH, [$this, 'handleResize']);
+        pcntl_signal(SIGINT, [$this, 'quit']);
+        pcntl_signal(SIGTERM, [$this, 'quit']);
 
         $this->frames = new Frames;
 
-        $this->commands = collect(Solo::commands())->each(function (Command $command) {
-            $command->setDimensions($this->width, $this->height);
-            $command->autostart();
-        })->all();
+        $this->commands = collect(Solo::commands())
+            ->tap(function (Collection $commands) {
+                // If they haven't added any commands, just show the About command.
+                if ($commands->isEmpty()) {
+                    $commands->push(Command::make('About', 'php artisan solo:about'));
+                }
+            })
+            ->each(function (Command $command) {
+                $command->setDimensions($this->width, $this->height);
+                $command->autostart();
+            })
+            ->all();
 
         $this->registerLoopables(...$this->commands);
     }

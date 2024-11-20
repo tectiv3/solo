@@ -10,6 +10,7 @@ namespace AaronFrancis\Solo\Providers;
 use AaronFrancis\Solo\Console\Commands\About;
 use AaronFrancis\Solo\Console\Commands\Install;
 use AaronFrancis\Solo\Console\Commands\Make;
+use AaronFrancis\Solo\Console\Commands\Monitor;
 use AaronFrancis\Solo\Console\Commands\Solo;
 use AaronFrancis\Solo\Manager;
 use Illuminate\Support\Facades\App;
@@ -35,6 +36,7 @@ class SoloServiceProvider extends ServiceProvider
     protected function registerCommands()
     {
         $this->commands([
+            Monitor::class,
             Solo::class,
             Install::class,
             About::class,
