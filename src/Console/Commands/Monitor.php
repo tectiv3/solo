@@ -51,6 +51,7 @@ class Monitor extends Command
         // Check if the process with the given PID exists
         $output = [];
         exec("ps -p {$pid}", $output);
+
         return count($output) > 1; // If the output has more than the header line, the process is running
     }
 
@@ -62,9 +63,9 @@ class Monitor extends Command
         // Get the list of all processes with their PID and PPID
         $output = [];
         if ($os === 'Darwin') { // macOS
-            exec("ps -eo pid,ppid | tail -n +2", $output);
+            exec('ps -eo pid,ppid | tail -n +2', $output);
         } elseif ($os === 'Linux') { // Linux
-            exec("ps -eo pid,ppid --no-headers", $output);
+            exec('ps -eo pid,ppid --no-headers', $output);
         } else {
             throw new RuntimeException("Unsupported operating system: $os");
         }
@@ -72,7 +73,7 @@ class Monitor extends Command
         // Parse the output into an array of processes
         $processes = [];
         foreach ($output as $line) {
-            list($childPid, $parentPid) = preg_split('/\s+/', trim($line));
+            [$childPid, $parentPid] = preg_split('/\s+/', trim($line));
             $processes[] = ['pid' => $childPid, 'ppid' => $parentPid];
         }
 

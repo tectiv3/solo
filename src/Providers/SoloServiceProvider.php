@@ -8,8 +8,8 @@
 namespace AaronFrancis\Solo\Providers;
 
 use AaronFrancis\Solo\Console\Commands\About;
-use AaronFrancis\Solo\Console\Commands\Monitor;
 use AaronFrancis\Solo\Console\Commands\Install;
+use AaronFrancis\Solo\Console\Commands\Monitor;
 use AaronFrancis\Solo\Console\Commands\Solo;
 use AaronFrancis\Solo\Manager;
 use Illuminate\Support\Facades\App;
