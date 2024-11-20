@@ -11,7 +11,8 @@
 > [!WARNING]  
 > This is still beta software. Use with caution.
 
-> This package require ext-pcntl
+> [!IMPORTANT]
+> This package requires ext-pcntl, so it will not work on Windows. Sorry about that.
 
 ## About 
 
