@@ -188,10 +188,9 @@ Solo::allowCommandsAddedFrom([
 ]);
 ```
 
-
 ## Service provider in a custom location.
 
-By default, your `SoloServiceProvider` is created in the `App\Providers` namespace, which is pre-registered as a "safe" location to add commands from. If your `SoloServiceProvider` is in a custom location, it will still be deemed "safe" as long as it is 1) an instance of SoloServiceProvider and 2) it resides in your application's namespace (usually `App`, but custom root namespaces are supported.)  
+By default, your `SoloServiceProvider` is created in the `App\Providers` namespace, which is pre-registered as a "safe" location to add commands from. If your `SoloServiceProvider` is in a custom location, it will still be deemed "safe" as long as it resides in your application's namespace (usually `App`, but custom root namespaces are supported.)  
 
 
 ## Contributing
