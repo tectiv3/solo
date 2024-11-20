@@ -11,7 +11,6 @@ use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Commands\UnsafeCommand;
 use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Prompt\Renderer;
-use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
 use AaronFrancis\Solo\Themes\DarkTheme;
 use AaronFrancis\Solo\Themes\LightTheme;
 use Exception;
