@@ -197,8 +197,6 @@ By default, your `SoloServiceProvider` is created in the `App\Providers` namespa
 ## Contributing
 Please help.
 
-I haven't tested this on Windows, I don't have a Windows machine!
-
 Also there are gonna be _so_ many edge cases with commands, terminals, etc. I need a good way to test these things. If you're good at testing, please help me set up a good scaffold. 
 
 ## Support me
@@ -211,3 +209,17 @@ If you want to support me you can either buy one of my courses or tell your frie
 - High Performance SQLite: https://highperformancesqlite.com
 - Screencasting: https://screencasting.com
 
+
+## FAQ
+
+My command isn't working
+: (That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi` option? Is it writing to somewhere besides `STDOUT`? Is there an option to force it to write to `STDOUT`? If you've tried all that, feel free to open an issue.
+
+Can I run Sail commands?
+: Yes! This seems to be the way to do it. `vendor/bin/sail artisan schedule:work --ansi` (Read more at [Issue #29](https://github.com/aarondfrancis/solo/issues/29).)
+
+Does Solo support Windows?
+: It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the roadmap. 
+
+Can I use this in production? 
+: I wouldn't. I'd use something more robust, like supervisor or something.
