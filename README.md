@@ -212,14 +212,20 @@ If you want to support me you can either buy one of my courses or tell your frie
 
 ## FAQ
 
-My command isn't working
-: (That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi` option? Is it writing to somewhere besides `STDOUT`? Is there an option to force it to write to `STDOUT`? If you've tried all that, feel free to open an issue.
-
-Can I run Sail commands?
-: Yes! This seems to be the way to do it. `vendor/bin/sail artisan schedule:work --ansi` (Read more at [Issue #29](https://github.com/aarondfrancis/solo/issues/29).)
-
-Does Solo support Windows?
-: It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the roadmap. 
-
-Can I use this in production? 
-: I wouldn't. I'd use something more robust, like supervisor or something.
+<dl>
+    <dt>My command isn't working</dt>
+    <dd>(That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi`
+        option? Is it writing to somewhere besides `STDOUT`? Is there an option to force it to write to `STDOUT`? If
+        you've tried all that, feel free to open an issue.
+    </dd>
+    <dt>Can I run Sail commands?</dt>
+    <dd>Yes! This seems to be the way to do it: `vendor/bin/sail artisan schedule:work --ansi` (Read more at [Issue
+        #29](https://github.com/aarondfrancis/solo/issues/29).)
+    </dd>
+    <dt>Does Solo support Windows?</dt>
+    <dd>It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the
+        roadmap.
+    </dd>
+    <dt>Can I use this in production?</dt>
+    <dd>I wouldn't. I'd use something more robust, like supervisor or something.</dd>
+</dl>
