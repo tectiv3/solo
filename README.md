@@ -219,8 +219,7 @@ If you want to support me you can either buy one of my courses or tell your frie
         you've tried all that, feel free to open an issue.
     </dd>
     <dt>Can I run Sail commands?</dt>
-    <dd>Yes! This seems to be the way to do it: `vendor/bin/sail artisan schedule:work --ansi` (Read more at [Issue
-        #29](https://github.com/aarondfrancis/solo/issues/29).)
+    <dd>Yes! This seems to be the way to do it: `vendor/bin/sail artisan schedule:work --ansi` (Read more at #29.)
     </dd>
     <dt>Does Solo support Windows?</dt>
     <dd>It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the
