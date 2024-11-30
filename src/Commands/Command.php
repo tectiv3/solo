@@ -118,6 +118,8 @@ class Command implements Loopable
 
     public function onTick(): void
     {
+        $this->collectIncrementalOutput();
+
         $this->marshalRogueProcess();
 
         if ($this->processStopped() && count($this->afterTerminateCallbacks)) {

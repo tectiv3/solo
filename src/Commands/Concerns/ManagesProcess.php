@@ -198,23 +198,12 @@ trait ManagesProcess
         $this->afterTerminateCallbacks = [];
     }
 
-    //    protected function handleOutput($type, $buffer): void
-    //    {
-    //        return;
-    //
-    //        $output = $this->multibyteBuffer . $buffer;
-    //        $this->multibyteBuffer = '';
-    //
-    //        // If it ends in an EOL, we know there's no byte splice.
-    //        if (str_ends_with($output, PHP_EOL)) {
-    //            $this->addOutput($output);
-    //            return;
-    //        }
-    //
-    //        // Check for byte splice
-    //        [$output, $this->multibyteBuffer] = SafeBytes::parse($output);
-    //
-    //        $this->addOutput($output);
-    //    }
-
+    protected function collectIncrementalOutput()
+    {
+        // A bit of a hack, but there's no other way in. Process is a Laravel InvokedProcess.
+        // Calling `running` on it defers to the Symfony process `isRunning` method. That
+        // method calls a protected method `updateStatus` which calls a private method
+        // `readPipes` which invokes the output callback, adding it to our buffer.
+        $this->process->running();
+    }
 }

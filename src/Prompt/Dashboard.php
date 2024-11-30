@@ -185,6 +185,25 @@ class Dashboard extends Prompt
         $this->frames->next();
     }
 
+    protected function render(): void
+    {
+        // This is basically what the parent `render` function does, but we can make a
+        // few improvements given our unique setup. In Solo, we guarantee that the
+        // entire screen is going to be written with characters, including spaces
+        // padded all the way to the width of the terminal. Since that's the case,
+        // we can merely move the cursor up and to (1,1) and rewrite everything.
+        // Since much of the screen stays the same, it just overwrite in place.
+        // But the good news is, because we never cleared we don't get any flicker.
+        $frame = $this->renderTheme();
+
+        if ($frame !== $this->prevFrame) {
+            static::writeDirectly("\e[{$this->height}F");
+            $this->output()->write($frame);
+
+            $this->prevFrame = $frame;
+        }
+    }
+
     protected function handleInteractiveInput()
     {
         $read = [STDIN];

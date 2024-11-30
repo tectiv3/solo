@@ -202,6 +202,13 @@ class Manager
         return $this;
     }
 
+    public function clearCommands(): static
+    {
+        $this->commands = [];
+
+        return $this;
+    }
+
     public function addCommands(array $commands): static
     {
         foreach ($commands as $name => $command) {

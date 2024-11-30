@@ -66,6 +66,13 @@ class Renderer extends PromptsRenderer
         return rtrim($this->output, "\n");
     }
 
+    protected function line(string $message): PromptsRenderer
+    {
+        $message = $this->pad($message, $this->width);
+
+        return parent::line($message);
+    }
+
     protected function renderTabs(): void
     {
         $tabs = collect($this->dashboard->commands)->map(fn(Command $command) => [
@@ -194,7 +201,7 @@ class Renderer extends PromptsRenderer
         // Try to scroll the content, which may or may not have an
         // effect, depending on how much content there is.
         $scrolled = $this->scrollbar(
-            // Subtract 1 for the left box border and 1 for the space after it.
+        // Subtract 1 for the left box border and 1 for the space after it.
             $visible, $start, $allowedLines, $wrappedLines->count(), $this->width - 2
         );
 
