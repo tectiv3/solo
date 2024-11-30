@@ -26,7 +26,7 @@ class Monitor extends Command
 
             $children = array_filter(
                 $children,
-                fn (int|string $pid) => ProcessTracker::isRunning($pid)
+                fn (string $pid) => ProcessTracker::isRunning($pid)
             );
 
             sleep(1);
