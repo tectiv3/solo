@@ -50,7 +50,6 @@ class ProcessTracker
         return count($output) > 0;
     }
 
-
     /**
      * Return all the PIDs that are running.
      *
@@ -71,11 +70,11 @@ class ProcessTracker
         // Construct the ps command to check multiple PIDs at once
         // -p specifies the PIDs to check
         // -o pid= outputs only the PID without headers
-        exec("ps -p " . implode(',', $pids) . " -o pid=", $output, $returnCode);
+        exec('ps -p ' . implode(',', $pids) . ' -o pid=', $output, $returnCode);
 
         // Handle potential errors in executing the ps command
         if ($returnCode !== 0 && !empty($output)) {
-            throw new RuntimeException("Error executing ps command: " . implode("\n", $output));
+            throw new RuntimeException('Error executing ps command: ' . implode("\n", $output));
         }
 
         // Trim whitespace and filter out any non-numeric entries from the output

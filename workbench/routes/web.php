@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Aaron Francis <aarondfrancis@gmail.com>
  * @link https://aaronfrancis.com
