@@ -74,7 +74,7 @@ class ProcessTracker
         exec("ps -p " . implode(',', $pids) . " -o pid=", $output, $returnCode);
 
         // Handle potential errors in executing the ps command
-        if ($returnVar !== 0 && !empty($output)) {
+        if ($returnCode !== 0 && !empty($output)) {
             throw new RuntimeException("Error executing ps command: " . implode("\n", $output));
         }
 
