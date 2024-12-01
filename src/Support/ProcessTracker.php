@@ -71,7 +71,7 @@ class ProcessTracker
         // Construct the ps command to check multiple PIDs at once
         // -p specifies the PIDs to check
         // -o pid= outputs only the PID without headers
-        exec("ps -p " . implode(',', $pids) . " -o pid=", $output, $returnVar);
+        exec("ps -p " . implode(',', $pids) . " -o pid=", $output, $returnCode);
 
         // Handle potential errors in executing the ps command
         if ($returnVar !== 0 && !empty($output)) {
