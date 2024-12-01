@@ -6,19 +6,8 @@
 namespace AaronFrancis\Solo\Tests\Integration;
 
 use AaronFrancis\Solo\Facades\Solo as SoloAlias;
-use AaronFrancis\Solo\Providers\SoloServiceProvider;
-use AaronFrancis\Solo\Support\PendingProcess;
-use AaronFrancis\Solo\Support\SafeBytes;
-use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
-use Generator;
-use Laravel\Prompts\Key;
-use Laravel\Prompts\Terminal;
-use Laravel\SerializableClosure\SerializableClosure;
-use Orchestra\Testbench\TestCase;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
-use Symfony\Component\Process\InputStream;
-use Symfony\Component\Process\Process;
+
 use function Orchestra\Testbench\package_path;
 
 class BasicTest extends Base

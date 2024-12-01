@@ -5,19 +5,15 @@
 
 namespace AaronFrancis\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Facades\Solo as SoloAlias;
 use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Providers\SoloServiceProvider;
 use AaronFrancis\Solo\Support\PendingProcess;
 use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
-use App\Providers\AppServiceProvider;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
-use Laravel\SerializableClosure\Contracts\Signer;
 use Laravel\SerializableClosure\SerializableClosure;
-use Laravel\SerializableClosure\Serializers\Signed;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Process\InputStream;
 
@@ -109,7 +105,7 @@ abstract class Base extends TestCase
         while ($this->process->running()) {
             // Move up 1000 rows to column 1, down 4 lines, clear up, move back up
             echo "\e[1000F" . "\e[4B" . "\e[1J" . "\e[4A";
-            echo "Running tests...";
+            echo 'Running tests...';
             // Four new lines
             echo "\n\n\n\n";
 
@@ -160,5 +156,4 @@ abstract class Base extends TestCase
             $callback($this->previousFrame, AnsiAware::plain($this->previousFrame));
         };
     }
-
 }

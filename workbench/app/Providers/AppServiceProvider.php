@@ -16,7 +16,6 @@ use function Orchestra\Testbench\package_path;
 
 class AppServiceProvider extends SoloApplicationServiceProvider
 {
-
     public static function allowCommandsFromTest($class)
     {
         Solo::allowCommandsAddedFrom([

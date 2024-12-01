@@ -9,13 +9,10 @@ namespace AaronFrancis\Solo\Commands\Concerns;
 
 use AaronFrancis\Solo\Support\PendingProcess;
 use AaronFrancis\Solo\Support\ProcessTracker;
-use AaronFrancis\Solo\Support\SafeBytes;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Str;
-use PHPUnit\Event\Runtime\PHP;
 use Symfony\Component\Process\InputStream;
 
 trait ManagesProcess
