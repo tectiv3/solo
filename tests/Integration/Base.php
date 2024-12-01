@@ -36,6 +36,8 @@ abstract class Base extends TestCase
 
     protected int $reservedLines = 4;
 
+    protected array $newFrameCallbacks = [];
+
     protected function getPackageProviders($app)
     {
         return [
@@ -63,24 +65,13 @@ abstract class Base extends TestCase
         // end to that so we can see Solo on screen.
         $stash = ob_get_clean();
 
-        // Pass a closure to the solo:test command so that we can
-        // configure Solo in different ways for the tests.
-        $closure = new SerializableClosure($provider ?? function () {
-            //
-        });
-
-        $this->process = $this->startProcess($closure);
-
         // Hide the cursor and start an alt screen
         $this->write("\e[?25l" . "\e[?1049h");
 
-        $result = $this->loop($actions);
-
-        if ($result->exitCode() !== 0) {
-            // Move up, clear down, and then print the
-            // errors from the underlying process.
-            $this->write("\e[1000F" . "\e[0J");
-            $this->write($this->frame);
+        try {
+            $this->execute($actions, $provider);
+        } catch (\Throwable $e) {
+            //
         }
 
         // Kill alt screen
@@ -91,12 +82,36 @@ abstract class Base extends TestCase
 
         // And put whatever we stashed back into the buffer.
         echo $stash;
+
+        if (isset($e)) {
+            throw $e;
+        }
+    }
+
+    protected function execute($actions, $closure)
+    {
+        // Pass a closure to the solo:test command so that we can
+        // configure Solo in different ways for the tests.
+        $closure = new SerializableClosure($closure ?? function () {
+            //
+        });
+
+        $this->process = $this->startProcess($closure);
+
+        $result = $this->loop($actions);
+
+        if ($result->exitCode() !== 0) {
+            // Move up, clear down, and then print the
+            // errors from the underlying process.
+            $this->write("\e[1000F" . "\e[0J");
+            $this->write($this->frame);
+        }
     }
 
     public function withSnapshot(Closure $callback)
     {
         return function () use ($callback) {
-            $callback($this->previousFrame, AnsiAware::plain($this->previousFrame));
+            $this->newFrameCallbacks[] = $callback;
         };
     }
 
@@ -126,6 +141,12 @@ abstract class Base extends TestCase
 
                 if (str_contains($buffer, $move)) {
                     $this->previousFrame = $this->frame;
+
+                    // There are potentially some assertions that are waiting on a
+                    // new frame to render. Once we're sure we've got a brand
+                    // new frame, go ahead and call those functions.
+                    $this->callNewFrameCallbacks();
+
                     // Move all the way up, but then down four lines.
                     $this->frame = "\e[1000F\e[{$this->reservedLines}B" . last(explode($move, $buffer));
                 } else {
@@ -139,11 +160,20 @@ abstract class Base extends TestCase
         echo $string;
     }
 
+    protected function callNewFrameCallbacks()
+    {
+        foreach ($this->newFrameCallbacks as $cb) {
+            $cb($this->previousFrame, AnsiAware::plain($this->previousFrame));
+        }
+
+        $this->newFrameCallbacks = [];
+    }
+
     protected function loop(array $actions): ProcessResult
     {
         $millisecondsSinceLastAction = 0;
         $millisecondsBetweenFrames = 10;
-        $millisecondsBetweenActions = 500;
+        $millisecondsBetweenActions = 1000;
 
         while ($this->process->running()) {
             // Move up 1000 rows to column 1
@@ -156,8 +186,10 @@ abstract class Base extends TestCase
             $this->write("\e[" . ($this->reservedLines - 1) . "A");
 
             // @TODO more status?
-            $this->write('Running tests...' . " ($millisecondsSinceLastAction)");
-            $this->write("\n\n\n\n");
+            $this->write('Running test: ' . $this->name());
+            $this->write("\n");
+            $this->write(count($actions) + 1 . ' actions remaining');
+            $this->write("\n\n\n");
 
             if ($this->newBuffer) {
                 $this->newBuffer = false;
@@ -192,6 +224,7 @@ abstract class Base extends TestCase
             }
         }
 
+        usleep($millisecondsBetweenFrames * 1000);
         return $this->process->wait();
     }
 }

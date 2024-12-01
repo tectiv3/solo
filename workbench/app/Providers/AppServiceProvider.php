@@ -37,9 +37,7 @@ class AppServiceProvider extends ServiceProvider
             // Commands that auto start.
             ->addCommands([
                 'About' => implode(' ', [
-                    'php',
-                    package_path('vendor', 'bin', 'testbench'),
-                    'solo:about'
+                    'php', package_path('vendor', 'bin', 'testbench'), 'solo:about'
                 ]),
 
                 EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
