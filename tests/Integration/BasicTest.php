@@ -81,6 +81,4 @@ class BasicTest extends Base
             ]);
         });
     }
-
-
 }
