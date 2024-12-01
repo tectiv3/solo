@@ -4,6 +4,7 @@ namespace AaronFrancis\Solo\Console\Commands;
 
 use AaronFrancis\Solo\Support\ProcessTracker;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 
 class Monitor extends Command
 {
@@ -23,6 +24,11 @@ class Monitor extends Command
                 ...$children,
                 ...ProcessTracker::children($parent)
             ]);
+
+            // Every 10 seconds cull the children that are no longer running.
+            if (Carbon::now()->second % 10 === 0) {
+                $children = ProcessTracker::running($children);
+            }
 
             sleep(1);
 

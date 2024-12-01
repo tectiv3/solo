@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Aaron Francis <aarondfrancis@gmail.com>
  * @link https://aaronfrancis.com
@@ -11,6 +12,7 @@ use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Support\Frames;
+use Carbon\CarbonImmutable;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;
 use Chewie\Concerns\RegistersRenderers;
@@ -231,8 +233,19 @@ class Dashboard extends Prompt
         }
     }
 
+    public function loopCallback(?KeyPressListener $listener = null)
+    {
+        $this->currentCommand()->catchUpScroll();
+        $this->render();
+
+        $listener?->once();
+        $this->frames->next();
+    }
+
     public function quit(): void
     {
+        $initiated = CarbonImmutable::now();
+
         foreach ($this->commands as $command) {
             /** @var Command $command */
 
@@ -241,17 +254,20 @@ class Dashboard extends Prompt
             $command->stop();
         }
 
-        while (true) {
-            $any = array_reduce($this->commands, function ($carry, $command) {
-                return $carry || $command->processRunning();
-            }, false);
+        // We do need to continue looping though, because the `marshalRogueProcess` runs
+        // in the loop. We'll break the loop after all processes are dead or after
+        // 3 seconds. If all the processes aren't dead after three seconds then
+        // the monitoring process should clean it up in the background.
+        $this->loop(function () use ($initiated) {
+            // Run the renderer so it doesn't look like Solo is frozen.
+            $this->loopCallback();
 
-            if ($any) {
-                Sleep::for(100)->milliseconds();
-            } else {
-                break;
-            }
-        }
+            $allDead = array_reduce($this->commands, function ($carry, Command $command) {
+                return $carry && $command->processStopped();
+            }, true);
+
+            return !($allDead || $initiated->addSeconds(3)->isPast());
+        }, 25_000);
 
         $this->terminal()->exit();
     }

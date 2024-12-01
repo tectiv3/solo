@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Aaron Francis <aarondfrancis@gmail.com>
  * @link https://aaronfrancis.com
@@ -9,12 +10,12 @@ namespace App\Providers;
 
 use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
 use Illuminate\Support\ProcessUtils;
+use Illuminate\Support\ServiceProvider;
 
 use function Orchestra\Testbench\package_path;
 
-class AppServiceProvider extends SoloApplicationServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     public static function allowCommandsFromTest($class)
     {

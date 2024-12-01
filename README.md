@@ -11,7 +11,8 @@
 > [!WARNING]  
 > This is still beta software. Use with caution.
 
-> This package require ext-pcntl
+> [!IMPORTANT]
+> This package requires ext-pcntl, so it will not work on Windows. Sorry about that.
 
 ## About 
 
@@ -73,9 +74,9 @@ namespace App\Providers;
 
 use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Providers\SoloApplicationServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class SoloServiceProvider extends SoloApplicationServiceProvider
+class SoloServiceProvider extends ServiceProvider
 {
     public function register()
     {
@@ -215,10 +216,13 @@ Solo::allowCommandsAddedFrom([
 ]);
 ```
 
+## Service provider in a custom location.
+
+By default, your `SoloServiceProvider` is created in the `App\Providers` namespace, which is pre-registered as a "safe" location to add commands from. If your `SoloServiceProvider` is in a custom location, it will still be deemed "safe" as long as it resides in your application's namespace (usually `App`, but custom root namespaces are supported.)  
+
+
 ## Contributing
 Please help.
-
-I haven't tested this on Windows, I don't have a Windows machine!
 
 Also there are gonna be _so_ many edge cases with commands, terminals, etc. I need a good way to test these things. If you're good at testing, please help me set up a good scaffold. 
 
