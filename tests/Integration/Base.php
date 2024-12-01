@@ -48,6 +48,8 @@ abstract class Base extends TestCase
 
     protected function setUp(): void
     {
+        touch(storage_path('logs/laravel.log'));
+        
         $this->input = new InputStream;
 
         $terminal = new Terminal;
