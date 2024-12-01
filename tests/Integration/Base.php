@@ -11,6 +11,7 @@ use AaronFrancis\Solo\Support\PendingProcess;
 use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
 use Closure;
 use Illuminate\Process\InvokedProcess;
+use Illuminate\Process\ProcessResult;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;
@@ -19,6 +20,8 @@ use Symfony\Component\Process\InputStream;
 
 abstract class Base extends TestCase
 {
+    protected InvokedProcess $process;
+
     protected InputStream $input;
 
     protected string $frame = '';
@@ -27,12 +30,11 @@ abstract class Base extends TestCase
 
     protected bool $newBuffer = false;
 
-    protected InvokedProcess $process;
+    protected int $width;
 
-    protected function getEnvironmentSetup($app)
-    {
-        //
-    }
+    protected int $height;
+
+    protected int $reservedLines = 4;
 
     protected function getPackageProviders($app)
     {
@@ -42,31 +44,67 @@ abstract class Base extends TestCase
         ];
     }
 
-    protected function runSolo(array $actions, ?Closure $provider = null)
+    protected function setUp(): void
     {
-        // Number of spare lines at the top for status and stuff.
-        $reservedLines = 4;
         $this->input = new InputStream;
-
-        // PHPUnit captures output, so we need to put an
-        // end to that so we can see Solo on screen.
-        $flushed = ob_get_clean();
 
         $terminal = new Terminal;
         $terminal->initDimensions();
 
-        $width = $terminal->cols();
-        $height = $terminal->lines() - $reservedLines;
+        $this->width = $terminal->cols();
+        $this->height = $terminal->lines() - $this->reservedLines;
 
+        parent::setUp();
+    }
+
+    protected function runSolo(array $actions, ?Closure $provider = null)
+    {
+        // PHPUnit captures output, so we need to put an
+        // end to that so we can see Solo on screen.
+        $stash = ob_get_clean();
+
+        // Pass a closure to the solo:test command so that we can
+        // configure Solo in different ways for the tests.
         $closure = new SerializableClosure($provider ?? function () {
             //
         });
 
-        $this->process = app(PendingProcess::class)
+        $this->process = $this->startProcess($closure);
+
+        // Hide the cursor and start an alt screen
+        $this->write("\e[?25l" . "\e[?1049h");
+
+        $result = $this->loop($actions);
+
+        if ($result->exitCode() !== 0) {
+            // Move up, clear down, and then print the
+            // errors from the underlying process.
+            $this->write("\e[1000F" . "\e[0J");
+            $this->write($this->frame);
+        }
+
+        // Kill alt screen
+        $this->write("\e[?25h" . "\e[?1049l");
+
+        // Turn on PHPUnit's buffering again.
+        ob_start();
+
+        // And put whatever we stashed back into the buffer.
+        echo $stash;
+    }
+
+    public function withSnapshot(Closure $callback)
+    {
+        return function () use ($callback) {
+            $callback($this->previousFrame, AnsiAware::plain($this->previousFrame));
+        };
+    }
+
+    protected function startProcess(SerializableClosure $closure): InvokedProcess
+    {
+        return app(PendingProcess::class)
             ->command([
-                'php',
-                'vendor/bin/testbench',
-                'solo:test',
+                'php', 'vendor/bin/testbench', 'solo:test',
                 static::class,
                 serialize($closure)
             ])
@@ -77,44 +115,57 @@ abstract class Base extends TestCase
                 // Disable the underlying alt screen of Solo
                 'NO_ALT_SCREEN' => '1',
                 'FORCE_COLOR' => '1',
-                'COLUMNS' => $width,
-                'LINES' => $height,
+                'COLUMNS' => $this->width,
+                'LINES' => $this->height,
             ])
-            ->start(null, function ($type, $buffer) use ($reservedLines, $height) {
+            ->start(null, function ($type, $buffer) {
                 $this->newBuffer = true;
 
-                // Move to top means that we're starting a new frame.
-                $move = "\e[{$height}F";
+                // Move to top means that Solo is starting a new frame.
+                $move = "\e[{$this->height}F";
 
                 if (str_contains($buffer, $move)) {
                     $this->previousFrame = $this->frame;
                     // Move all the way up, but then down four lines.
-                    $this->frame = "\e[1000F\e[{$reservedLines}B" . last(explode($move, $buffer));
+                    $this->frame = "\e[1000F\e[{$this->reservedLines}B" . last(explode($move, $buffer));
                 } else {
                     $this->frame .= $buffer;
                 }
             });
+    }
 
+    protected function write(string $string)
+    {
+        echo $string;
+    }
+
+    protected function loop(array $actions): ProcessResult
+    {
         $millisecondsSinceLastAction = 0;
-        $millisecondsBetweenLoops = 10;
-        $millisecondsBetweenActions = 1_000;
-
-        // Start an alt screen
-        echo "\e[?1049h";
+        $millisecondsBetweenFrames = 10;
+        $millisecondsBetweenActions = 500;
 
         while ($this->process->running()) {
-            // Move up 1000 rows to column 1, down 4 lines, clear up, move back up
-            echo "\e[1000F" . "\e[4B" . "\e[1J" . "\e[4A";
-            echo 'Running tests...';
-            // Four new lines
-            echo "\n\n\n\n";
+            // Move up 1000 rows to column 1
+            $this->write("\e[1000F");
+            // Down a few lines
+            $this->write("\e[" . ($this->reservedLines - 1) . "B");
+            // Clear to beginning
+            $this->write("\e[1J");
+            // Move back up
+            $this->write("\e[" . ($this->reservedLines - 1) . "A");
+
+            // @TODO more status?
+            $this->write('Running tests...' . " ($millisecondsSinceLastAction)");
+            $this->write("\n\n\n\n");
 
             if ($this->newBuffer) {
-                echo $this->frame;
+                $this->newBuffer = false;
+                $this->write($this->frame);
             }
 
-            usleep($millisecondsBetweenLoops * 1000);
-            $millisecondsSinceLastAction += $millisecondsBetweenLoops;
+            usleep($millisecondsBetweenFrames * 1000);
+            $millisecondsSinceLastAction += $millisecondsBetweenFrames;
 
             if ($millisecondsSinceLastAction < $millisecondsBetweenActions) {
                 continue;
@@ -129,31 +180,18 @@ abstract class Base extends TestCase
             }
 
             if (is_string($action)) {
+                // All strings get written to the underlying process.
                 $this->input->write($action);
             } elseif (is_int($action)) {
+                // If it's an integer, just back up that many
+                // milliseconds to delay the next action.
                 $millisecondsSinceLastAction = -1 * $action;
             } else {
+                // Any functions just get called.
                 call_user_func($action);
             }
         }
 
-        $result = $this->process->wait();
-
-        if ($result->exitCode() !== 0) {
-            echo "\e[1000F" . "\e[0J";
-            echo $this->frame;
-        }
-
-        echo "\e[?1049l";
-
-        ob_start();
-        echo $flushed;
-    }
-
-    public function withSnapshot(Closure $callback)
-    {
-        return function () use ($callback) {
-            $callback($this->previousFrame, AnsiAware::plain($this->previousFrame));
-        };
+        return $this->process->wait();
     }
 }
