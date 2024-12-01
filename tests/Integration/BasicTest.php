@@ -37,7 +37,6 @@ class BasicTest extends Base
         ];
 
         $this->runSolo($actions, function () {
-            SoloAlias::clearCommands();
             SoloAlias::useTheme('light');
 
             SoloAlias::addCommands([

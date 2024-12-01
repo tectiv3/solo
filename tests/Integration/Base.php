@@ -15,7 +15,9 @@ use Closure;
 use Illuminate\Process\InvokedProcess;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
+use Laravel\SerializableClosure\Contracts\Signer;
 use Laravel\SerializableClosure\SerializableClosure;
+use Laravel\SerializableClosure\Serializers\Signed;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Process\InputStream;
 
@@ -43,7 +45,6 @@ abstract class Base extends TestCase
             SoloTestServiceProvider::class,
         ];
     }
-
 
     protected function runSolo(array $actions, ?Closure $provider = null)
     {
@@ -81,7 +82,6 @@ abstract class Base extends TestCase
                 'NO_ALT_SCREEN' => '1',
                 'FORCE_COLOR' => '1',
                 'COLUMNS' => $width,
-                // Leave some space for status at the top
                 'LINES' => $height,
             ])
             ->start(null, function ($type, $buffer) use ($reservedLines, $height) {
@@ -104,7 +104,7 @@ abstract class Base extends TestCase
         $millisecondsBetweenActions = 1_000;
 
         // Start an alt screen
-//        echo "\e[?1049h";
+        echo "\e[?1049h";
 
         while ($this->process->running()) {
             // Move up 1000 rows to column 1, down 4 lines, clear up, move back up
@@ -141,9 +141,14 @@ abstract class Base extends TestCase
             }
         }
 
-        $this->process->wait();
+        $result = $this->process->wait();
 
-//        echo "\e[?1049l";
+        if ($result->exitCode() !== 0) {
+            echo "\e[1000F" . "\e[0J";
+            echo $this->frame;
+        }
+
+        echo "\e[?1049l";
 
         ob_start();
         echo $flushed;

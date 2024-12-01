@@ -17,6 +17,7 @@ use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;
+use Laravel\SerializableClosure\Serializers\Signed;
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process;
 use function Orchestra\Testbench\package_path;
@@ -30,9 +31,10 @@ class Test extends Solo
     public function handle(): void
     {
         AppServiceProvider::allowCommandsFromTest($this->argument('class'));
+        Signed::$signer = null;
+        SoloAlias::clearCommands();
 
-        $closure = $this->argument('provider');
-        $closure = unserialize($closure)->getClosure();
+        $closure = unserialize($this->argument('provider'))->getClosure();
 
         call_user_func($closure);
 
