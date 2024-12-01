@@ -48,14 +48,17 @@ abstract class Base extends TestCase
 
     protected function setUp(): void
     {
-        touch(storage_path('logs/laravel.log'));
-        
+        $this->afterApplicationCreated(function () {
+            touch(storage_path('logs/laravel.log'));
+        });
+
+
         $this->input = new InputStream;
 
         $terminal = new Terminal;
         $terminal->initDimensions();
 
-        $this->width = $terminal->cols();
+        $this->width = max($terminal->cols(), 150);
         $this->height = $terminal->lines() - $this->reservedLines;
 
         parent::setUp();
