@@ -81,4 +81,29 @@ class BasicTest extends Base
             ]);
         });
     }
+
+    #[Test]
+    public function tail_restarts_too_quickly()
+    {
+        $rand = 'Testing ' . Str::random();
+        Log::info($rand);
+
+        $actions = [
+            $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
+                $this->assertStringContainsString($rand, $plain);
+            }),
+            'c',
+            'r',
+            2_500,
+            $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
+                $this->assertStringNotContainsString('Waiting...', $plain);
+            }),
+        ];
+
+        $this->runSolo($actions, function () {
+            SoloAlias::addCommands([
+                'Logs' => 'tail -f -n 100 ' . storage_path('logs/laravel.log')
+            ]);
+        });
+    }
 }

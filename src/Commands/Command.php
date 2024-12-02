@@ -70,6 +70,9 @@ class Command implements Loopable
 
     public function allHotkeys(): array
     {
+        // In interactive mode, the only hotkey that works is
+        // Ctrl+X, to exit interactive mode. Everything else
+        // gets proxied to the underlying process.
         if ($this->isInteractive()) {
             return [
                 Hotkey::make("\x18", fn() => null)->label('Exit interactive mode')
@@ -79,10 +82,10 @@ class Command implements Loopable
         $hotkeys = $this->hotkeys();
 
         if ($this->canBeInteractive()) {
-            $hotkeys[] = Hotkey::make('i', KeyHandler::Interactive)->label('Interactive mode');
+            $hotkeys['interactive'] = Hotkey::make('i', KeyHandler::Interactive)->label('Interactive mode');
         }
 
-        return $hotkeys;
+        return array_filter($hotkeys);
     }
 
     /**
@@ -121,11 +124,7 @@ class Command implements Loopable
     {
         $this->collectIncrementalOutput();
 
-        $this->marshalRogueProcess();
-
-        if ($this->processStopped() && count($this->afterTerminateCallbacks)) {
-            $this->callAfterTerminateCallbacks();
-        }
+        $this->marshalProcess();
     }
 
     public function isFocused(): bool

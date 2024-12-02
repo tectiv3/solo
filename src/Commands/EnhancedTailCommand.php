@@ -17,6 +17,20 @@ class EnhancedTailCommand extends Command
 {
     protected $hideVendor = true;
 
+    protected string $file;
+
+    public static function forFile($path)
+    {
+        return static::make('Logs', 'tail -f -n 1 ' . storage_path('logs/laravel.log'))->setFile($path);
+    }
+
+    public function setFile($path)
+    {
+        $this->file = $path;
+
+        return $this;
+    }
+
     /**
      * @return array<string, Hotkey>
      */
@@ -30,6 +44,21 @@ class EnhancedTailCommand extends Command
                 //                if ($index !== false) {
                 //                    $this->lines[$index] = '___scrollpos___';
                 //                }
+            }),
+            'truncate' => true ? null : Hotkey::make('t', function () {
+                if (!$this->file) {
+                    return;
+                }
+
+                // Opening in write mode truncates (or creates.)
+                $handle = fopen($this->file, 'w');
+
+                if ($handle !== false) {
+                    fclose($handle);
+                }
+
+                // Clear the logs held in memory.
+                $this->clear();
             })
         ];
     }

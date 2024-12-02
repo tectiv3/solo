@@ -14,6 +14,7 @@ use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
+use Log;
 use ReflectionClass;
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process as SymfonyProcess;
@@ -109,7 +110,7 @@ trait ManagesProcess
             // buffer it, because there's more output coming right behind it. If we don't
             // buffer, we could splice a multibyte character or an ANSI code. Much
             // effort went into fixing byte splices, but ANSI splices are way
-            // tougher. This 1024 method seems to be foolproof.
+            // tougher. This 1024/4096 method seems to be foolproof.
             if (strlen($buffer) === 1024 || strlen($buffer) === 4096) {
                 $this->partialBuffer .= $buffer;
                 return;
@@ -128,8 +129,6 @@ trait ManagesProcess
 
     public function stop(): void
     {
-        $this->addLine('Stopping process...');
-
         $this->stopping = true;
 
         if ($this->processRunning()) {
@@ -177,19 +176,18 @@ trait ManagesProcess
 
     protected function clearStdOut()
     {
-        $this->withSymfonyProcess(function (SymfonyProcess $process) {
-            (new ReflectionClass(SymfonyProcess::class))
-                ->getMethod('clearOutput')
-                ->invoke($process);
-        });
+        $this->callPrivateMethodOnSymfonyProcess('clearOutput');
     }
 
     protected function clearStdErr()
     {
-        $this->withSymfonyProcess(function (SymfonyProcess $process) {
-            (new ReflectionClass(SymfonyProcess::class))
-                ->getMethod('clearErrorOutput')
-                ->invoke($process);
+        $this->callPrivateMethodOnSymfonyProcess('clearErrorOutput');
+    }
+
+    protected function callPrivateMethodOnSymfonyProcess($method, array $args = []): mixed
+    {
+        return $this->withSymfonyProcess(function (SymfonyProcess $process) use ($method, $args) {
+            return (new ReflectionClass(SymfonyProcess::class))->getMethod($method)->invoke($process, ...$args);
         });
     }
 
@@ -200,10 +198,10 @@ trait ManagesProcess
             ->getProperty('process')
             ->getValue($this->process);
 
-        $callback($process);
+        return $callback($process);
     }
 
-    protected function marshalRogueProcess(): void
+    protected function marshalProcess(): void
     {
         // If we're trying to stop and the process isn't running, then we
         // succeeded. We'll reset some state and call the callbacks.
@@ -214,6 +212,8 @@ trait ManagesProcess
             ProcessTracker::kill($this->children);
 
             $this->addLine('Stopped.');
+
+            $this->callAfterTerminateCallbacks();
 
             return;
         }
