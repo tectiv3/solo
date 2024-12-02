@@ -14,7 +14,9 @@ use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
+use ReflectionClass;
 use Symfony\Component\Process\InputStream;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 trait ManagesProcess
 {
@@ -30,7 +32,7 @@ trait ManagesProcess
 
     public InputStream $input;
 
-    protected string $multibyteBuffer = '';
+    protected string $partialBuffer = '';
 
     protected $children = [];
 
@@ -40,17 +42,18 @@ trait ManagesProcess
 
         $command = explode(' ', $this->command);
 
-        // We have to make our own so that we can control pty if needed.
+        // We have to make our own so that we can control pty.
         $process = app(PendingProcess::class)
             ->command($command)
             ->forever()
             ->timeout(0)
-            ->idleTimeout(0);
-
-        if ($this->interactive) {
-            $process->pty();
-            $process->input($this->input);
-        }
+            ->idleTimeout(0)
+            // Regardless of whether or not it's an interactive process, we're
+            // still going to register an input stream. This lets command-
+            //specific hotkeys potentially send input even without
+            // entering interactive mode.
+            ->pty()
+            ->input($this->input);
 
         if ($this->processModifier) {
             call_user_func($this->processModifier, $process);
@@ -91,9 +94,30 @@ trait ManagesProcess
 
     public function start(): void
     {
-        $this->process = $this->createPendingProcess()->start(
-            null, fn($type, $buffer) => $this->addOutput($buffer)
-        );
+        $this->process = $this->createPendingProcess()->start(null, function ($type, $buffer) {
+            // After many, many hours of frustration I've figured out that for some reason the
+            // max number of bytes that come through at any time is 1024. If there are more
+            // than 1024 in stdout, they might end up in stderr! No idea why. For that
+            // reason, we don't differentiate between stdout and stderr here.
+
+            // When we get a chunk that's exactly 1024 we need to buffer it, because there's more
+            // output coming right behind it. If we don't buffer, we could splice a multibyte
+            // character or an ANSI code. Much effort went into fixing byte splices, but
+            // ANSI splices are way tougher. This 1024 method seems to be foolproof.
+            if (strlen($buffer) === 1024) {
+                $this->partialBuffer .= $buffer;
+                return;
+            }
+
+            $this->addOutput($this->partialBuffer . $buffer);
+            $this->partialBuffer = '';
+
+            // 5% chance of clearing the buffer. Hopefully this helps save memory.
+            // @link https://github.com/aarondfrancis/solo/issues/33
+            if (5 < rand(1, 100)) {
+                $type === SymfonyProcess::OUT ? $this->clearStdOut() : $this->clearStdErr();
+            }
+        });
     }
 
     public function stop(): void
@@ -143,6 +167,34 @@ trait ManagesProcess
     public function processStopped(): bool
     {
         return !$this->processRunning();
+    }
+
+    protected function clearStdOut()
+    {
+        $this->withSymfonyProcess(function (SymfonyProcess $process) {
+            (new ReflectionClass(SymfonyProcess::class))
+                ->getMethod('clearOutput')
+                ->invoke($process);
+        });
+    }
+
+    protected function clearStdErr()
+    {
+        $this->withSymfonyProcess(function (SymfonyProcess $process) {
+            (new ReflectionClass(SymfonyProcess::class))
+                ->getMethod('clearErrorOutput')
+                ->invoke($process);
+        });
+    }
+
+    protected function withSymfonyProcess(Closure $callback)
+    {
+        /** @var SymfonyProcess $process */
+        $process = (new ReflectionClass(InvokedProcess::class))
+            ->getProperty('process')
+            ->getValue($this->process);
+
+        $callback($process);
     }
 
     protected function marshalRogueProcess(): void
