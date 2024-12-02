@@ -114,7 +114,7 @@ trait ManagesProcess
 
             // 5% chance of clearing the buffer. Hopefully this helps save memory.
             // @link https://github.com/aarondfrancis/solo/issues/33
-            if (5 < rand(1, 100)) {
+            if (rand(1, 100) < 5) {
                 $type === SymfonyProcess::OUT ? $this->clearStdOut() : $this->clearStdErr();
             }
         });
