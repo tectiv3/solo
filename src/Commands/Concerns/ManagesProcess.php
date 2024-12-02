@@ -95,16 +95,22 @@ trait ManagesProcess
     public function start(): void
     {
         $this->process = $this->createPendingProcess()->start(null, function ($type, $buffer) {
-            // After many, many hours of frustration I've figured out that for some reason the
-            // max number of bytes that come through at any time is 1024. If there are more
-            // than 1024 in stdout, they might end up in stderr! No idea why. For that
-            // reason, we don't differentiate between stdout and stderr here.
+            // After many, many hours of frustration I've figured out that for some reason the max
+            // number of bytes that come through at any time is 1024. I think it has to do with
+            // stdio buffering (https://www.pixelbeat.org/programming/stdio_buffering).
 
-            // When we get a chunk that's exactly 1024 we need to buffer it, because there's more
-            // output coming right behind it. If we don't buffer, we could splice a multibyte
-            // character or an ANSI code. Much effort went into fixing byte splices, but
-            // ANSI splices are way tougher. This 1024 method seems to be foolproof.
-            if (strlen($buffer) === 1024) {
+            // According to that article, it could be 1024 or 4096, depending on whether a terminal
+            // is connected or not. We'll check both. If there are more than 1024 bytes in
+            // stdout, they might end up in stderr! No idea why. Not sure if that's
+            // Symfony or just normal system stuff. Regardless, for that reason
+            // we don't differentiate between stdout and stderr here.
+
+            // So when we do get a chunk that seems like it might have a continuation, we need to
+            // buffer it, because there's more output coming right behind it. If we don't
+            // buffer, we could splice a multibyte character or an ANSI code. Much
+            // effort went into fixing byte splices, but ANSI splices are way
+            // tougher. This 1024 method seems to be foolproof.
+            if (strlen($buffer) === 1024 || strlen($buffer) === 4096) {
                 $this->partialBuffer .= $buffer;
                 return;
             }
