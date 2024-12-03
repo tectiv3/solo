@@ -9,9 +9,7 @@ use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo as SoloAlias;
 use Log;
 use PHPUnit\Framework\Attributes\Test;
-
 use Str;
-use function Orchestra\Testbench\package_path;
 
 class BasicTest extends Base
 {
@@ -19,17 +17,15 @@ class BasicTest extends Base
     public function basic_test()
     {
         $actions = [
-            $this->withSnapshot(function (string $ansi, string $plain) {
+            function (string $ansi, string $plain) {
                 $this->assertStringContainsString("Stopped", $plain);
                 $this->assertStringContainsString("\e[9mAbout\e[29m", $ansi);
-            }),
+            },
         ];
 
         $this->runSolo($actions, function () {
             SoloAlias::addCommands([
-                'About' => implode(' ', [
-                    'php', package_path('vendor', 'bin', 'testbench'), 'solo:about'
-                ]),
+                'About' => 'php artisan solo:about'
             ]);
         });
     }
@@ -39,17 +35,17 @@ class BasicTest extends Base
     {
         $actions = [
             // Assert that the Logs tab is not crossed out
-            $this->withSnapshot(function (string $ansi, string $plain) {
+            function (string $ansi, string $plain) {
                 $this->assertStringNotContainsString("\e[9mLogs\e[29m", $ansi);
                 $this->assertStringContainsString(" Running: tail ", $plain);
-            }),
+            },
             // Press the stop hotkey
             's',
             // Assert that the Logs tab is crossed out and it says stopped
-            $this->withSnapshot(function (string $ansi, string $plain) {
+            function (string $ansi, string $plain) {
                 $this->assertStringContainsString("\e[9mLogs\e[29m", $ansi);
                 $this->assertStringContainsString(" Stopped: tail ", $plain);
-            }),
+            },
         ];
 
         $this->runSolo($actions, function () {
@@ -66,13 +62,13 @@ class BasicTest extends Base
         Log::info($rand);
 
         $actions = [
-            $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
+            function (string $ansi, string $plain) {
                 $this->assertStringContainsString($rand, $ansi);
-            }),
+            },
             'c',
-            $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
+            function (string $ansi, string $plain) {
                 $this->assertStringNotContainsString($rand, $ansi);
-            }),
+            },
         ];
 
         $this->runSolo($actions, function () {
@@ -89,15 +85,15 @@ class BasicTest extends Base
         Log::info($rand);
 
         $actions = [
-            $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
+            function (string $ansi, string $plain) {
                 $this->assertStringContainsString($rand, $plain);
-            }),
+            },
             'c',
             'r',
             1_500,
-            $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
+            function (string $ansi, string $plain) {
                 $this->assertStringNotContainsString('Waiting...', $plain);
-            }),
+            },
         ];
 
         $this->runSolo($actions, function () {

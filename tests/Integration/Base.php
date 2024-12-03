@@ -16,7 +16,9 @@ use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;
 use Orchestra\Testbench\TestCase;
+use Str;
 use Symfony\Component\Process\InputStream;
+use function Orchestra\Testbench\package_path;
 
 abstract class Base extends TestCase
 {
@@ -50,6 +52,10 @@ abstract class Base extends TestCase
     {
         $this->afterApplicationCreated(function () {
             touch(storage_path('logs/laravel.log'));
+            @symlink(
+                package_path('vendor', 'bin', 'testbench'),
+                package_path() . '/artisan',
+            );
         });
 
 
@@ -113,13 +119,6 @@ abstract class Base extends TestCase
         }
     }
 
-    public function withSnapshot(Closure $callback)
-    {
-        return function () use ($callback) {
-            $this->newFrameCallbacks[] = $callback;
-        };
-    }
-
     protected function startProcess(SerializableClosure $closure): InvokedProcess
     {
         return app(PendingProcess::class)
@@ -158,20 +157,6 @@ abstract class Base extends TestCase
                     $this->frame .= $buffer;
                 }
             });
-    }
-
-    protected function write(string $string)
-    {
-        echo $string;
-    }
-
-    protected function callNewFrameCallbacks($frame)
-    {
-        foreach ($this->newFrameCallbacks as $cb) {
-            $cb($frame, AnsiAware::plain($frame));
-        }
-
-        $this->newFrameCallbacks = [];
     }
 
     protected function loop(array $actions): ProcessResult
@@ -229,13 +214,30 @@ abstract class Base extends TestCase
                 // If it's an integer, just back up that many
                 // milliseconds to delay the next action.
                 $millisecondsSinceLastAction = -1 * $action;
+            } elseif (is_callable($action)) {
+                // Call this method after we get a new frame. This ensures
+                // the previous frame is completely written to the buffer.
+                $this->newFrameCallbacks[] = $action;
             } else {
-                // Any functions just get called.
-                call_user_func($action);
+                throw new \InvalidArgumentException("Unknown action.");
             }
         }
 
         usleep($millisecondsBetweenFrames * 1000);
         return $this->process->wait();
+    }
+
+    protected function write(string $string)
+    {
+        echo $string;
+    }
+
+    protected function callNewFrameCallbacks($frame)
+    {
+        foreach ($this->newFrameCallbacks as $cb) {
+            $cb($frame, AnsiAware::plain($frame));
+        }
+
+        $this->newFrameCallbacks = [];
     }
 }
