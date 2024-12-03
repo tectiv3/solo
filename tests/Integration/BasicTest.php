@@ -94,7 +94,7 @@ class BasicTest extends Base
             }),
             'c',
             'r',
-            2_500,
+            1_500,
             $this->withSnapshot(function (string $ansi, string $plain) use ($rand) {
                 $this->assertStringNotContainsString('Waiting...', $plain);
             }),

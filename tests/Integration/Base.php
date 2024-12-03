@@ -76,7 +76,7 @@ abstract class Base extends TestCase
         try {
             $this->execute($actions, $provider);
         } catch (\Throwable $e) {
-            //
+
         }
 
         // Kill alt screen
@@ -150,7 +150,7 @@ abstract class Base extends TestCase
                     // There are potentially some assertions that are waiting on a
                     // new frame to render. Once we're sure we've got a brand
                     // new frame, go ahead and call those functions.
-                    $this->callNewFrameCallbacks();
+                    $this->callNewFrameCallbacks($this->previousFrame);
 
                     // Move all the way up, but then down four lines.
                     $this->frame = "\e[1000F\e[{$this->reservedLines}B" . last(explode($move, $buffer));
@@ -165,10 +165,10 @@ abstract class Base extends TestCase
         echo $string;
     }
 
-    protected function callNewFrameCallbacks()
+    protected function callNewFrameCallbacks($frame)
     {
         foreach ($this->newFrameCallbacks as $cb) {
-            $cb($this->previousFrame, AnsiAware::plain($this->previousFrame));
+            $cb($frame, AnsiAware::plain($frame));
         }
 
         $this->newFrameCallbacks = [];
@@ -209,6 +209,12 @@ abstract class Base extends TestCase
             }
 
             $millisecondsSinceLastAction = 0;
+
+            // Before we move on to the next action we need to call any callbacks that
+            // are waiting. It's possible that the underlying process hasn't sent
+            // any new output and therefore we haven't triggered the new frame
+            // callbacks. This ensures we call them before we move on.
+            $this->callNewFrameCallbacks($this->frame);
 
             if (count($actions)) {
                 $action = array_shift($actions);

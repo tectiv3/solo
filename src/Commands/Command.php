@@ -294,7 +294,7 @@ class Command implements Loopable
 
     public function wrappedLines(): Collection
     {
-        //         $lines = $this->lines;
+        // @TODO make Screen stateful? Feed new output directly into it?
         $lines = (new Screen)->emulateAnsiCodes($this->lines);
 
         return collect($lines)
