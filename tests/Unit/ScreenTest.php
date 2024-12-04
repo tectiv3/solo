@@ -13,16 +13,10 @@ class ScreenTest extends Base
 {
     protected function assertEmulation(array $input, array $expect)
     {
-        $screen = new Screen;
-        $output = $screen->emulateAnsiCodes(array_to_splqueue($input));
+        $screen = new Screen(180, 30);
+        $screen->write(implode(PHP_EOL, $input));
 
-        //        dd($output);
-        //        $str = implode(PHP_EOL, $input);
-        //        dump("echo $'$str'");
-        //dd($expect, splqueue_to_array($output));
-        //        dd($screen->ansi->buffer);
-
-        $this->assertSame($expect, splqueue_to_array($output));
+        $this->assertSame(implode(PHP_EOL, $expect), $screen->output());
     }
 
     #[Test]
@@ -150,6 +144,7 @@ class ScreenTest extends Base
             'Home 1: Hello, World!',
             'Line 2: This is a test.',
             'Line 3: Goodbye!',
+            '',
         ]);
     }
 
@@ -165,6 +160,7 @@ class ScreenTest extends Base
             'Line 1',
             'Inserted Line',
             'Line 3',
+            '',
         ]);
     }
 
@@ -229,6 +225,7 @@ class ScreenTest extends Base
             'Line 1',
             'Line 2',
             'LineInserted',
+            ''
         ]);
     }
 
@@ -258,7 +255,8 @@ class ScreenTest extends Base
             'Line 1',
             "\e[5AAbove Start",
         ], [
-            'Above Start'
+            'Above Start',
+            ''
         ]);
     }
 
@@ -315,15 +313,17 @@ class ScreenTest extends Base
     #[Test]
     public function clear_screen_from_cursor_to_end_clears_buffer(): void
     {
-        $screen = new Screen;
+        $screen = new Screen(180, 30);
 
-        $screen->emulateAnsiCodes(array_to_splqueue([
+        $screen->write(implode(PHP_EOL, [
             "\e[34m",
             'abcd',
             'efgh',
             'ijkl',
             "\e[2A\e[1C\e[0J"
         ]));
+
+        $screen->output();
 
         $this->assertSame(
             [[
@@ -337,6 +337,8 @@ class ScreenTest extends Base
                 32, // Only the first character on line two is blue
             ], [
                 // Line three is completely blanked
+            ],[
+                //
             ]],
             $screen->ansi->buffer->buffer
         );
@@ -345,9 +347,9 @@ class ScreenTest extends Base
     #[Test]
     public function clear_screen_from_start_to_cursor_clears_buffer(): void
     {
-        $screen = new Screen;
+        $screen = new Screen(180, 30);
 
-        $screen->emulateAnsiCodes(array_to_splqueue([
+        $screen->write(implode(PHP_EOL, [
             "\e[34m",
             'abcd',
             'efgh',
@@ -355,9 +357,11 @@ class ScreenTest extends Base
             "\e[2A\e[2C\e[1J"
         ]));
 
+        $screen->output();
+
         $this->assertSame(
             [[
-
+                //
             ], [
                 // Line 1 is totally blank now
             ], [
@@ -370,6 +374,8 @@ class ScreenTest extends Base
                 32,
                 32,
                 32,
+            ], [
+                32
             ]],
             $screen->ansi->buffer->buffer
         );
@@ -379,9 +385,9 @@ class ScreenTest extends Base
     #[Test]
     public function clear_entire_screen_clears_buffer(): void
     {
-        $screen = new Screen;
+        $screen = new Screen(180, 30);
 
-        $screen->emulateAnsiCodes(array_to_splqueue([
+        $screen->write(implode(PHP_EOL, [
             "\e[34m",
             'abcd',
             'efgh',
@@ -389,8 +395,16 @@ class ScreenTest extends Base
             "\e[2A\e[2C\e[2J"
         ]));
 
+        $screen->output();
+
         $this->assertSame(
-            [],
+            [
+                [],
+                [],
+                [],
+                [],
+                [],
+            ],
             $screen->ansi->buffer->buffer
         );
     }
@@ -398,13 +412,15 @@ class ScreenTest extends Base
     #[Test]
     public function erase_in_line_0(): void
     {
-        $screen = new Screen;
+        $screen = new Screen(180, 30);
 
-        $screen->emulateAnsiCodes(array_to_splqueue([
+        $screen->write(implode(PHP_EOL, [
             "\e[34m",
             'abcde',
             "\e[1A\e[2C\e[0K"
         ]));
+
+        $screen->output();
 
         $this->assertSame(
             [[
@@ -412,6 +428,8 @@ class ScreenTest extends Base
             ], [
                 32,
                 32,
+            ],[
+                32
             ]],
             $screen->ansi->buffer->buffer
         );
@@ -421,13 +439,15 @@ class ScreenTest extends Base
     #[Test]
     public function erase_in_line_1(): void
     {
-        $screen = new Screen;
+        $screen = new Screen(180, 30);
 
-        $screen->emulateAnsiCodes(array_to_splqueue([
+        $screen->write(implode(PHP_EOL, [
             "\e[34m",
             'abcde',
             "\e[1A\e[2C\e[1K"
         ]));
+
+        $screen->output();
 
         $this->assertSame(
             [[
@@ -438,6 +458,8 @@ class ScreenTest extends Base
                 0,
                 32,
                 32,
+            ],[
+                32
             ]],
             $screen->ansi->buffer->buffer
         );
@@ -447,18 +469,21 @@ class ScreenTest extends Base
     #[Test]
     public function erase_in_line_2(): void
     {
-        $screen = new Screen;
+        $screen = new Screen(180, 30);
 
-        $screen->emulateAnsiCodes(array_to_splqueue([
+        $screen->write(implode(PHP_EOL, [
             "\e[34m",
             'abcde',
             "\e[1A\e[2C\e[2K"
         ]));
 
+        $screen->output();
+
         $this->assertSame(
             [
                 [32],
                 [],
+                [32]
             ],
             $screen->ansi->buffer->buffer
         );

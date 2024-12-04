@@ -21,7 +21,7 @@ class EnhancedTailCommand extends Command
 
     public static function forFile($path)
     {
-        return static::make('Logs', 'tail -f -n 1 ' . storage_path('logs/laravel.log'))->setFile($path);
+        return static::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log'))->setFile($path);
     }
 
     public function setFile($path)
@@ -94,6 +94,8 @@ class EnhancedTailCommand extends Command
 
     public function wrapAndFormat($line): string|array
     {
+        return $line;
+
         $theme = Solo::makeTheme();
 
         // A single trailing line that closes the JSON exception object.
@@ -154,6 +156,8 @@ class EnhancedTailCommand extends Command
 
     protected function modifyWrappedLines(Collection $lines): Collection
     {
+        return $lines;
+
         if (!$this->hideVendor) {
             return $lines;
         }

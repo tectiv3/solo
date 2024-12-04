@@ -56,6 +56,7 @@ class AnsiTracker
      * assigned bit values, allowing for efficient combination
      * and manipulation using bitwise operations.
      *
+     * @TODO Support
      * @link https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
      */
     protected array $codes = [
@@ -63,10 +64,10 @@ class AnsiTracker
         0 => 1 << 0, // 1
 
         // Foreground
-        30 => 1 << 1,  // Black 2
-        31 => 1 << 2,  // Red 4
-        32 => 1 << 3,  // Green 8
-        33 => 1 << 4,  // Yellow 16
+        30 => 1 << 1,  // Black
+        31 => 1 << 2,  // Red
+        32 => 1 << 3,  // Green
+        33 => 1 << 4,  // Yellow
         34 => 1 << 5,  // Blue
         35 => 1 << 6,  // Magenta
         36 => 1 << 7,  // Cyan

@@ -62,13 +62,9 @@ class BasicTest extends Base
         Log::info($rand);
 
         $actions = [
-            function (string $ansi, string $plain) {
-                $this->assertStringContainsString($rand, $ansi);
-            },
+            fn(string $ansi, string $plain) => $this->assertStringContainsString($rand, $ansi),
             'c',
-            function (string $ansi, string $plain) {
-                $this->assertStringNotContainsString($rand, $ansi);
-            },
+            fn(string $ansi, string $plain) => $this->assertStringNotContainsString($rand, $ansi),
         ];
 
         $this->runSolo($actions, function () {
@@ -85,15 +81,11 @@ class BasicTest extends Base
         Log::info($rand);
 
         $actions = [
-            function (string $ansi, string $plain) {
-                $this->assertStringContainsString($rand, $plain);
-            },
+            fn(string $ansi, string $plain) => $this->assertStringContainsString($rand, $plain),
             'c',
             'r',
             1_500,
-            function (string $ansi, string $plain) {
-                $this->assertStringNotContainsString('Waiting...', $plain);
-            },
+            fn(string $ansi, string $plain) => $this->assertStringNotContainsString('Waiting...', $plain),
         ];
 
         $this->runSolo($actions, function () {

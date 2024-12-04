@@ -46,6 +46,8 @@ class Command implements Loopable
 
     public int $width = 0;
 
+    public Screen $screen;
+
     public ?KeyPressListener $keyPressListener = null;
 
     public function __construct(
@@ -53,8 +55,6 @@ class Command implements Loopable
         public ?string $command = null,
         public bool $autostart = true,
     ) {
-        $this->clear();
-
         $this->boot();
     }
 
@@ -102,6 +102,8 @@ class Command implements Loopable
     {
         $this->width = $width;
         $this->height = $height;
+
+        $this->screen = new Screen($width, $height);
 
         return $this;
     }
@@ -159,30 +161,7 @@ class Command implements Loopable
 
     public function addOutput($text)
     {
-        if ($text === '') {
-            return;
-        }
-
-        $line = $this->lines->isEmpty() ? '' : $this->lines->pop();
-
-        $line .= $text;
-
-        // Carriage return moves the cursor back to zero, while \n inserts
-        // a newline. For our purposes, the carriage return is irrelevant.
-        $line = str_replace("\r\n", PHP_EOL, $line);
-        $line = str_replace("\r", '', $line);
-
-        $newLines = explode(PHP_EOL, $line);
-
-        foreach ($newLines as $line) {
-            $this->lines->enqueue($line);
-        }
-
-        // Enforce a strict 2000 line limit, which
-        // seems like more than enough.
-        if ($this->lines->count() > 2000) {
-            $this->lines->dequeue();
-        }
+        $this->screen->write($text);
     }
 
     public function addLine($line)
@@ -233,13 +212,13 @@ class Command implements Loopable
 
     public function clear(): void
     {
-        $this->lines = new SplQueue;
+        $this->screen = new Screen($this->width, $this->height);
     }
 
     public function catchUpScroll(): void
     {
         if (!$this->paused) {
-            $this->scrollDown($this->lines->count());
+            $this->scrollDown(INF);
             // `scrollDown` pauses, so turn follow back on.
             $this->follow();
         }
@@ -294,8 +273,8 @@ class Command implements Loopable
 
     public function wrappedLines(): Collection
     {
-        // @TODO make Screen stateful? Feed new output directly into it?
-        $lines = (new Screen)->emulateAnsiCodes($this->lines);
+        $lines = $this->screen->output();
+        $lines = explode(PHP_EOL, $lines);
 
         return collect($lines)
             ->flatMap(function ($line) {
