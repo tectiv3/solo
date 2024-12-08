@@ -8,10 +8,8 @@
 
 namespace AaronFrancis\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Support\AnsiMatcher;
 use Illuminate\Support\Arr;
-use Laravel\Prompts\Concerns\Colors;
 use PHPUnit\Framework\Attributes\Test;
 
 class AnsiMatchTest extends Base

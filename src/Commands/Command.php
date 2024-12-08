@@ -9,16 +9,15 @@
 namespace AaronFrancis\Solo\Commands;
 
 use AaronFrancis\Solo\Commands\Concerns\ManagesProcess;
-use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Hotkeys\KeyHandler;
+use AaronFrancis\Solo\Support\AnsiAware;
 use AaronFrancis\Solo\Support\Screen;
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use SplQueue;
 

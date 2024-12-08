@@ -6,7 +6,7 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Helpers;
+namespace AaronFrancis\Solo\Support;
 
 class AnsiAware
 {

@@ -5,8 +5,8 @@
 
 namespace AaronFrancis\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Providers\SoloServiceProvider;
+use AaronFrancis\Solo\Support\AnsiAware;
 use AaronFrancis\Solo\Support\PendingProcess;
 use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
 use Closure;
@@ -16,7 +16,6 @@ use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;
 use Orchestra\Testbench\TestCase;
-use Str;
 use Symfony\Component\Process\InputStream;
 use function Orchestra\Testbench\package_path;
 

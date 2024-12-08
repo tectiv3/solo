@@ -11,19 +11,16 @@ namespace AaronFrancis\Solo\Prompt;
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Helpers\AnsiAware;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Hotkeys\KeycodeMap;
+use AaronFrancis\Solo\Support\AnsiAware;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
-
-use function Laravel\Prompts\info;
 
 class Renderer extends PromptsRenderer
 {
