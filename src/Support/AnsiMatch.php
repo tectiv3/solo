@@ -5,22 +5,54 @@
 
 namespace AaronFrancis\Solo\Support;
 
-class AnsiMatch
+use JetBrains\PhpStorm\NoReturn;
+use function DI\string;
+
+readonly class AnsiMatch implements \Stringable
 {
+    public ?string $command;
+    public ?string $params;
 
-    public function __construct(public readonly string $raw)
+    #[NoReturn]
+    public function __construct(public string $raw)
     {
-        //
+        $pattern = <<<PATTERN
+/
+    (?<command_1>
+        [ABCDEHIJKMNOSTZ=><12su78c]
+    )
+|
+\\[
+    (?<params_2>
+        [0-9;?]*
+    )
+    (?<command_2>
+        [@-~]
+    )
+/x
+PATTERN;
+
+        preg_match($pattern, $this->raw, $matches);
+
+        $command = null;
+        $params = null;
+
+        foreach ($matches as $name => $value) {
+            if (str_starts_with($name, 'command_')) {
+                $command = $value;
+            }
+
+            if (str_starts_with($name, 'params_')) {
+                $params = $value;
+            }
+        }
+
+        $this->command = $command;
+        $this->params = $params;
     }
 
-    public function command()
+    public function __toString(): string
     {
-
+        return $this->raw;
     }
-
-    public function params()
-    {
-
-    }
-
 }

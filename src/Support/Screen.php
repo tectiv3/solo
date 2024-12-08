@@ -10,25 +10,6 @@ use SplQueue;
 
 class Screen
 {
-    const ANSI_CODE_REGEX = '/
-    (
-        \e\[
-            [0-9;?]*      # Parameters: digits, semicolons, question marks
-            [a-zA-Z]      # Command: a single letter
-        |
-        \e[78]            # Standalone ESC 7 or ESC 8
-    )
-/x';
-
-    const ANSI_CODE_PARTS_REGEX = '/
-        (?P<params>   
-            [0-9;?]*    # Capture the params
-        )     
-        (?P<command>  
-            [a-zA-Z78]  # Capture the command (alphabetic characters and 7,8)
-        )    
-/x';
-
     public AnsiTracker $ansi;
 
     public Buffer $buffer;
@@ -102,9 +83,7 @@ class Screen
 
         // Split the line by ANSI codes. Each item in the resulting array
         // will be a set of printable characters or an ANSI code.
-        $parts = preg_split(
-            static::ANSI_CODE_REGEX, $content, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
-        );
+        $parts = AnsiMatcher::split($content);
 
         $i = 0;
 
@@ -112,16 +91,15 @@ class Screen
             $part = $parts[$i];
 
 
-            if (str_starts_with($part, "\e")) {
+            if ($part instanceof AnsiMatch) {
                 // Split out the ANSI code by its command and optional parameters.
-                preg_match(static::ANSI_CODE_PARTS_REGEX, $part, $matches);
 
-                if (Arr::has($matches, ['command', 'params'])) {
-                    $this->handleAnsiCode($matches['command'], $matches['params']);
+                if ($part->command) {
+                    $this->handleAnsiCode($part);
                 } else {
                     Log::error('Unknown ANSI match:', [
                         'line' => $content,
-                        'part' => $part,
+                        'part' => $part->raw,
                     ]);
                 }
             } else {
@@ -156,8 +134,11 @@ class Screen
         }
     }
 
-    protected function handleAnsiCode($command, $param)
+    protected function handleAnsiCode(AnsiMatch $ansi)
     {
+        $command = $ansi->command;
+        $param = $ansi->params;
+
         // Some commands have a default of zero and some have a default of one. Just
         // make both options and decide within the body of the if statement.
         // We could do a match here but it doesn't seem worth it.
