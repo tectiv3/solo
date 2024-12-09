@@ -253,11 +253,10 @@ class AnsiMatchTest extends Base
 
             $result = AnsiMatcher::split("\e{$sequence}test");
 
-            echo "Testing $sequence ($description) \n";
+            // echo "Testing $sequence ($description) \n";
 
             $this->assertEquals("\e{$sequence}", Arr::get($result, 0));
             $this->assertEquals("test", Arr::get($result, 1));
-
         }
     }
 }

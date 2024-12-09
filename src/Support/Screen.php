@@ -90,7 +90,6 @@ class Screen
         while ($i < count($parts)) {
             $part = $parts[$i];
 
-
             if ($part instanceof AnsiMatch) {
                 // Split out the ANSI code by its command and optional parameters.
 
@@ -131,6 +130,15 @@ class Screen
             );
 
             $this->unflushedAnsi = false;
+        }
+    }
+
+    public function writeln(string $content): void
+    {
+        if ($this->cursorCol === 0) {
+            $this->write("$content\n");
+        } else {
+            $this->write("\n$content\n");
         }
     }
 

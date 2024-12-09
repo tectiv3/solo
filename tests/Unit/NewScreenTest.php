@@ -28,6 +28,31 @@ class NewScreenTest extends Base
         $this->assertEquals('Bar ', $screen->output());
     }
 
+    #[Test]
+    public function basic_writeln_test_1()
+    {
+        $screen = new Screen(180, 30);
+
+        // No trailing newline
+        $screen->write("Test");
+        $screen->writeln("New");
+
+        $this->assertEquals("Test\nNew\n", $screen->output());
+    }
+
+
+    #[Test]
+    public function basic_writeln_test_2()
+    {
+        $screen = new Screen(180, 30);
+
+        // Trailing newline
+        $screen->write("Test\n");
+        $screen->writeln("New");
+
+        $this->assertEquals("Test\nNew\n", $screen->output());
+    }
+
 
     #[Test]
     public function simple_wrap()
@@ -75,7 +100,6 @@ class NewScreenTest extends Base
 
         $this->assertEquals('Test', $screen->output());
 
-        // Back 1000 characters
         $screen->write("\rBar ");
 
         $this->assertEquals('Bar ', $screen->output());
@@ -91,7 +115,6 @@ class NewScreenTest extends Base
 
         $this->assertEquals('Test', $screen->output());
 
-        // Back 1000 characters
         $screen->write("\nBar");
 
         $this->assertEquals("Test\nBar", $screen->output());
@@ -145,8 +168,6 @@ class NewScreenTest extends Base
     #[Test]
     public function doesnt_go_past_width_absolute()
     {
-        $this->markTestSkipped('Need to implement wrapping');
-
         $screen = new Screen(30, 30);
         $screen->write("\e[1000Ga");
 
@@ -356,16 +377,6 @@ a
 
         ob_start();
         echo $captured;
-
-//        $screen = new Screen(180, 10);
-//
-//        $screen->write(implode(PHP_EOL, [
-//            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-//            'v', 'w', 'x', 'y', 'z'
-//        ]));
-//
-//        $this->assertEquals("", $screen->output());
-
     }
 
 }

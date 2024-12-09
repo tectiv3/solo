@@ -7,16 +7,15 @@ namespace AaronFrancis\Solo\Support;
 
 use ArrayAccess;
 use ReturnTypeWillChange;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 class Buffer implements ArrayAccess
 {
     public array $buffer = [];
 
-    public bool $usesStrings;
-
-    public function __construct(bool $usesStrings = false)
+    public function __construct(public bool $usesStrings = false, public int $max = 5000)
     {
-        $this->usesStrings = $usesStrings;
+        //
     }
 
     public function getBuffer()
@@ -92,6 +91,8 @@ class Buffer implements ArrayAccess
                 $line, array_fill_keys(range($startCol, $endCol), $value)
             );
         }
+
+        $this->trim();
     }
 
     public function rowLength($row)
@@ -99,6 +100,26 @@ class Buffer implements ArrayAccess
         $line = $this->buffer[$row];
 
         return $this->usesStrings ? mb_strlen($line, 'UTF-8') : count($line) - 1;
+    }
+
+    public function trim()
+    {
+        // 95% chance of just doing nothing.
+        if (rand(1, 100) <= 95) {
+            return;
+        }
+
+        $excess = count($this->buffer) - $this->max;
+
+        // Clear out old rows. Hopefully this helps save memory.
+        // @link https://github.com/aarondfrancis/solo/issues/33
+        if ($excess > 0) {
+            $keys = array_keys($this->buffer);
+            $remove = array_slice($keys, 0, $excess);
+            $nulls = array_fill_keys($remove, $this->usesStrings ? '' : []);
+
+            $this->buffer = array_replace($this->buffer, $nulls);
+        }
     }
 
     protected function normalizeClearColumns(int $currentRow, int $startRow, int $startCol, int $endRow, int $endCol)
@@ -137,6 +158,8 @@ class Buffer implements ArrayAccess
         } else {
             $this->buffer[$offset] = $value;
         }
+
+        $this->trim();
     }
 
     public function offsetUnset(mixed $offset): void

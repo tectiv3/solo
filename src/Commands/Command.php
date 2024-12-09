@@ -165,13 +165,7 @@ class Command implements Loopable
 
     public function addLine($line)
     {
-        $last = $this->lines->isEmpty() ? '' : $this->lines->top();
-
-        if ($last !== '' && !Str::endsWith($last, PHP_EOL)) {
-            $line = Str::start($line, "\n");
-        }
-
-        $this->addOutput(Str::finish($line, "\n"));
+        $this->screen->writeln($line);
     }
 
     public function setMode(int $mode): bool

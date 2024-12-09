@@ -236,7 +236,6 @@ trait ManagesProcess
         if ($this->processRunning()) {
             $this->addLine('Force killing!');
 
-            // @TODO clean up orphans? Looking at you, pail
             $this->process->signal(SIGKILL);
         }
     }
