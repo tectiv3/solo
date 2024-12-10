@@ -102,7 +102,7 @@ class Command implements Loopable
         $this->width = $width;
         $this->height = $height;
 
-        $this->screen = new Screen($width, $height);
+        $this->screen = new Screen($this->scrollPaneWidth(), $this->scrollPaneHeight());
 
         return $this;
     }
@@ -266,20 +266,9 @@ class Command implements Loopable
 
     public function wrappedLines(): Collection
     {
-        $lines = $this->screen->output();
-        $lines = explode(PHP_EOL, $lines);
+        $lines = explode(PHP_EOL, $this->screen->output());
 
-        return collect($lines)
-            ->flatMap(function ($line) {
-                return Arr::wrap($this->wrapAndFormat($line));
-            })
-            ->pipe(fn(Collection $lines) => $this->modifyWrappedLines($lines))
-            ->values();
-    }
-
-    protected function wrapAndFormat($line): string|array
-    {
-        return $this->wrapLine($line);
+        return $this->modifyWrappedLines(collect($lines));
     }
 
     protected function wrapLine($line, $width = null): array
@@ -294,17 +283,10 @@ class Command implements Loopable
             $width = $defaultWidth;
         }
 
-        // A bit experimental, but seems to work.
         return explode(PHP_EOL, AnsiAware::wordwrap(
             string: $line,
             width: $width,
             cut: true
-        ));
-
-        return explode(PHP_EOL, wordwrap(
-            string: $line,
-            width: $width,
-            cut_long_words: true
         ));
     }
 

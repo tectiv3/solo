@@ -21,7 +21,7 @@ class EnhancedTailCommand extends Command
 
     public static function forFile($path)
     {
-        return static::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log'))->setFile($path);
+        return static::make('Logs', "tail -f -n 100 $path")->setFile($path);
     }
 
     public function setFile($path)
@@ -63,6 +63,18 @@ class EnhancedTailCommand extends Command
         ];
     }
 
+    public function addOutput($text)
+    {
+        $text = explode(PHP_EOL, $text);
+
+        $text = collect($text)
+            ->map($this->formatLogLine(...))
+            ->reject(fn($line) => is_null($line))
+            ->implode(PHP_EOL);
+
+        parent::addOutput($text);
+    }
+
     public function findNonVendorFrame(int $start)
     {
         $linesCount = count($this->lines);
@@ -92,15 +104,13 @@ class EnhancedTailCommand extends Command
         return false;
     }
 
-    public function wrapAndFormat($line): string|array
+    protected function formatLogLine($line): ?string
     {
-        return $line;
-
         $theme = Solo::makeTheme();
 
         // A single trailing line that closes the JSON exception object.
         if (trim($line) === '"}') {
-            return '';
+            return null;
         }
 
         if (str_contains($line, '{"exception":"[object] ')) {
@@ -112,20 +122,20 @@ class EnhancedTailCommand extends Command
         }
 
         if (!Str::isMatch('/#[0-9]+ /', $line)) {
-            return $this->wrapLine($line);
+            return $line;
         }
 
+        $base = function_exists('Orchestra\Testbench\package_path') ? \Orchestra\Testbench\package_path() : base_path();
+
         // Make the line shorter by removing the base path. Helps prevent wrapping.
-        $line = str_replace(base_path(), '', $line);
+        $line = str_replace($base, '…', $line);
 
         // Replace all vendor frame with a simple placeholder.
         if ($this->hideVendor && $this->isVendorFrame($line)) {
             return $theme->dim('   [Vendor frames]');
         }
 
-        return array_map(function ($line) {
-            return (Str::isMatch('/#[0-9]+ /', $line) ? str_repeat(' ', 3) : str_repeat(' ', 7)) . $line;
-        }, $this->wrapLine($line, -7));
+        return (Str::isMatch('/#[0-9]+ /', $line) ? str_repeat(' ', 3) : str_repeat(' ', 7)) . $line;
     }
 
     public function isVendorFrame($line)
@@ -134,30 +144,21 @@ class EnhancedTailCommand extends Command
             || str_contains($line, '[Vendor frames]');
     }
 
-    public function formatInitialException($line): array
+    public function formatInitialException($line): string
     {
         $lines = explode('{"exception":"[object] ', $line);
 
-        // Wrap first and then apply formatting, so that we don't have to
-        // muck around with ANSI codes when trying to measure width.
-        $message = collect($lines[0])
-            ->flatMap($this->wrapLine(...))
-            ->map(fn($line) => Solo::makeTheme()->red($line));
+        $message = Solo::makeTheme()->red($lines[0]);
 
-        $exception = collect($lines[1])
-            // 3 for the 3 spaces we prepend.
-            ->flatMap(fn($line) => $this->wrapLine($line, -3))
-            ->map(fn($line) => '   ' . Solo::makeTheme()->exception($line));
+        return collect($this->wrapLine($lines[1], -3))
+            ->map(fn($line) => '   ' . Solo::makeTheme()->exception($line))
+            ->prepend($message)
+            ->implode(PHP_EOL);
 
-        return [
-            ...$message->toArray(), ...$exception->toArray()
-        ];
     }
 
     protected function modifyWrappedLines(Collection $lines): Collection
     {
-        return $lines;
-
         if (!$this->hideVendor) {
             return $lines;
         }
