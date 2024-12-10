@@ -19,10 +19,7 @@ jobs:
         dependency-version: [ prefer-lowest, prefer-stable ]
         include:
           - laravel: 10.*
-            testbench: ^8.29
           - laravel: 11.*
-            testbench: ^9.1
-
 
     name: P${{ matrix.php }} / L${{ matrix.laravel }} / ${{ matrix.dependency-version }}
 
