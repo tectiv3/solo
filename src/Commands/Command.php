@@ -155,7 +155,7 @@ class Command implements Loopable
     */
     public function dd()
     {
-        dd($this->lines);
+        dd($this->screen->buffer);
     }
 
     public function addOutput($text)
