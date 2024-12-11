@@ -33,7 +33,7 @@ class Manager
 
     protected string $theme;
 
-    protected ?Theme $cachedTheme;
+    protected ?Theme $cachedTheme = null;
 
     protected string $renderer = Renderer::class;
 
