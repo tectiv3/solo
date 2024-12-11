@@ -14,7 +14,7 @@ use Laravel\Prompts\Concerns\Colors;
 class LightTheme implements Theme
 {
     use Colors {
-        dim as baseDim;
+        Colors::dim as baseDim;
     }
 
     /*

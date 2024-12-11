@@ -70,12 +70,6 @@ class Screen
             foreach ($ansiForLine as $pos => $code) {
                 $line = mb_substr($line, 0, $pos, 'UTF-8') . $code . mb_substr($line, $pos, null, 'UTF-8');
             }
-
-            // Reset styles at the end of the line. This prevents them from leaking out
-            // of the scroll pane into the scrollbar. We don't rely on codes staying
-            // open across line wraps, we handle that manually by filling the
-            // buffer with the right ANSI codes when the line wraps.
-            $line .= $this->ansi->ansiStringFromCodes(['0']);
         }
 
         return implode(PHP_EOL, $buffer);

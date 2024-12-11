@@ -213,7 +213,7 @@ class Renderer extends PromptsRenderer
             str($line)
                 // Remove the gray scrollbar and replace it with
                 // our own that matches the theme's box.
-                ->replaceLast($this->gray('│'), $this->coloredBox('│'))
+                ->replaceLast($this->gray('│'),  $this->reset($this->coloredBox('│')))
 
                 // Replace the handle with the user's preferred handle.
                 ->replaceLast($this->cyan('┃'), $this->theme->boxHandle())

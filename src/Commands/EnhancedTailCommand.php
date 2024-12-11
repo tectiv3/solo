@@ -10,11 +10,16 @@ namespace AaronFrancis\Solo\Commands;
 
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Support\Screen;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Laravel\Prompts\Concerns\Colors;
+use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 
 class EnhancedTailCommand extends Command
 {
+    use Colors, InteractsWithStrings;
+
     protected $hideVendor = true;
 
     protected string $file;
@@ -63,19 +68,114 @@ class EnhancedTailCommand extends Command
         ];
     }
 
-    public function addOutput($text)
+    protected function makeNewScreen()
     {
-        $text = explode(PHP_EOL, $text);
-
-        $text = collect($text)
-            ->map($this->formatLogLine(...))
-            ->reject(fn($line) => is_null($line))
-            ->implode(PHP_EOL);
-
-        parent::addOutput($text);
+        // Disable wrapping by setting the width to 1000 characters. We'll wrap it ourselves.
+        return new Screen(1000, $this->scrollPaneHeight());
     }
 
-    public function findNonVendorFrame(int $start)
+    protected function modifyWrappedLines(Collection $lines): Collection
+    {
+        if (!$this->hideVendor) {
+            return $lines;
+        }
+
+        $hasVendorFrame = false;
+
+        // After all the lines have been wrapped, we look through them
+        // to collapse consecutive vendor frames into a single line.
+        return $lines
+            ->map($this->formatLogLine(...))
+            ->flatten()
+            ->reject(fn($line) => is_null($line))
+            ->filter(function ($line) use (&$hasVendorFrame) {
+                $isVendorFrame = $this->isVendorFrame($line);
+
+                if ($isVendorFrame) {
+                    // Skip the line if a vendor frame has already been added.
+                    if ($hasVendorFrame) {
+                        return false;
+                    }
+                    // Otherwise, mark that a vendor frame has been added.
+                    $hasVendorFrame = true;
+                } else {
+                    // Reset the flag if the current line is not a vendor frame.
+                    $hasVendorFrame = false;
+                }
+
+                return true;
+            });
+    }
+
+    protected function formatInitialException($line): array
+    {
+        $lines = explode('{"exception":"[object] ', $line);
+        $message = array_map(
+            fn($line) => Solo::makeTheme()->exception($line),
+            $this->wrapLine($lines[0])
+        );
+
+        $exception = array_map(
+            fn($line) => '   ' . Solo::makeTheme()->exception($line),
+            $this->wrapLine($lines[1], -3)
+        );
+
+        return [
+            ...$message,
+            ...$exception
+        ];
+    }
+
+    protected function formatLogLine($line): null|array|string
+    {
+        $theme = Solo::makeTheme();
+
+        // 1 space outside of each border.
+        $traceBoxWidth = $this->scrollPaneWidth() - 2;
+
+        // 1 border + 1 space on each side
+        $traceContentWidth = $traceBoxWidth - 4;
+
+        // A single trailing line that closes the JSON exception object.
+        if (trim($line) === '"}') {
+            return $theme->dim(' ╰' . str_repeat('═', $traceBoxWidth - 2) . '╯');
+        }
+
+        if (str_contains($line, '{"exception":"[object] ')) {
+            return $this->formatInitialException($line);
+        }
+
+        if (str_contains($line, '[stacktrace]')) {
+            return $theme->dim(' ╭─Trace' . str_repeat('─', $traceContentWidth - 4) . '╮');
+        }
+
+        if (!Str::isMatch('/#[0-9]+ /', $line)) {
+            return $this->wrapLine($line);
+        }
+
+        $base = function_exists('Orchestra\Testbench\package_path') ? \Orchestra\Testbench\package_path() : base_path();
+
+        // Make the line shorter by removing the base path. Helps prevent wrapping.
+        $line = str_replace($base, '', $line);
+
+        // Replace all vendor frame with a simple placeholder.
+        if ($this->hideVendor && $this->isVendorFrame($line)) {
+            return $this->dim(' │ ' . $this->pad('#…', $traceContentWidth) . ' │ ');
+        }
+
+        // Extract the file so that we can keep that part not dim.
+        $file = Str::match('/^#\d+ (.*?): /', $line);
+
+        $line = explode($file, $line);
+        $line = $theme->dim($line[0]) . $this->reset($file) . $this->dim($line[1]);
+
+        return array_map(
+            fn($line) => $this->dim(' │ ') . $this->pad($line, $traceContentWidth) . $this->dim(' │ '),
+            $this->wrapLine($line, $traceContentWidth)
+        );
+    }
+
+    protected function findNonVendorFrame(int $start)
     {
         $linesCount = count($this->lines);
         $step = 0;
@@ -100,89 +200,19 @@ class EnhancedTailCommand extends Command
             $step++;
         }
 
-        // If no non-vendor frames are found, return false
+        // No non-vendor frames were found.
         return false;
     }
 
-    protected function formatLogLine($line): ?string
+    protected function isVendorFrame($line)
     {
-        $theme = Solo::makeTheme();
-
-        // A single trailing line that closes the JSON exception object.
-        if (trim($line) === '"}') {
-            return null;
-        }
-
-        if (str_contains($line, '{"exception":"[object] ')) {
-            return $this->formatInitialException($line);
-        }
-
-        if (str_contains($line, '[stacktrace]')) {
-            return '   ' . $theme->dim($line);
-        }
-
-        if (!Str::isMatch('/#[0-9]+ /', $line)) {
-            return $line;
-        }
-
-        $base = function_exists('Orchestra\Testbench\package_path') ? \Orchestra\Testbench\package_path() : base_path();
-
-        // Make the line shorter by removing the base path. Helps prevent wrapping.
-        $line = str_replace($base, '…', $line);
-
-        // Replace all vendor frame with a simple placeholder.
-        if ($this->hideVendor && $this->isVendorFrame($line)) {
-            return $theme->dim('   [Vendor frames]');
-        }
-
-        return (Str::isMatch('/#[0-9]+ /', $line) ? str_repeat(' ', 3) : str_repeat(' ', 7)) . $line;
-    }
-
-    public function isVendorFrame($line)
-    {
-        return str_contains($line, '/vendor/') && !Str::isMatch("/BoundMethod\.php\([0-9]+\): App/", $line)
-            || str_contains($line, '[Vendor frames]');
-    }
-
-    public function formatInitialException($line): string
-    {
-        $lines = explode('{"exception":"[object] ', $line);
-
-        $message = Solo::makeTheme()->red($lines[0]);
-
-        return collect($this->wrapLine($lines[1], -3))
-            ->map(fn($line) => '   ' . Solo::makeTheme()->exception($line))
-            ->prepend($message)
-            ->implode(PHP_EOL);
-
-    }
-
-    protected function modifyWrappedLines(Collection $lines): Collection
-    {
-        if (!$this->hideVendor) {
-            return $lines;
-        }
-
-        $hasVendorFrame = false;
-
-        // After all the lines have been wrapped, we look through them
-        // to collapse consecutive vendor frames into a single line.
-        return $lines->filter(function ($line) use (&$hasVendorFrame) {
-            $isVendorFrame = $this->isVendorFrame($line);
-
-            if ($isVendorFrame) {
-                // Skip the line if a vendor frame has already been added.
-                if ($hasVendorFrame) {
-                    return false;
-                }
-                // Otherwise, mark that a vendor frame has been added.
-                $hasVendorFrame = true;
-            } else {
-                // Reset the flag if the current line is not a vendor frame.
-                $hasVendorFrame = false;
-            }
-
-            return true;
-        });
+        return
+            (
+                str_contains($line, '/vendor/') && !Str::isMatch("/BoundMethod\.php\([0-9]+\): App/", $line)
+            )
+            ||
+            str_ends_with($line, '{main}')
+            ||
+            str_contains($line, '#…');
     }
 }

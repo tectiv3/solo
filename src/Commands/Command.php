@@ -102,7 +102,7 @@ class Command implements Loopable
         $this->width = $width;
         $this->height = $height;
 
-        $this->screen = new Screen($this->scrollPaneWidth(), $this->scrollPaneHeight());
+        $this->screen = $this->makeNewScreen();
 
         return $this;
     }
@@ -205,7 +205,7 @@ class Command implements Loopable
 
     public function clear(): void
     {
-        $this->screen = new Screen($this->width, $this->height);
+        $this->screen = $this->makeNewScreen();
     }
 
     public function catchUpScroll(): void
@@ -269,6 +269,11 @@ class Command implements Loopable
         $lines = explode(PHP_EOL, $this->screen->output());
 
         return $this->modifyWrappedLines(collect($lines));
+    }
+
+    protected function makeNewScreen()
+    {
+        return new Screen($this->scrollPaneWidth(), $this->scrollPaneHeight());
     }
 
     protected function wrapLine($line, $width = null): array
