@@ -90,8 +90,6 @@ class Screen
             $part = $parts[$i];
 
             if ($part instanceof AnsiMatch) {
-                // Split out the ANSI code by its command and optional parameters.
-
                 if ($part->command) {
                     $this->handleAnsiCode($part);
                 } else {

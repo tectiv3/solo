@@ -155,7 +155,7 @@ class Command implements Loopable
     */
     public function dd()
     {
-        dd($this->screen->buffer);
+        $this->wrappedLines()->map(fn($line) => AnsiAware::plain($line))->dd();
     }
 
     public function addOutput($text)
@@ -268,7 +268,7 @@ class Command implements Loopable
     {
         $lines = explode(PHP_EOL, $this->screen->output());
 
-        return $this->modifyWrappedLines(collect($lines));
+        return $this->modifyWrappedLines(collect($lines))->values();
     }
 
     protected function makeNewScreen()

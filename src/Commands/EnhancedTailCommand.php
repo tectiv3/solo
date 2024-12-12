@@ -10,17 +10,23 @@ namespace AaronFrancis\Solo\Commands;
 
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Support\AnsiAware;
 use AaronFrancis\Solo\Support\Screen;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
+use Log;
 
 class EnhancedTailCommand extends Command
 {
     use Colors, InteractsWithStrings;
 
-    protected $hideVendor = true;
+    protected bool $hideVendor = true;
+
+    protected int $compressed = 0;
+
+    protected ?int $pendingScrollIndex = null;
 
     protected string $file;
 
@@ -43,12 +49,26 @@ class EnhancedTailCommand extends Command
     {
         return [
             'vendor' => Hotkey::make('v', function () {
-                $index = $this->findNonVendorFrame($this->scrollIndex + floor($this->scrollPaneHeight() / 2));
+                if ($this->hideVendor) {
+                    $lines = $this->wrappedLines();
+                    $cursor = $this->scrollIndex;
 
-                dd($this->wrappedLines());
-                //                if ($index !== false) {
-                //                    $this->lines[$index] = '___scrollpos___';
-                //                }
+                    while ($cursor >= 0) {
+                        $line = $lines->get($cursor);
+
+                        if ($count = Str::match("/#… \\[(\d+)]/", AnsiAware::plain($line))) {
+                            $this->pendingScrollIndex ??= $this->scrollIndex += intval($count);
+                        }
+
+                        if ($this->isVendorFrame($line)) {
+                            $this->pendingScrollIndex -= 1;
+                        }
+
+                        $cursor--;
+                    }
+                }
+
+                $this->hideVendor = !$this->hideVendor;
             }),
             'truncate' => true ? null : Hotkey::make('t', function () {
                 if (!$this->file) {
@@ -76,35 +96,47 @@ class EnhancedTailCommand extends Command
 
     protected function modifyWrappedLines(Collection $lines): Collection
     {
-        if (!$this->hideVendor) {
-            return $lines;
-        }
-
+        $this->compressed = 0;
         $hasVendorFrame = false;
 
         // After all the lines have been wrapped, we look through them
         // to collapse consecutive vendor frames into a single line.
-        return $lines
+        $lines = $lines
             ->map($this->formatLogLine(...))
             ->flatten()
-            ->reject(fn($line) => is_null($line))
-            ->filter(function ($line) use (&$hasVendorFrame) {
-                $isVendorFrame = $this->isVendorFrame($line);
+            ->reject(fn($line) => is_null($line));
 
-                if ($isVendorFrame) {
-                    // Skip the line if a vendor frame has already been added.
-                    if ($hasVendorFrame) {
-                        return false;
+        $remainingVendorLines = 0;
+
+        if ($this->hideVendor) {
+            $lines = $lines
+                ->reverse()
+                ->filter(function ($line) use (&$hasVendorFrame, &$remainingVendorLines) {
+                    $isVendorFrame = $this->isVendorFrame($line);
+
+                    if ($isVendorFrame) {
+                        // Skip the line if a vendor frame has already been added.
+                        if ($hasVendorFrame) {
+                            return false;
+                        }
+                        // Otherwise, mark that a vendor frame has been added.
+                        $hasVendorFrame = true;
+                    } else {
+                        // Reset the flag if the current line is not a vendor frame.
+                        $hasVendorFrame = false;
                     }
-                    // Otherwise, mark that a vendor frame has been added.
-                    $hasVendorFrame = true;
-                } else {
-                    // Reset the flag if the current line is not a vendor frame.
-                    $hasVendorFrame = false;
-                }
 
-                return true;
-            });
+                    return true;
+                })
+                ->reverse();
+        }
+
+        if (!is_null($this->pendingScrollIndex)) {
+            $this->scrollIndex = $this->pendingScrollIndex;
+            $this->pendingScrollIndex = null;
+        }
+
+        return $lines;
     }
 
     protected function formatInitialException($line): array
@@ -160,48 +192,25 @@ class EnhancedTailCommand extends Command
 
         // Replace all vendor frame with a simple placeholder.
         if ($this->hideVendor && $this->isVendorFrame($line)) {
-            return $this->dim(' │ ' . $this->pad('#…', $traceContentWidth) . ' │ ');
+            $this->compressed += count($this->wrapLine($line, $traceContentWidth));
+
+            $invisible = "\e[8m[$this->compressed]\e[28m";
+
+            return $this->dim(' │ ' . $this->pad("#… $invisible", $traceContentWidth) . ' │ ');
         }
 
         // Extract the file so that we can keep that part not dim.
         $file = Str::match('/^#\d+ (.*?): /', $line);
 
-        $line = explode($file, $line);
-        $line = $theme->dim($line[0]) . $this->reset($file) . $this->dim($line[1]);
+        if ($file) {
+            $line = explode($file, $line);
+            $line = $theme->dim($line[0]) . $this->reset($file) . $this->dim($line[1]);
+        }
 
         return array_map(
             fn($line) => $this->dim(' │ ') . $this->pad($line, $traceContentWidth) . $this->dim(' │ '),
             $this->wrapLine($line, $traceContentWidth)
         );
-    }
-
-    protected function findNonVendorFrame(int $start)
-    {
-        $linesCount = count($this->lines);
-        $step = 0;
-
-        while ($start + $step < $linesCount || $start - $step >= 0) {
-            // Check forward index
-            if ($start + $step < $linesCount) {
-                $index = $start + $step;
-                if (!$this->isVendorFrame($this->lines[$index])) {
-                    return $index;
-                }
-            }
-
-            // Check backward index, avoiding duplicate check at step 0
-            if ($step !== 0 && $start - $step >= 0) {
-                $index = $start - $step;
-                if (!$this->isVendorFrame($this->lines[$index])) {
-                    return $index;
-                }
-            }
-
-            $step++;
-        }
-
-        // No non-vendor frames were found.
-        return false;
     }
 
     protected function isVendorFrame($line)
