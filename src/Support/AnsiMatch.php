@@ -5,15 +5,11 @@
 
 namespace AaronFrancis\Solo\Support;
 
-use JetBrains\PhpStorm\NoReturn;
-use function DI\string;
-
 readonly class AnsiMatch implements \Stringable
 {
     public ?string $command;
     public ?string $params;
 
-    #[NoReturn]
     public function __construct(public string $raw)
     {
         $pattern = <<<PATTERN
