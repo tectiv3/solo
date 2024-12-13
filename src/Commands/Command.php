@@ -217,13 +217,18 @@ class Command implements Loopable
         }
     }
 
+    public function scrollTo($index): void
+    {
+        $this->scrollIndex = max(0, min(
+            $index,
+            $this->wrappedLines()->count() - $this->scrollPaneHeight()
+        ));
+    }
+
     public function scrollDown($amount = 1): void
     {
         $this->paused = true;
-        $this->scrollIndex = max(0, min(
-            $this->scrollIndex + $amount,
-            $this->wrappedLines()->count() - $this->scrollPaneHeight()
-        ));
+        $this->scrollTo($this->scrollIndex + $amount);
     }
 
     public function pageDown()
@@ -234,9 +239,7 @@ class Command implements Loopable
     public function scrollUp($amount = 1): void
     {
         $this->paused = true;
-        $this->scrollIndex = max(
-            $this->scrollIndex - $amount, 0
-        );
+        $this->scrollTo($this->scrollIndex - $amount);
     }
 
     public function pageUp()
@@ -276,7 +279,7 @@ class Command implements Loopable
         return new Screen($this->scrollPaneWidth(), $this->scrollPaneHeight());
     }
 
-    protected function wrapLine($line, $width = null): array
+    public function wrapLine($line, $width = null, $continuationIndent = 0): array
     {
         $defaultWidth = $this->scrollPaneWidth();
 
@@ -288,11 +291,36 @@ class Command implements Loopable
             $width = $defaultWidth;
         }
 
-        return explode(PHP_EOL, AnsiAware::wordwrap(
+        $exploded = explode(PHP_EOL, AnsiAware::wordwrap(
             string: $line,
             width: $width,
             cut: true
         ));
+
+        if ($continuationIndent === 0 || count($exploded) === 1) {
+            return $exploded;
+        }
+
+        $first = array_shift($exploded);
+        $indent = str_repeat(' ', $continuationIndent);
+
+        if ($continuationIndent) {
+            $allIndented = true;
+            foreach ($exploded as $continuationLine) {
+                $allIndented = $allIndented && str_starts_with($continuationLine, $indent);
+            }
+
+            if ($allIndented) {
+                return [$first, ...$exploded];
+            }
+        }
+
+        $rest = $indent . implode(PHP_EOL, $exploded);
+
+        return [
+            $first,
+            ...$this->wrapLine($rest, $width, $continuationIndent)
+        ];
     }
 
     protected function modifyWrappedLines(Collection $lines): Collection

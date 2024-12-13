@@ -16,7 +16,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
-use Log;
 
 class EnhancedTailCommand extends Command
 {
@@ -29,6 +28,8 @@ class EnhancedTailCommand extends Command
     protected ?int $pendingScrollIndex = null;
 
     protected string $file;
+
+    private string $invisibleVendorMark = "\e[8mV\e[28m";
 
     public static function forFile($path)
     {
@@ -48,28 +49,7 @@ class EnhancedTailCommand extends Command
     public function hotkeys(): array
     {
         return [
-            'vendor' => Hotkey::make('v', function () {
-                if ($this->hideVendor) {
-                    $lines = $this->wrappedLines();
-                    $cursor = $this->scrollIndex;
-
-                    while ($cursor >= 0) {
-                        $line = $lines->get($cursor);
-
-                        if ($count = Str::match("/#… \\[(\d+)]/", AnsiAware::plain($line))) {
-                            $this->pendingScrollIndex ??= $this->scrollIndex += intval($count);
-                        }
-
-                        if ($this->isVendorFrame($line)) {
-                            $this->pendingScrollIndex -= 1;
-                        }
-
-                        $cursor--;
-                    }
-                }
-
-                $this->hideVendor = !$this->hideVendor;
-            }),
+            'vendor' => Hotkey::make('v', fn() => $this->toggleVendorFrames()),
             'truncate' => true ? null : Hotkey::make('t', function () {
                 if (!$this->file) {
                     return;
@@ -84,59 +64,138 @@ class EnhancedTailCommand extends Command
 
                 // Clear the logs held in memory.
                 $this->clear();
-            })
-        ];
+            })];
     }
 
     protected function makeNewScreen()
     {
-        // Disable wrapping by setting the width to 1000 characters. We'll wrap it ourselves.
+        // Disable wrapping by setting the width to 1000
+        // characters. We'll wrap the lines ourselves.
         return new Screen(1000, $this->scrollPaneHeight());
+    }
+
+    protected function toggleVendorFrames()
+    {
+        $this->hideVendor ? $this->showVendorFrames() : $this->hideVendorFrames();
+        $this->hideVendor = !$this->hideVendor;
+    }
+
+    protected function showVendorFrames()
+    {
+        $lines = $this->wrappedLines();
+        $cursor = $this->scrollIndex;
+
+        while ($cursor >= 0) {
+            $line = $lines->get($cursor);
+
+            // Invisible compressed line count.
+            if ($count = Str::match("/\\e\[8m\[(\d+)]\\e\[28m/", $line)) {
+                $this->pendingScrollIndex ??= $this->scrollIndex + intval($count);
+            }
+
+            // Need to offset for all the vendor lines that do remain. For example
+            // if we've compressed 50 lines into 5, we can't offset the scroll
+            // index by 50, because there are still 5 remaining. So we figure
+            // out how many total lines have been compressed (50) and
+            // how many remain (5).
+            if ($this->isVendorFrame($line)) {
+                $this->pendingScrollIndex -= 1;
+            }
+
+            $cursor--;
+        }
+    }
+
+    protected function hideVendorFrames()
+    {
+        $lines = $this->wrappedLines();
+        $cursor = $this->scrollIndex;
+
+        $linesAreVendor = [];
+
+        // Working our way backwards above the scroll index,
+        // figure out if the lines are vendor or not.
+        while ($cursor >= 0) {
+            $line = $lines->get($cursor);
+            $linesAreVendor[] = $this->isVendorFrame($line);
+            $cursor--;
+        }
+
+        $totalVendorLines = 0;
+        $remainingVendorLines = 0;
+
+        $inChunk = false;
+
+        // Now that we have the classification of all the lines, lets figure
+        // out how many total vendor frames there are, and how many that
+        // compresses down to. Each continuous chunk of vendor frames
+        // gets collapsed down into a single line.
+        foreach ($linesAreVendor as $value) {
+            if ($value === true) {
+                $totalVendorLines++;
+
+                if (!$inChunk) {
+                    $remainingVendorLines++;
+                    $inChunk = true;
+                }
+            } elseif ($value === false) {
+                $inChunk = false;
+            }
+        }
+
+        $this->pendingScrollIndex = $this->scrollIndex - $totalVendorLines + $remainingVendorLines;
     }
 
     protected function modifyWrappedLines(Collection $lines): Collection
     {
         $this->compressed = 0;
-        $hasVendorFrame = false;
 
-        // After all the lines have been wrapped, we look through them
-        // to collapse consecutive vendor frames into a single line.
         $lines = $lines
             ->map($this->formatLogLine(...))
             ->flatten()
-            ->reject(fn($line) => is_null($line));
-
-        $remainingVendorLines = 0;
-
-        if ($this->hideVendor) {
-            $lines = $lines
-                ->reverse()
-                ->filter(function ($line) use (&$hasVendorFrame, &$remainingVendorLines) {
-                    $isVendorFrame = $this->isVendorFrame($line);
-
-                    if ($isVendorFrame) {
-                        // Skip the line if a vendor frame has already been added.
-                        if ($hasVendorFrame) {
-                            return false;
-                        }
-                        // Otherwise, mark that a vendor frame has been added.
-                        $hasVendorFrame = true;
-                    } else {
-                        // Reset the flag if the current line is not a vendor frame.
-                        $hasVendorFrame = false;
-                    }
-
-                    return true;
-                })
-                ->reverse();
-        }
+            ->reject(fn($line) => is_null($line))
+            ->when($this->hideVendor, $this->collapseVendorFrames(...));
 
         if (!is_null($this->pendingScrollIndex)) {
-            $this->scrollIndex = $this->pendingScrollIndex;
+            $this->scrollIndex = max(0, min(
+                $this->pendingScrollIndex,
+                $lines->count() - $this->scrollPaneHeight()
+            ));
             $this->pendingScrollIndex = null;
         }
 
         return $lines;
+    }
+
+    protected function collapseVendorFrames(Collection $lines)
+    {
+        $hasVendorFrame = false;
+
+        return $lines
+            // We reverse because we want to keep the *last* vendor frame,
+            // because that line holds the cumulative compressed lines
+            // number. If we kept the first vendor frame our scroll
+            // index wouldn't work when toggling.
+            ->reverse()
+            ->filter(function ($line) use (&$hasVendorFrame, &$remainingVendorLines) {
+                $isVendorFrame = $this->isVendorFrame($line);
+
+                if ($isVendorFrame) {
+                    // Skip the line if a vendor frame has already been added.
+                    if ($hasVendorFrame) {
+                        return false;
+                    }
+                    // Otherwise, mark that a vendor frame has been added.
+                    $hasVendorFrame = true;
+                } else {
+                    // Reset the flag if the current line is not a vendor frame.
+                    $hasVendorFrame = false;
+                }
+
+                return true;
+            })
+            // Put it back in the right orientation.
+            ->reverse();
     }
 
     protected function formatInitialException($line): array
@@ -148,8 +207,8 @@ class EnhancedTailCommand extends Command
         );
 
         $exception = array_map(
-            fn($line) => '   ' . Solo::makeTheme()->exception($line),
-            $this->wrapLine($lines[1], -3)
+            fn($line) => ' ' . Solo::makeTheme()->exception($line),
+            $this->wrapLine($lines[1], -1)
         );
 
         return [
@@ -187,41 +246,65 @@ class EnhancedTailCommand extends Command
 
         $base = function_exists('Orchestra\Testbench\package_path') ? \Orchestra\Testbench\package_path() : base_path();
 
-        // Make the line shorter by removing the base path. Helps prevent wrapping.
+        // Make the line shorter by removing the base path, which helps prevent wrapping.
         $line = str_replace($base, '', $line);
 
-        // Replace all vendor frame with a simple placeholder.
-        if ($this->hideVendor && $this->isVendorFrame($line)) {
-            $this->compressed += count($this->wrapLine($line, $traceContentWidth));
+        // Stack trace lines start with #\d. Here we pad the numbers 0-9
+        // with a preceding zero to keep everything in line visually.
+        $line = preg_replace('/^#(\d)(?!\d)/', '#0$1', $line);
 
-            $invisible = "\e[8m[$this->compressed]\e[28m";
+        $vendor = $this->isVendorFrame($line);
 
-            return $this->dim(' │ ' . $this->pad("#… $invisible", $traceContentWidth) . ' │ ');
+        if ($this->hideVendor && $vendor) {
+            // Count up how many lines this *would* have occupied, if it had been shown.
+            $this->compressed += count($this->wrapLine($line, $traceContentWidth, 4));
+
+            // Add the running total, invisibly, to this line. When we turn vendor
+            // frames back on we search through the lines above the current index
+            // to figure out how many compressed vendor frames there are.
+            $invisibleCount = "\e[8m[$this->compressed]\e[28m";
+
+            // We also add the invisible vendor mark to denote that these
+            // are vendor frames, albeit collapsed ones.
+            return $this->dim(
+                ' │ ' . $this->pad("#… {$invisibleCount} {$this->invisibleVendorMark}", $traceContentWidth) . ' │ '
+            );
         }
 
-        // Extract the file so that we can keep that part not dim.
-        $file = Str::match('/^#\d+ (.*?): /', $line);
+        $line = $this->highlightFileOnly($line);
 
-        if ($file) {
-            $line = explode($file, $line);
-            $line = $theme->dim($line[0]) . $this->reset($file) . $this->dim($line[1]);
-        }
+        return array_map(function ($line) use ($traceContentWidth, $vendor) {
+            return $this->dim(' │ ')
+                . $this->pad($line, $traceContentWidth)
+                . $this->dim(' │')
+                . ($vendor ? $this->invisibleVendorMark : ' ');
+        }, $this->wrapLine($line, $traceContentWidth, 4));
+    }
 
-        return array_map(
-            fn($line) => $this->dim(' │ ') . $this->pad($line, $traceContentWidth) . $this->dim(' │ '),
-            $this->wrapLine($line, $traceContentWidth)
-        );
+    protected function highlightFileOnly($line)
+    {
+        // ^ and $: Start and end of line
+        // (#\d+): Capture the # followed by digits (this is the chunk we dim)
+        // (.*?): Capture everything up to a colon if it exists (non-greedy)
+        // (:.*)?: Capture an optional colon and everything after it
+        $pattern = '/^(#\d+)(.*?)(:.*)?$/';
+
+        // We then apply dim (\033[2m) and reset (\033[0m) codes. Reference $1 is
+        // the frame number, $2 is the file, $3 is after the file, which is
+        // usually the method. Dim the number and method parts,
+        // leave the file part as is.
+        $replacement = "\033[2m$1\033[0m$2\033[2m$3\033[0m";
+
+        return preg_replace($pattern, $replacement, $line);
     }
 
     protected function isVendorFrame($line)
     {
         return
-            (
-                str_contains($line, '/vendor/') && !Str::isMatch("/BoundMethod\.php\([0-9]+\): App/", $line)
-            )
+            str_contains($line, $this->invisibleVendorMark)
             ||
-            str_ends_with($line, '{main}')
+            str_contains($line, '/vendor/') && !Str::isMatch("/BoundMethod\.php\([0-9]+\): App/", $line)
             ||
-            str_contains($line, '#…');
+            str_ends_with($line, '{main}');
     }
 }
