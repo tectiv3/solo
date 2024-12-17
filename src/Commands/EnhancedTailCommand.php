@@ -49,22 +49,12 @@ class EnhancedTailCommand extends Command
     public function hotkeys(): array
     {
         return [
-            'vendor' => Hotkey::make('v', fn() => $this->toggleVendorFrames()),
-            'truncate' => true ? null : Hotkey::make('t', function () {
-                if (!$this->file) {
-                    return;
-                }
+            'vendor' => Hotkey::make('v', $this->toggleVendorFrames(...))
+                ->label($this->hideVendor ? 'Show Vendor' : 'Hide Vendor'),
 
-                // Opening in write mode truncates (or creates.)
-                $handle = fopen($this->file, 'w');
-
-                if ($handle !== false) {
-                    fclose($handle);
-                }
-
-                // Clear the logs held in memory.
-                $this->clear();
-            })];
+            'truncate' => $this->file ? Hotkey::make('t', $this->truncateFile(...))
+                ->label('Truncate') : null
+        ];
     }
 
     protected function makeNewScreen()
@@ -72,6 +62,23 @@ class EnhancedTailCommand extends Command
         // Disable wrapping by setting the width to 1000
         // characters. We'll wrap the lines ourselves.
         return new Screen(1000, $this->scrollPaneHeight());
+    }
+
+    protected function truncateFile()
+    {
+        if (!$this->file) {
+            return;
+        }
+
+        // Opening in write mode truncates (or creates.)
+        $handle = fopen($this->file, 'w');
+
+        if ($handle !== false) {
+            fclose($handle);
+        }
+
+        // Clear the logs held in memory.
+        $this->clear();
     }
 
     protected function toggleVendorFrames()

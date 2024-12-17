@@ -35,8 +35,6 @@ class Screen
 
     public int $height;
 
-    protected bool $unflushedAnsi = false;
-
     protected array $stashedCursor = [];
 
     public function __construct(int $width, int $height)
@@ -75,7 +73,7 @@ class Screen
         return implode(PHP_EOL, $buffer);
     }
 
-    public function write(string $content): void
+    public function write(string $content): static
     {
         // Carriage returns get replaced with a code to move to column 0.
         $content = str_replace("\r", "\e[G", $content);
@@ -113,21 +111,7 @@ class Screen
             $i++;
         }
 
-        // There may be some ANSI codes that we're keeping track of that have
-        // not been written into the buffer, since they are written during
-        // the `handlePrintableCharacters` method. Any ANSI codes not
-        // followed by printable characters will never get written.
-        // We can fix that here by checking the flag.
-        if ($this->unflushedAnsi) {
-            // Add the ANSI at the exact point of the cursor.
-            $this->ansi->fillBufferWithActiveFlags(
-                row: $this->cursorRow,
-                startCol: $this->cursorCol,
-                endCol: $this->cursorCol,
-            );
-
-            $this->unflushedAnsi = false;
-        }
+        return $this;
     }
 
     public function writeln(string $content): void
@@ -218,6 +202,10 @@ class Screen
 
     protected function handlePrintableCharacters(string $text): void
     {
+        if (empty($text)) {
+            return;
+        }
+
         $this->buffer->expand($this->cursorRow);
 
         $lineContent = $this->buffer[$this->cursorRow];
@@ -256,10 +244,6 @@ class Screen
         // Fill the ANSI buffer with currently active flags, based
         // on where the cursor started and where it ended.
         $this->ansi->fillBufferWithActiveFlags($this->cursorRow, $startCol, max($startCol, $this->cursorCol - 1));
-
-        // We no longer have ANSI codes that haven't been written
-        // into the ANSI buffer, so flip the flag.
-        $this->unflushedAnsi = false;
 
         if (!empty($remainder)) {
             $this->newlineWithScroll();
@@ -317,7 +301,7 @@ class Screen
     {
         $this->ensureCursorParams($absolute, $relative);
 
-        $max = $this->height + $this->linesOffScreen;
+        $max = $this->height + $this->linesOffScreen -1 ;
         $min = $this->linesOffScreen;
 
         $position = $this->cursorRow;
@@ -332,6 +316,18 @@ class Screen
 
         $position = min($position, $max);
         $position = max($min, $position);
+
+        if ($relative === 1000) {
+//             dd([
+//                 'max' => $max,
+//                 'min' => $min,
+//                 'height' => $this->height,
+//                 'linesOffScreen' => $this->linesOffScreen,
+//                 'cursorRow' => $this->cursorRow,
+//                 '$position' => $position
+//             ]);
+//            $position--;
+        }
 
         $this->cursorRow = $position;
 
@@ -376,8 +372,6 @@ class Screen
      */
     protected function handleSGR(string $params): void
     {
-        $this->unflushedAnsi = true;
-
         // Support multiple codes, like \e[30;41m
         $codes = array_map(intval(...), explode(';', $params));
 

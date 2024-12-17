@@ -60,8 +60,7 @@ class AnsiTracker
      * @link https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
      */
     protected array $codes = [
-        // Reset all
-        0 => 1 << 0, // 1
+        0 => 1 << 0, // Reset all
 
         // Foreground
         30 => 1 << 1,  // Black
@@ -141,8 +140,11 @@ class AnsiTracker
     public function __construct()
     {
         if (PHP_INT_SIZE < 8) {
-            throw new RuntimeException('AnsiBuffer requires a 64-bit PHP environment.');
+            throw new RuntimeException(static::class . ' requires a 64-bit PHP environment.');
         }
+
+        // Default decoration, default foreground, and default background.
+        // $this->addAnsiCodes(0, 39, 49);
 
         // This buffer uses integers to keep track of active ANSI codes.
         $this->buffer = new Buffer(usesStrings: false);
@@ -165,26 +167,60 @@ class AnsiTracker
 
     public function compressedAnsiBuffer(): array
     {
+        $reset = $this->codes[0];
         $previousBits = 0;
 
-        $compressed = array_map(function ($line) use (&$previousBits) {
-            // We return false for any duplicates, so array_filter removes those leaving us with
-            // a sparsely populated array with missing numeric keys (which is what we want.)
-            return array_filter(array_map(function ($bits) use (&$previousBits) {
-                // Since we're compressing for output, we don't need an ANSI code for every
-                // character, as they are persistent. This bitwise operation gives us
-                // only the flags that weren't present in the previous bits.
+        return array_map(function ($line) use (&$previousBits, $reset) {
+            return array_filter(array_map(function ($bits) use (&$previousBits, $reset) {
+                // Determine which bits have been newly added versus previously set.
                 $unique = $bits & ~$previousBits;
 
-                if ($unique) {
-                    $previousBits = $bits;
+                // Determine which bits have been turned off compared to the last state.
+                $turnedOff = $previousBits & ~$bits;
+
+                // We'll build a list of ANSI codes to reset foreground, background, or decorations
+                // that have been turned off.
+                $resetCodes = [];
+                $turnedOffCodes = $this->ansiCodesFromBits($turnedOff);
+
+                // Check for previously active features that need resetting.
+                foreach ($turnedOffCodes as $code) {
+                    // If a foreground color was turned off, reset to default (39).
+                    if ($this->codeInRange($code, $this->foreground)) {
+                        $resetCodes[] = 39;
+                    }
+
+                    // If a background color was turned off, reset to default (49).
+                    if ($this->codeInRange($code, $this->background)) {
+                        $resetCodes[] = 49;
+                    }
+
+                    // If a decoration was turned off, apply its corresponding reset code.
+                    if ($this->codeInRange($code, $this->decoration) && isset($this->decorationResets[$code])) {
+                        $resetCodes[] = $this->decorationResets[$code];
+                    }
                 }
 
-                return $unique ? $this->ansiStringFromBits($unique) : false;
+                // Remove duplicates just in case.
+                $resetCodes = array_unique($resetCodes);
+
+                // Convert the unique "turned on" bits to ANSI codes.
+                $uniqueCodes = $this->ansiCodesFromBits($unique);
+
+                // If we have something to output (either resets or unique new codes), merge them.
+                if (!empty($resetCodes) || !empty($uniqueCodes)) {
+                    $finalCodes = array_merge($resetCodes, $uniqueCodes);
+                    $finalCodes = array_unique($finalCodes);
+
+                    $previousBits = $bits;
+
+                    return $this->ansiStringFromCodes($finalCodes);
+                }
+
+                // If nothing changed, return false so it's filtered out.
+                return false;
             }, $line));
         }, $this->buffer->getBuffer());
-
-        return $compressed;
     }
 
     public function ansiCodesFromBits(int $bits): array
@@ -257,7 +293,7 @@ class AnsiTracker
         // code that disables that specific decoration.
         if ($this->codeInRange($code, $this->decoration)) {
             $unset = $this->codes[$this->decorationResets[$code]];
-            $this->active &= ~$unset;
+            // $this->active &= ~($unset | 1);
         }
 
         // If we're unsetting a decoration, we need to remove

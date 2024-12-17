@@ -6,59 +6,37 @@
 namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Support\Screen;
+use AaronFrancis\Solo\Tests\Support\ComparesVisually;
 use PHPUnit\Framework\Attributes\Test;
-use SplQueue;
 
 class ScreenTest extends Base
 {
-    protected function assertEmulation(array $input, array $expect)
-    {
-        $screen = new Screen(180, 30);
-        $screen->write(implode(PHP_EOL, $input));
-
-        $this->assertSame(implode(PHP_EOL, $expect), $screen->output());
-    }
+    use ComparesVisually;
 
     #[Test]
     public function clear_screen_test()
     {
-        $this->assertEmulation([
-            'Hello World',
-            'Hello World',
+        $this->assertTerminalMatch([
+            "Hello World",
+            "Hello World",
             "\e[2J",
-            'New Line after clear',
-        ], [
-            '',
-            '',
-            '',
-            'New Line after clear',
+            "New Line after clear"
         ]);
     }
 
     #[Test]
     public function colors_are_preserved()
     {
-        $this->assertEmulation([
-            "Hello \e[32mWorld!\e[39m how are you",
-        ], [
-            "Hello \e[32mWorld!\e[39m how are you",
-        ]);
+        $this->assertTerminalMatch("Hello \e[32mWorld!\e[39m how are you");
     }
 
     #[Test]
     public function laravel_prompts_make_model(): void
     {
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             "\e[?25l",
             "\e[90m ┌\e[39m \e[36mWhat should the model be named?\e[39m \e[90m─────────────────────────────┐\e[39m",
             "\e[90m │\e[39m \e[2m\e[7mE\e[27m.g. Flight\e[22m                                                  \e[90m│\e[39m",
-            "\e[90m └──────────────────────────────────────────────────────────────┘\e[39m",
-            '',
-            '',
-        ], [
-            '',
-            "\e[90m ┌\e[39m \e[36mWhat should the model be named?\e[39m \e[90m─────────────────────────────┐\e[39m",
-            "\e[90m │\e[39m \e[2;7mE\e[27m.g. Flight\e[22m                                                  \e[90m│\e[39m",
             "\e[90m └──────────────────────────────────────────────────────────────┘\e[39m",
             '',
             '',
@@ -68,131 +46,85 @@ class ScreenTest extends Base
     #[Test]
     public function test_simple_line_without_ansi_codes(): void
     {
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Hello, World!',
             '',
             'Part two!'
-        ], [
-            'Hello, World!',
-            '',
-            'Part two!',
         ]);
     }
 
     #[Test]
     public function single_line_ansi_colors(): void
     {
-        $this->assertEmulation([
-            "\e[31mRed Text\e[0m"
-        ], [
-            "\e[31mRed Text\e[0m"
-        ]);
+        $this->assertTerminalMatch("\e[31mRed Text\e[0m");
     }
 
     #[Test]
     public function test_cursor_horizontal_absolute(): void
     {
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Start',
             "\e[5GHello",
-        ], [
-            'Start',
-            '    Hello', // Moved to column 5
         ]);
     }
 
     #[Test]
     public function test_cursor_forward(): void
     {
-        // Input lines with ANSI escape code \e[5C to move cursor forward 5 columns and insert "Forward"
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Line 1: Hello, World!',
             'Line 2: This is a test.',
-            // Move forward 5 columns on Line 3 and insert "Forward"
             "Line 3: Goodbye!\e[5CForward",
-        ], [
-            'Line 1: Hello, World!',
-            'Line 2: This is a test.',
-            'Line 3: Goodbye!     Forward',
         ]);
     }
 
     public function test_cursor_backward(): void
     {
-        // Input lines with ANSI escape code \e[3D to move cursor backward 3 columns and insert "Back"
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Line 1: Hello, World!',
             'Line 2: This is a test.',
-            "Line 3: Goodbye!\e[3DBack", // Move backward 3 columns on Line 3 and insert "Back"
-        ], [
-            'Line 1: Hello, World!',
-            'Line 2: This is a test.',
-            'Line 3: GoodbBack', // "Back" inserted starting 3 columns before the end
+            "Line 3: Goodbye!\e[3DBack",
         ]);
     }
 
     #[Test]
     public function test_cursor_home(): void
     {
-        // Input lines with ANSI escape code \e[H to move cursor to home and insert "Home"
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Line 1: Hello, World!',
             'Line 2: This is a test.',
             'Line 3: Goodbye!',
             "\e[HHome", // Move cursor to home position and insert "Home"
-        ], [
-            'Home 1: Hello, World!',
-            'Line 2: This is a test.',
-            'Line 3: Goodbye!',
-            '',
         ]);
     }
 
     #[Test]
     public function test_cursor_up(): void
     {
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Line 1',
             'Line 2',
             'Line 3',
             "\e[2AInserted Line",
-        ], [
-            'Line 1',
-            'Inserted Line',
-            'Line 3',
-            '',
         ]);
     }
 
     #[Test]
     public function test_erase_display_from_cursor_to_end(): void
     {
-        // Input lines with ANSI escape code \e[0J
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Line 1: Hello, World!',
             'Line 2: This is a test.',
-            // Move cursor to column 2 on Line 3
             "Line 3: Goodbye!\e[2G\e[0J",
-        ], [
-            'Line 1: Hello, World!',
-            'Line 2: This is a test.',
-            'L', // 'L' is at column 1, cursor moved to column 2, so 'Line 3' becomes 'L'
         ]);
     }
 
     #[Test]
     public function test_erase_display_from_start_to_cursor(): void
     {
-        // Input lines with ANSI escape code \e[1J
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             'Line 1: Hello, World!',
-            "Line 2: This is a test.\e[10G\e[1J", // Move cursor to column 10 on Line 2 and erase
-            'Line 3: Goodbye!',
-        ], [
-            // Line 1 is cleared
-            '',
-            // Line 2: 10 spaces to account for clearing up to cursor, which is at column 10
-            '          is is a test.',
+            "Line 2: This is a test.\e[10G\e[1J",
             'Line 3: Goodbye!',
         ]);
     }
@@ -200,302 +132,354 @@ class ScreenTest extends Base
     #[Test]
     public function test_show_and_hide_cursor(): void
     {
-        $this->assertEmulation([
+        $this->assertTerminalMatch([
             "\e[?25l",
             'Hidden Cursor Line',
-            "\e[?25h",
-            'Visible Cursor Line',
-        ], [
-            '',
-            'Hidden Cursor Line',
-            '',
-            'Visible Cursor Line',
         ]);
     }
 
     #[Test]
     public function test_combined_ansi_codes(): void
     {
-        $this->assertEmulation([
-            'Line 1',
-            'Line 2',
-            'Line 3',
-            "\e[1A\e[5GInserted", // Move up 1 line and to column 5
-        ], [
-            'Line 1',
-            'Line 2',
-            'LineInserted',
-            ''
+        $this->assertTerminalMatch([
+            "Line 1",
+            "Line 2",
+            "Line 3",
+            "\e[1A\e[5GInserted"
         ]);
     }
 
     #[Test]
     public function test_move_down_ansi_code(): void
     {
-        // Input lines with ANSI escape code \e[1B and insert "Inserted Line"
-        $this->assertEmulation([
-            'Line 1: Hello, World!',
-            'Line 2: This is a test.',
-            'Line 3: Goodbye!',
-            "\e[1B\e[5GInserted Line", // Move down 1 line and to column 5, then insert text
-        ], [
-            'Line 1: Hello, World!',
-            'Line 2: This is a test.',
-            'Line 3: Goodbye!',
-            '',
-            '    Inserted Line', // "Inserted Line" starts at column 5 on Line 4
+        $this->assertTerminalMatch([
+            "Line 1: Hello, World!",
+            "Line 2: This is a test.",
+            "Line 3: Goodbye!",
+            "\e[1B\e[5GInserted Line"
         ]);
     }
 
     #[Test]
     public function test_cursor_movement_beyond_screen_buffer(): void
     {
-        // Attempt to move up 5 lines from line 2
-        $this->assertEmulation([
-            'Line 1',
-            "\e[5AAbove Start",
-        ], [
-            'Above Start',
-            ''
+        $this->assertTerminalMatch([
+            "Line 1",
+            "\e[5AAbove Start"
         ]);
     }
 
     #[Test]
     public function test_erase_in_line_1(): void
     {
-        $this->assertEmulation([
-            "hello world\e[4G\e[1K",
-        ], [
-            '    o world'
-        ]);
+        $this->assertTerminalMatch("hello world\e[4G\e[1K");
     }
 
     #[Test]
     public function test_erase_in_line_2(): void
     {
-        $this->assertEmulation([
-            "hello world\e[4G\e[2K",
-        ], [
-            ''
-        ]);
+        $this->assertTerminalMatch("hello world\e[4G\e[2K");
     }
 
     #[Test]
     public function test_erase_in_line_3(): void
     {
-        $this->assertEmulation([
-            "hello world\e[4G\e[0K",
-        ], [
-            'hel'
-        ]);
+        $this->assertTerminalMatch("hello world\e[4G\e[0K");
     }
 
     #[Test]
     public function test_cursor_with_colors(): void
     {
-        $this->assertEmulation([
-            "\e[1;32mWorld\e[0m Test\e[8Dq",
-        ], [
-            "\e[1;32mWo\e[0mq\e[1;32mld\e[0m Test",
-        ]);
+        $this->assertTerminalMatch("\e[1;32mWorld\e[0m Test\e[8Dq");
     }
 
     #[Test]
     public function test_cursor_delete_with_colors(): void
     {
-        $this->assertEmulation([
-            "\e[1;32mWorld\e[0m Test\e[11G\e[1Ktest",
-        ], [
-            "          \e[0mtest",
-        ]);
+        $this->assertTerminalMatch("\e[1;32mWorld\e[0m Test\e[11G\e[1Ktest");
     }
 
     #[Test]
     public function clear_screen_from_cursor_to_end_clears_buffer(): void
     {
-        $screen = new Screen(180, 30);
-
-        $screen->write(implode(PHP_EOL, [
+        $this->assertTerminalMatch([
             "\e[34m",
             'abcd',
             'efgh',
             'ijkl',
-            "\e[2A\e[1C\e[0J"
-        ]));
-
-        $screen->output();
-
-        $this->assertSame(
-            [[
-                32
-            ], [
-                32, // All characters on line one remain blue
-                32,
-                32,
-                32,
-            ], [
-                32, // Only the first character on line two is blue
-            ], [
-                // Line three is completely blanked
-            ],[
-                //
-            ]],
-            $screen->ansi->buffer->buffer
-        );
+            "\e[2A\e[1C\e[0J@"
+        ]);
     }
 
     #[Test]
     public function clear_screen_from_start_to_cursor_clears_buffer(): void
     {
-        $screen = new Screen(180, 30);
-
-        $screen->write(implode(PHP_EOL, [
+        $this->assertTerminalMatch([
             "\e[34m",
             'abcd',
             'efgh',
             'ijkl',
-            "\e[2A\e[2C\e[1J"
-        ]));
-
-        $screen->output();
-
-        $this->assertSame(
-            [[
-                //
-            ], [
-                // Line 1 is totally blank now
-            ], [
-                0,
-                0,
-                0,
-                32, // Only the letter h are blue
-            ], [
-                32,
-                32,
-                32,
-                32,
-            ], [
-                32
-            ]],
-            $screen->ansi->buffer->buffer
-        );
-
+            "\e[2A\e[2C\e[1J@"
+        ]);
     }
 
     #[Test]
     public function clear_entire_screen_clears_buffer(): void
     {
-        $screen = new Screen(180, 30);
-
-        $screen->write(implode(PHP_EOL, [
+        $this->assertTerminalMatch([
             "\e[34m",
             'abcd',
             'efgh',
             'ijkl',
             "\e[2A\e[2C\e[2J"
-        ]));
-
-        $screen->output();
-
-        $this->assertSame(
-            [
-                [],
-                [],
-                [],
-                [],
-                [],
-            ],
-            $screen->ansi->buffer->buffer
-        );
+        ]);
     }
 
     #[Test]
     public function erase_in_line_0(): void
     {
-        $screen = new Screen(180, 30);
-
-        $screen->write(implode(PHP_EOL, [
+        $this->assertTerminalMatch([
             "\e[34m",
             'abcde',
-            "\e[1A\e[2C\e[0K"
-        ]));
-
-        $screen->output();
-
-        $this->assertSame(
-            [[
-                32
-            ], [
-                32,
-                32,
-            ],[
-                32
-            ]],
-            $screen->ansi->buffer->buffer
-        );
-
+            "\e[1A\e[2C\e[0K",
+            '@'
+        ]);
     }
 
     #[Test]
     public function erase_in_line_1(): void
     {
-        $screen = new Screen(180, 30);
-
-        $screen->write(implode(PHP_EOL, [
+        $this->assertTerminalMatch([
             "\e[34m",
             'abcde',
-            "\e[1A\e[2C\e[1K"
-        ]));
-
-        $screen->output();
-
-        $this->assertSame(
-            [[
-                32
-            ], [
-                0,
-                0,
-                0,
-                32,
-                32,
-            ],[
-                32
-            ]],
-            $screen->ansi->buffer->buffer
-        );
-
+            "\e[1A\e[2C\e[1K@"
+        ]);
     }
 
     #[Test]
     public function erase_in_line_2(): void
     {
-        $screen = new Screen(180, 30);
-
-        $screen->write(implode(PHP_EOL, [
+        $this->assertTerminalMatch([
             "\e[34m",
             'abcde',
-            "\e[1A\e[2C\e[2K"
-        ]));
-
-        $screen->output();
-
-        $this->assertSame(
-            [
-                [32],
-                [],
-                [32]
-            ],
-            $screen->ansi->buffer->buffer
-        );
+            "\e[1A\e[2C\e[2K@"
+        ]);
     }
 
     #[Test]
     public function save_and_restore_cursor(): void
     {
-        $this->assertEmulation([
-            "\e7this is a test\e8haha!",
-        ], [
-            'haha!is a test',
+        $this->assertTerminalMatch("\e7this is a test\e8haha!");
+    }
+
+    #[Test]
+    public function basic_move_test()
+    {
+        $this->assertTerminalMatch("Test\e[1000DBar ");
+    }
+
+    #[Test]
+    public function basic_writeln_test_1()
+    {
+        $screen = new Screen(180, 30);
+
+        // No trailing newline
+        $screen->write("Test");
+        $screen->writeln("New");
+
+        $this->assertEquals("Test\nNew\n", $screen->output());
+    }
+
+
+    #[Test]
+    public function basic_writeln_test_2()
+    {
+        $screen = new Screen(180, 30);
+
+        // Trailing newline
+        $screen->write("Test\n");
+        $screen->writeln("New");
+
+        $this->assertEquals("Test\nNew\n", $screen->output());
+    }
+
+    #[Test]
+    public function simple_wrap()
+    {
+        $this->assertTerminalMatch(implode('', range(1, 200)));
+    }
+
+    #[Test]
+    public function wrap_overwrite()
+    {
+        $this->assertTerminalMatch([
+            '',
+            implode('', range(1, 200)) . "\e[1F--overwritten--",
+            '345'
         ]);
     }
+
+    #[Test]
+    public function move_up_constrained_test()
+    {
+        $this->assertTerminalMatch("Test\e[1000FBar ");
+    }
+
+    #[Test]
+    public function carriage_return_test()
+    {
+        $this->assertTerminalMatch("Test\rBar ");
+    }
+
+
+    #[Test]
+    public function newline_test()
+    {
+        $this->assertTerminalMatch("Test\nBar");
+    }
+
+    #[Test]
+    public function trailing_newlines()
+    {
+        $screen = new Screen(180, 30);
+        $screen->write("Test\n\n");
+        // Can't see trailing newlines, so test the output directly
+        $this->assertEquals("Test\n\n", $screen->output());
+    }
+
+    #[Test]
+    public function cursor_remains_in_correct_location()
+    {
+        $this->assertTerminalMatch("Test\n\n\e[5CBuzz");
+    }
+
+    #[Test]
+    public function move_forward_and_write()
+    {
+        $this->assertTerminalMatch("1\e[5C23");
+    }
+
+    #[Test]
+    public function doesnt_go_past_width_relative()
+    {
+        $this->assertTerminalMatch("\e[1000Ca");
+    }
+
+    #[Test]
+    public function doesnt_go_past_width_absolute()
+    {
+        $this->assertTerminalMatch("\e[1000Ga");
+    }
+
+    #[Test]
+    public function doesnt_go_past_height_relative()
+    {
+        $this->assertTerminalMatch([
+            ...range(1, 100),
+            "101\e[1000A12"
+        ]);
+    }
+
+    #[Test]
+    public function issue_found_while_creating_popup4()
+    {
+        $this->assertTerminalMatch("\e[0;31m red red \e[4D\e[32mgreen\e[2m dimmmm");
+    }
+
+    #[Test]
+    public function issue_found_while_creating_popup3()
+    {
+        $this->assertTerminalMatch("\e[0;31m red red \e[4D\e[0mblack\e[2m dimmmm");
+    }
+
+    #[Test]
+    public function issue_found_while_creating_popup2()
+    {
+        $this->assertTerminalMatch([
+            "\e[0;2;49mRunning: tail -f -n 100 /Users/",
+            "Running: tail -f -n 100 /Users/",
+            "\e[1A\e[1C\e[0mZZZZZZZZ",
+        ]);
+    }
+
+    #[Test]
+    public function issue_found_while_creating_popup1()
+    {
+        $this->assertTerminalMatch([
+            "\e[H\e[2mRunning",
+            "Running",
+            "Running",
+            "Running",
+            "Running",
+            "\e[4A\e[4C\e[103m\nTest",
+        ]);
+    }
+
+    #[Test]
+    public function doesnt_go_past_height_home()
+    {
+        $this->assertTerminalMatch([
+            ...range(1, 100),
+            "\e[H12"
+        ]);
+    }
+
+    #[Test]
+    public function clear_up_doesnt_go_off_screen()
+    {
+        $this->assertTerminalMatch([
+            ...range(1, 100),
+            "\e[100A\e[1J",
+        ]);
+    }
+
+    #[Test]
+    public function clear_down()
+    {
+        $this->assertTerminalMatch([
+            ...range(1, 100),
+            "\e[5A\e[0J"
+        ]);
+    }
+
+    #[Test]
+    public function clear_doesnt_go_off_screen()
+    {
+        $screen = new Screen(180, 10);
+
+        $screen->write("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11");
+        $screen->write("\e[2J");
+
+        $this->assertEquals(
+            "1
+
+
+
+
+
+
+
+
+
+",
+            $screen->output()
+        );
+    }
+
+    #[Test]
+    public function stash_restore_off_screen()
+    {
+        $this->assertTerminalMatch([
+            ...range(1, 100),
+            "101\e[1000A\e7\e[1000B\e8aaa",
+        ]);
+    }
+
+    #[Test]
+    public function alt_screen()
+    {
+        $this->markTestSkipped('Not implemented yet');
+        $this->assertTerminalMatch("abcd\e[?1049hefgh");
+    }
+
 }
