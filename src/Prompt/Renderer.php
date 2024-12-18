@@ -14,6 +14,7 @@ use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Hotkeys\KeycodeMap;
 use AaronFrancis\Solo\Support\AnsiAware;
+use AaronFrancis\Solo\Support\Screen;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;
@@ -21,6 +22,7 @@ use Illuminate\Support\Collection;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
+use PHPUnit\Event\Runtime\PHP;
 
 class Renderer extends PromptsRenderer
 {
@@ -35,6 +37,8 @@ class Renderer extends PromptsRenderer
     public int $width;
 
     public int $height;
+
+    protected Collection $visibleContent;
 
     public function setup(Dashboard $dashboard): void
     {
@@ -53,6 +57,34 @@ class Renderer extends PromptsRenderer
         $this->renderProcessState();
         $this->renderContentPane();
         $this->renderHotkeys();
+
+
+        $screen = new Screen($this->width, $this->height);
+        $screen->write($this->output);
+        $screen->write("\e[H\e[2B");
+        $screen->write("\e[2C" . $this->visibleContent->implode(PHP_EOL . "\e[2C"));
+
+        $this->output = $screen->output();
+
+        return $this;
+
+        $screen = new Screen($this->width, $this->height);
+        $screen->write("\e[2m" . AnsiAware::plain($this->output));
+
+        $popup = "\e[H\e[10B";
+        $popup .= "\e[10C\e[0m ┌─────────────────────────┓ " . PHP_EOL;
+        $popup .= "\e[10C\e[0m │ This is a dialog        ┃ " . PHP_EOL;
+        $popup .= "\e[10C\e[0m ├─────────────────────────┫ " . PHP_EOL;
+        $popup .= "\e[10C\e[0m │  yo yo yo yo yo yoy yo  ┃ " . PHP_EOL;
+        $popup .= "\e[10C\e[0m │  yo yo yo yo yo yoy yo  ┃ " . PHP_EOL;
+        $popup .= "\e[10C\e[0m │  yo yo yo yo yo yoy yo  ┃ " . PHP_EOL;
+        $popup .= "\e[10C\e[0m └━━━━━━━━━━━━━━━━━━━━━━━━━┛ " . PHP_EOL;
+
+        $screen->write($popup);
+
+        $this->output = $screen->output();
+
+        dd($this->output);
 
         return $this;
     }
@@ -192,6 +224,12 @@ class Renderer extends PromptsRenderer
         $start = $this->currentCommand->scrollIndex;
         $visible = $wrappedLines->slice($start, $allowedLines);
 
+        $this->visibleContent = $visible;
+
+        $visible = $visible->map(function ($line) {
+            return str_repeat(' ', mb_strlen(AnsiAware::plain($line), 'UTF-8'));
+        });
+
         // Add one since we're showing what lines they're viewing.
         // There's no such thing as a zeroth line.
         $this->renderBoxTop($start + 1, $start + $visible->count(), $wrappedLines->count());
@@ -199,7 +237,7 @@ class Renderer extends PromptsRenderer
         // Try to scroll the content, which may or may not have an
         // effect, depending on how much content there is.
         $scrolled = $this->scrollbar(
-            // Subtract 1 for the left box border and 1 for the space after it.
+        // Subtract 1 for the left box border and 1 for the space after it.
             $visible, $start, $allowedLines, $wrappedLines->count(), $this->width - 2
         );
 
@@ -213,7 +251,7 @@ class Renderer extends PromptsRenderer
             str($line)
                 // Remove the gray scrollbar and replace it with
                 // our own that matches the theme's box.
-                ->replaceLast($this->gray('│'),  $this->reset($this->coloredBox('│')))
+                ->replaceLast($this->gray('│'), $this->reset($this->coloredBox('│')))
 
                 // Replace the handle with the user's preferred handle.
                 ->replaceLast($this->cyan('┃'), $this->theme->boxHandle())
