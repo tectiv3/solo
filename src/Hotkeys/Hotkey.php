@@ -6,7 +6,7 @@ use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Prompt\Dashboard;
 use Chewie\Input\KeyPressListener;
 use Closure;
-use Laravel\SerializableClosure\Support\ReflectionClosure;
+use ReflectionFunction;
 use ReflectionParameter;
 
 class Hotkey
@@ -68,9 +68,13 @@ class Hotkey
         return $this->callWithParams($this->label);
     }
 
-    public function visible() {}
+    public function visible()
+    {
+    }
 
-    public function active() {}
+    public function active()
+    {
+    }
 
     public function display(?Closure $cb): static
     {
@@ -90,17 +94,19 @@ class Hotkey
             return $value;
         }
 
-        $reflected = new ReflectionClosure($value);
+        $reflected = new ReflectionFunction($value);
 
-        $arguments = collect($reflected->getParameters())->map(function (ReflectionParameter $parameter) {
-            return match ($parameter->getType()->getName()) {
-                Command::class => $this->command,
-                Dashboard::class => $this->prompt,
-                KeyPressListener::class => $this->prompt->listener,
-                Hotkey::class => $this,
-                default => null
-            };
-        });
+        $reflected->getParameters();
+        $arguments = collect($reflected->getParameters())
+            ->map(function (ReflectionParameter $parameter) {
+                return match ($parameter->getType()->getName()) {
+                    Command::class => $this->command,
+                    Dashboard::class => $this->prompt,
+                    KeyPressListener::class => $this->prompt->listener,
+                    Hotkey::class => $this,
+                    default => null
+                };
+            });
 
         return call_user_func($value, ...$arguments->all());
     }

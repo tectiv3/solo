@@ -205,6 +205,10 @@ trait ComparesVisually
         // Run screencapture
         exec("screencapture -l " . escapeshellarg($iterm) . " -o -x " . escapeshellarg($filename), $output, $result);
 
+        // Crop off the top bar, as it causes false positives
+        exec(sprintf("convert %s -gravity North -chop 0x60 %s", escapeshellarg($filename), escapeshellarg($filename)));
+
+
         $this->restoreTerminal();
 
         if ($result !== 0) {

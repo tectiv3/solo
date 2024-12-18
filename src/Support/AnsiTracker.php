@@ -293,7 +293,7 @@ class AnsiTracker
         // code that disables that specific decoration.
         if ($this->codeInRange($code, $this->decoration)) {
             $unset = $this->codes[$this->decorationResets[$code]];
-            // $this->active &= ~($unset | 1);
+             $this->active &= ~$unset;
         }
 
         // If we're unsetting a decoration, we need to remove

@@ -7,6 +7,7 @@ namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Support\Screen;
 use AaronFrancis\Solo\Tests\Support\ComparesVisually;
+use Artisan;
 use PHPUnit\Framework\Attributes\Test;
 
 class ScreenTest extends Base
@@ -482,4 +483,29 @@ class ScreenTest extends Base
         $this->assertTerminalMatch("abcd\e[?1049hefgh");
     }
 
+    #[Test]
+    public function about_command()
+    {
+        // This is a bug from the solo:about command when rendered inside of our content pane.
+        $this->assertTerminalMatch("\e[22m\e[2mdim");
+    }
+
+    #[Test]
+    public function renderer()
+    {
+        $content = [
+            '┌────────────────────────────────────┓',
+            '│                                    │',
+            '│                                    │',
+            '│                                    │',
+            '│                                    │',
+            '│                                    │',
+            '│                                    │',
+            '└━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛',
+            "\e[H\e[1B\e[2C\e[102mThis should have",
+            "\e[2Ca background"
+        ];
+
+        $this->assertTerminalMatch($content);
+    }
 }
