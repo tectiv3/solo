@@ -301,7 +301,7 @@ class Screen
     {
         $this->ensureCursorParams($absolute, $relative);
 
-        $max = $this->height + $this->linesOffScreen -1 ;
+        $max = $this->height + $this->linesOffScreen - 1;
         $min = $this->linesOffScreen;
 
         $position = $this->cursorRow;
