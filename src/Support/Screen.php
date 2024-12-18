@@ -317,18 +317,6 @@ class Screen
         $position = min($position, $max);
         $position = max($min, $position);
 
-        if ($relative === 1000) {
-//             dd([
-//                 'max' => $max,
-//                 'min' => $min,
-//                 'height' => $this->height,
-//                 'linesOffScreen' => $this->linesOffScreen,
-//                 'cursorRow' => $this->cursorRow,
-//                 '$position' => $position
-//             ]);
-//            $position--;
-        }
-
         $this->cursorRow = $position;
 
         $this->buffer->expand($this->cursorRow);
