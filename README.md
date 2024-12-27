@@ -62,6 +62,9 @@ php artisan solo
 
 This will start every command defined in your `SoloServiceProvider`.
 
+You'll be presented with a dashboard. To navigate between processes use the left/right arrows. You can scroll the output by using the up/down keys. **Shift + up/down** scrolls by 10 lines instead of one.
+
+See the hotkeys on the dashboard for further details.
 
 ## Customization
 
@@ -134,14 +137,6 @@ Solo::useTheme('dark')
 `EnhancedTailCommand` is a subclass of `Command` with a little bit of logic to make the logs more readable. You're free to create your own subclasses if you want!
 
 To remove a command, simply delete the command. No need to create a PR to fix the stub. We've provided a reasonable set of starting commands, but the `SoloServiceProvider` lives in your application, so you have full control of it.
-
-## Usage
-
-To use Solo, you simply need to run `php artisan solo`.
-
-You'll be presented with a dashboard. To navigate between processes use the left/right arrows. You can scroll the output by using the up/down keys. **Shift + up/down** scrolls by 10 lines instead of one.
-
-See the hotkeys on the dashboard for further details.
 
 ## Theming
 
