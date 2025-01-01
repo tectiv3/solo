@@ -36,14 +36,15 @@ class AppServiceProvider extends ServiceProvider
         Solo::useTheme('dark')
             // Commands that auto start.
             ->addCommands([
-                EnhancedTailCommand::forFile(storage_path('logs/laravel.log')),
                 'About' => 'php artisan solo:about',
+                'Dumps' => 'php artisan solo:dumps',
+                EnhancedTailCommand::forFile(storage_path('logs/laravel.log')),
                 'Tail' => 'tail -f -n 100 ' . storage_path('logs/laravel.log'),
-//                'HTTP' => implode(' ', [
-//                    'php',
-//                    ProcessUtils::escapeArgument(package_path('vendor', 'bin', 'testbench')),
-//                    'serve'
-//                ]),
+                //                'HTTP' => implode(' ', [
+                //                    'php',
+                //                    ProcessUtils::escapeArgument(package_path('vendor', 'bin', 'testbench')),
+                //                    'serve'
+                //                ]),
             ]);
     }
 

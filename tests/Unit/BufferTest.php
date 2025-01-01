@@ -6,14 +6,10 @@
 namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Support\Buffer;
-use AaronFrancis\Solo\Support\Screen;
-use Laravel\Prompts\Terminal;
 use PHPUnit\Framework\Attributes\Test;
-use SplQueue;
 
 class BufferTest extends Base
 {
-
     #[Test]
     public function basic_buffer()
     {
@@ -30,16 +26,16 @@ class BufferTest extends Base
         }
 
         $this->assertEquals([
-            0 => "",
-            1 => "",
-            2 => "",
-            3 => "",
-            4 => "",
-            5 => "a",
-            6 => "a",
-            7 => "a",
-            8 => "a",
-            9 => "a",
+            0 => '',
+            1 => '',
+            2 => '',
+            3 => '',
+            4 => '',
+            5 => 'a',
+            6 => 'a',
+            7 => 'a',
+            8 => 'a',
+            9 => 'a',
         ], $buffer->getBuffer());
 
     }

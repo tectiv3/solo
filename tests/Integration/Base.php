@@ -17,6 +17,7 @@ use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Process\InputStream;
+
 use function Orchestra\Testbench\package_path;
 
 abstract class Base extends TestCase
@@ -56,7 +57,6 @@ abstract class Base extends TestCase
                 package_path() . '/artisan',
             );
         });
-
 
         $this->input = new InputStream;
 
@@ -168,11 +168,11 @@ abstract class Base extends TestCase
             // Move up 1000 rows to column 1
             $this->write("\e[1000F");
             // Down a few lines
-            $this->write("\e[" . ($this->reservedLines - 1) . "B");
+            $this->write("\e[" . ($this->reservedLines - 1) . 'B');
             // Clear to beginning
             $this->write("\e[1J");
             // Move back up
-            $this->write("\e[" . ($this->reservedLines - 1) . "A");
+            $this->write("\e[" . ($this->reservedLines - 1) . 'A');
 
             // @TODO more status?
             $this->write('Running test: ' . $this->name());
@@ -218,11 +218,12 @@ abstract class Base extends TestCase
                 // the previous frame is completely written to the buffer.
                 $this->newFrameCallbacks[] = $action;
             } else {
-                throw new \InvalidArgumentException("Unknown action.");
+                throw new \InvalidArgumentException('Unknown action.');
             }
         }
 
         usleep($millisecondsBetweenFrames * 1000);
+
         return $this->process->wait();
     }
 

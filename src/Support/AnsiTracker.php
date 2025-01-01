@@ -11,114 +11,65 @@ use RuntimeException;
 class AnsiTracker
 {
     /**
-     * An array full of arrays full of integers. Each first-level array
-     * represents a row on the screen, while each integer represents
-     * the active SGR ANSI codes at a position in that line.
+     * The buffer that stores ANSI codes for each cell as either a pure integer
+     * or as an array, if there are extended foreground and backgrounds.
      */
     public Buffer $buffer;
 
     /**
-     * The currently active SGR ANSI codes, at this moment in time.
+     * The active integer bitmask representing current standard ANSI
+     * states like bold, underline, 8-color FG/BG, etc.
      */
     protected int $active = 0;
 
     /**
-     * The ANSI codes that control text foreground colors.
-     *
-     * @var array<array<int>>
+     * Extended active color states:
+     *   [ 'type' => '256', 'color' => <0–255> ] or
+     *   [ 'type' => 'rgb',  'r' => <0–255>, 'g' => <0–255>, 'b' => <0–255> ]
      */
-    protected array $foreground = [[30, 39], [90, 97]];
+    protected ?array $extendedForeground = null;
 
-    /**
-     * The ANSI codes that control text background colors.
-     *
-     * @var array<array<int>>
-     */
-    protected array $background = [[40, 49], [100, 107]];
+    protected ?array $extendedBackground = null;
 
     /**
      * The ANSI codes that control text decoration,
      * like underline, bold, italic, etc.
      *
-     * @var array<array<int>>
+     * @var array<int>
      */
-    protected array $decoration = [[1, 9]];
+    protected readonly array $decoration;
 
     /**
      * The ANSI codes that control decoration resets.
      *
-     * @var array<array<int>>
+     * @var array<int>
      */
-    protected array $resets = [[22, 29]];
+    protected readonly array $resets;
 
     /**
-     * The keys are ANSI SGR codes and the values are arbitrarily
-     * assigned bit values, allowing for efficient combination
+     * The ANSI codes that control text foreground colors.
+     *
+     * @var array<int>
+     */
+    protected readonly array $foreground;
+
+    /**
+     * The ANSI codes that control text background colors.
+     *
+     * @var array<int>
+     */
+    protected readonly array $background;
+
+    /**
+     * The keys are ANSI SGR codes and the values are arbitrary bit values
+     * initiated in the constructor allowing for efficient combination
      * and manipulation using bitwise operations.
      *
-     * @TODO Support
      * @link https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+     *
+     * @var array<int, int>
      */
-    protected array $codes = [
-        0 => 1 << 0, // Reset all
-
-        // Foreground
-        30 => 1 << 1,  // Black
-        31 => 1 << 2,  // Red
-        32 => 1 << 3,  // Green
-        33 => 1 << 4,  // Yellow
-        34 => 1 << 5,  // Blue
-        35 => 1 << 6,  // Magenta
-        36 => 1 << 7,  // Cyan
-        37 => 1 << 8,  // White
-        39 => 1 << 9,  // Default
-        90 => 1 << 10, // Bright Black
-        91 => 1 << 11, // Bright Red
-        92 => 1 << 12, // Bright Green
-        93 => 1 << 13, // Bright Yellow
-        94 => 1 << 14, // Bright Blue
-        95 => 1 << 15, // Bright Magenta
-        96 => 1 << 16, // Bright Cyan
-        97 => 1 << 17, // Bright White
-
-        // Background
-        40 => 1 << 18, // Black
-        41 => 1 << 19, // Red
-        42 => 1 << 20, // Green
-        43 => 1 << 21, // Yellow
-        44 => 1 << 22, // Blue
-        45 => 1 << 23, // Magenta
-        46 => 1 << 24, // Cyan
-        47 => 1 << 25, // White
-        49 => 1 << 26, // Default
-        100 => 1 << 27, // Bright Black
-        101 => 1 << 28, // Bright Red
-        102 => 1 << 29, // Bright Green
-        103 => 1 << 30, // Bright Yellow
-        104 => 1 << 31, // Bright Blue
-        105 => 1 << 32, // Bright Magenta
-        106 => 1 << 33, // Bright Cyan
-        107 => 1 << 34, // Bright White
-
-        // Decoration
-        1 => 1 << 35, // Set bold mode
-        2 => 1 << 36, // Set dim/faint mode
-        3 => 1 << 37, // Set italic mode
-        4 => 1 << 38, // Set underline mode
-        5 => 1 << 39, // Set blinking mode
-        7 => 1 << 40, // Set inverse/reverse mode
-        8 => 1 << 41, // Set hidden/invisible mode
-        9 => 1 << 42, // Set strikethrough mode
-
-        // Decoration resets
-        22 => 1 << 43, // Reset bold mode AND dim/faint mode
-        23 => 1 << 44, // Reset italic mode
-        24 => 1 << 45, // Reset underline mode
-        25 => 1 << 46, // Reset blinking mode
-        27 => 1 << 47, // Reset inverse/reverse mode
-        28 => 1 << 48, // Reset hidden/invisible mode
-        29 => 1 << 49, // Reset strikethrough mode
-    ];
+    protected readonly array $codes;
 
     /**
      * Each key is an ANSI code that turns a certain decoration on, while
@@ -143,16 +94,52 @@ class AnsiTracker
             throw new RuntimeException(static::class . ' requires a 64-bit PHP environment.');
         }
 
-        // Default decoration, default foreground, and default background.
-        // $this->addAnsiCodes(0, 39, 49);
+        $this->decoration = range(1, 9);
+        $this->resets = range(22, 29);
+        // Standard and bright.
+        $this->foreground = [...range(30, 39), ...range(90, 97)];
+        $this->background = [...range(40, 49), ...range(100, 107)];
 
-        // This buffer uses integers to keep track of active ANSI codes.
+        $supported = [
+            0, // Reset all styles
+            ...$this->decoration,
+            ...$this->resets,
+            ...$this->foreground,
+            ...$this->background,
+        ];
+
+        $this->codes = array_reduce($supported, function ($carry, $code) {
+            // Every code gets a unique bit value, via left shift.
+            $carry[$code] = 1 << count($carry);
+
+            return $carry;
+        }, []);
+
+        // This buffer uses integers and arrays to keep track of active ANSI codes.
         $this->buffer = new Buffer(usesStrings: false);
+    }
+
+    /**
+     * The "cellValue" determines what we actually store in the Buffer:
+     * - If no extended FG or BG, store just an int (the $this->active bitmask).
+     * - If extended FG or BG is set, store an array with bits + extFg + extBg.
+     */
+    protected function cellValue(): int|array
+    {
+        if (is_null($this->extendedForeground) && is_null($this->extendedBackground)) {
+            return $this->active;
+        }
+
+        // Use conventional placement to avoid having named keys, since
+        // it could be copied many tens of thousands of times.
+        return [
+            $this->active, $this->extendedForeground, $this->extendedBackground,
+        ];
     }
 
     public function fillBufferWithActiveFlags(int $row, int $startCol, int $endCol): void
     {
-        $this->buffer->fill($this->active, $row, $startCol, $endCol);
+        $this->buffer->fill($this->cellValue(), $row, $startCol, $endCol);
     }
 
     public function getActive(): int
@@ -167,60 +154,61 @@ class AnsiTracker
 
     public function compressedAnsiBuffer(): array
     {
-        $reset = $this->codes[0];
-        $previousBits = 0;
+        // Conventional placement: bits, extfg, extbg.
+        $previousCell = [0, null, null];
 
-        return array_map(function ($line) use (&$previousBits, $reset) {
-            return array_filter(array_map(function ($bits) use (&$previousBits, $reset) {
-                // Determine which bits have been newly added versus previously set.
-                $unique = $bits & ~$previousBits;
+        $lines = $this->buffer->getBuffer();
 
-                // Determine which bits have been turned off compared to the last state.
-                $turnedOff = $previousBits & ~$bits;
+        return array_map(function ($line) use (&$previousCell) {
+            return array_filter(array_map(function ($cell) use (&$previousCell) {
+                if (is_int($cell)) {
+                    $cell = [$cell, null, null];
+                }
 
-                // We'll build a list of ANSI codes to reset foreground, background, or decorations
-                // that have been turned off.
+                $uniqueBits = $cell[0] & ~$previousCell[0];
+                $turnedOffBits = $previousCell[0] & ~$cell[0];
+
                 $resetCodes = [];
-                $turnedOffCodes = $this->ansiCodesFromBits($turnedOff);
+                $turnedOffCodes = $this->ansiCodesFromBits($turnedOffBits);
 
-                // Check for previously active features that need resetting.
                 foreach ($turnedOffCodes as $code) {
-                    // If a foreground color was turned off, reset to default (39).
                     if ($this->codeInRange($code, $this->foreground)) {
+                        // If a foreground code was removed, then use code 39 to reset.
                         $resetCodes[] = 39;
-                    }
-
-                    // If a background color was turned off, reset to default (49).
-                    if ($this->codeInRange($code, $this->background)) {
+                    } elseif ($this->codeInRange($code, $this->background)) {
+                        // If a background code was removed, then use code 49 to reset.
                         $resetCodes[] = 49;
-                    }
-
-                    // If a decoration was turned off, apply its corresponding reset code.
-                    if ($this->codeInRange($code, $this->decoration) && isset($this->decorationResets[$code])) {
+                    } elseif ($this->codeInRange($code, $this->decoration) && isset($this->decorationResets[$code])) {
+                        // If a decoration code turned off, apply its reset
                         $resetCodes[] = $this->decorationResets[$code];
                     }
                 }
 
-                // Remove duplicates just in case.
-                $resetCodes = array_unique($resetCodes);
+                $uniqueCodes = $this->ansiCodesFromBits($uniqueBits);
 
-                // Convert the unique "turned on" bits to ANSI codes.
-                $uniqueCodes = $this->ansiCodesFromBits($unique);
-
-                // If we have something to output (either resets or unique new codes), merge them.
-                if (!empty($resetCodes) || !empty($uniqueCodes)) {
-                    $finalCodes = array_merge($resetCodes, $uniqueCodes);
-                    $finalCodes = array_unique($finalCodes);
-
-                    $previousBits = $bits;
-
-                    return $this->ansiStringFromCodes($finalCodes);
+                // Extended foreground changed
+                if ($previousCell[1] !== $cell[1]) {
+                    if ($previousCell[1] !== null && $cell[1] === null) {
+                        $resetCodes[] = 39;
+                    } elseif ($cell[1] !== null) {
+                        $uniqueCodes[] = $this->buildExtendedColorCode(38, $cell[1]);
+                    }
                 }
 
-                // If nothing changed, return false so it's filtered out.
-                return false;
+                // Extended background changed
+                if ($previousCell[2] !== $cell[2]) {
+                    if ($previousCell[2] !== null && $cell[2] === null) {
+                        $resetCodes[] = 49;
+                    } elseif ($cell[2] !== null) {
+                        $uniqueCodes[] = $this->buildExtendedColorCode(48, $cell[2]);
+                    }
+                }
+
+                $previousCell = $cell;
+
+                return $this->ansiStringFromCodes(array_unique(array_merge($resetCodes, $uniqueCodes)));
             }, $line));
-        }, $this->buffer->getBuffer());
+        }, $lines);
     }
 
     public function ansiCodesFromBits(int $bits): array
@@ -233,7 +221,8 @@ class AnsiTracker
         $active = [];
 
         foreach ($this->codes as $code => $bit) {
-            // No point in checking further as they'll all be false.
+            // Because the bits grow in ascending powers of 2,
+            // if $bit > $bits, we can break early.
             if ($bit > $bits) {
                 break;
             }
@@ -255,14 +244,56 @@ class AnsiTracker
 
     public function ansiStringFromBits(int $bits): string
     {
-        return $this->ansiStringFromCodes(
-            $this->ansiCodesFromBits($bits)
-        );
+        // Basic codes from the bitmask
+        $codes = $this->ansiCodesFromBits($bits);
+
+        // If we have an extended FG, add that
+        if ($this->extendedForeground !== null) {
+            $codes[] = $this->buildExtendedColorCode(38, $this->extendedForeground);
+        }
+        // If we have an extended BG, add that
+        if ($this->extendedBackground !== null) {
+            $codes[] = $this->buildExtendedColorCode(48, $this->extendedBackground);
+        }
+
+        return $this->ansiStringFromCodes($codes);
     }
 
     public function addAnsiCodes(int ...$codes)
     {
-        foreach ($codes as $code) {
+        for ($i = 0; $i < count($codes); $i++) {
+            $code = $codes[$i];
+
+            // Extended color codes are multipart
+            // https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#256-colors
+            if ($code === 38 || $code === 48) {
+                // Code 2 = RGB colors
+                // Code 5 = 256 colors
+                $type = $codes[$i + 1] ?? null;
+
+                if ($type === 2 || $type === 5) {
+                    // A 256 color type requires 1 additional code, an RGB type requires 3.
+                    $take = $type === 5 ? 1 : 3;
+
+                    // Take the type code too
+                    $take++;
+
+                    $slice = array_slice($codes, $i + 1, $take);
+
+                    if (count($slice) < $take) {
+                        // Not enough codes... just move on
+                        continue;
+                    }
+
+                    $this->setExtendedColor($code, $slice);
+
+                    $i += $take;
+                }
+
+                continue;
+            }
+
+            // Otherwise treat it as a normal code
             $this->addAnsiCode($code);
         }
     }
@@ -277,6 +308,8 @@ class AnsiTracker
         // Reset all styles.
         if ($code === 0) {
             $this->resetBitRange(0, 64);
+            $this->extendedForeground = null;
+            $this->extendedBackground = null;
         }
 
         // If we're adding a new foreground color, zero out the old ones.
@@ -291,9 +324,11 @@ class AnsiTracker
 
         // If we're adding a decoration, we need to unset the
         // code that disables that specific decoration.
-        if ($this->codeInRange($code, $this->decoration)) {
-            $unset = $this->codes[$this->decorationResets[$code]];
-             $this->active &= ~$unset;
+        if ($this->codeInRange($code, $this->decoration) && isset($this->decorationResets[$code])) {
+            $bitToUnset = $this->decorationResets[$code] ?? null;
+            if (isset($this->codes[$bitToUnset])) {
+                $this->active &= ~$this->codes[$bitToUnset];
+            }
         }
 
         // If we're unsetting a decoration, we need to remove
@@ -311,34 +346,46 @@ class AnsiTracker
         $this->active |= $this->codes[$code];
     }
 
+    protected function setExtendedColor(int $baseCode, array $color)
+    {
+        if ($baseCode === 38) {
+            $this->resetForeground();
+            $this->extendedForeground = $color;
+        } elseif ($baseCode === 48) {
+            $this->resetBackground();
+            $this->extendedBackground = $color;
+        }
+    }
+
+    protected function buildExtendedColorCode(int $base, array $color): string
+    {
+        return implode(';', [$base, ...$color]);
+    }
+
     protected function resetForeground()
     {
-        $this->resetCodeRanges($this->foreground);
+        $this->resetCodes($this->foreground);
+        $this->extendedForeground = null;
     }
 
     protected function resetBackground()
     {
-        $this->resetCodeRanges($this->background);
+        $this->resetCodes($this->background);
+        $this->extendedBackground = null;
     }
 
-    protected function codeInRange(int $code, array $ranges)
+    protected function codeInRange(int $code, array $range)
     {
-        foreach ($ranges as $range) {
-            if ($code >= $range[0] && $code <= $range[1]) {
-                return true;
+        // O(1) lookup vs in_array which is O(n)
+        return isset(array_flip($range)[$code]);
+    }
+
+    protected function resetCodes($codes)
+    {
+        foreach ($codes as $code) {
+            if (isset($this->codes[$code])) {
+                $this->active &= ~$this->codes[$code];
             }
-        }
-
-        return false;
-    }
-
-    protected function resetCodeRanges($ranges)
-    {
-        foreach ($ranges as $range) {
-            $start = $this->codes[$range[0]];
-            $end = $this->codes[$range[1]];
-
-            $this->resetBitRange((int) log($start, 2), (int) log($end, 2));
         }
     }
 

@@ -9,12 +9,14 @@
 namespace AaronFrancis\Solo\Providers;
 
 use AaronFrancis\Solo\Console\Commands\About;
+use AaronFrancis\Solo\Console\Commands\Dumps;
 use AaronFrancis\Solo\Console\Commands\Install;
 use AaronFrancis\Solo\Console\Commands\Make;
 use AaronFrancis\Solo\Console\Commands\Monitor;
 use AaronFrancis\Solo\Console\Commands\Solo;
 use AaronFrancis\Solo\Console\Commands\Test;
 use AaronFrancis\Solo\Manager;
+use AaronFrancis\Solo\Support\CustomDumper;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +34,7 @@ class SoloServiceProvider extends ServiceProvider
         }
 
         $this->registerCommands();
+        $this->registerDumper();
         $this->publishProviders();
     }
 
@@ -44,7 +47,16 @@ class SoloServiceProvider extends ServiceProvider
             About::class,
             Make::class,
             Test::class,
+            Dumps::class
         ]);
+    }
+
+    protected function registerDumper()
+    {
+        $basePath = $this->app->basePath();
+        $compiledViewPath = $this->app['config']->get('view.compiled');
+
+        CustomDumper::register($basePath, $compiledViewPath);
     }
 
     protected function publishProviders()

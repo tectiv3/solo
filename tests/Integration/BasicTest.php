@@ -5,7 +5,6 @@
 
 namespace AaronFrancis\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Facades\Solo as SoloAlias;
 use Log;
 use PHPUnit\Framework\Attributes\Test;
@@ -14,11 +13,11 @@ use Str;
 class BasicTest extends Base
 {
     #[Test]
-    public function basic_test()
+    public function basic_test_only()
     {
         $actions = [
             function (string $ansi, string $plain) {
-                $this->assertStringContainsString("Stopped", $plain);
+                $this->assertStringContainsString('Stopped', $plain);
                 $this->assertStringContainsString("\e[9mAbout\e[29m", $ansi);
             },
         ];
@@ -37,14 +36,14 @@ class BasicTest extends Base
             // Assert that the Logs tab is not crossed out
             function (string $ansi, string $plain) {
                 $this->assertStringNotContainsString("\e[9mLogs\e[29m", $ansi);
-                $this->assertStringContainsString(" Running: tail ", $plain);
+                $this->assertStringContainsString(' Running: tail ', $plain);
             },
             // Press the stop hotkey
             's',
             // Assert that the Logs tab is crossed out and it says stopped
             function (string $ansi, string $plain) {
                 $this->assertStringContainsString("\e[9mLogs\e[29m", $ansi);
-                $this->assertStringContainsString(" Stopped: tail ", $plain);
+                $this->assertStringContainsString(' Stopped: tail ', $plain);
             },
         ];
 

@@ -16,9 +16,7 @@ use AaronFrancis\Solo\Support\Screen;
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Chewie\Input\KeyPressListener;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use SplQueue;
 
 class Command implements Loopable
@@ -155,7 +153,8 @@ class Command implements Loopable
     */
     public function dd()
     {
-        $this->wrappedLines()->map(fn($line) => AnsiAware::plain($line))->dd();
+        $this->wrappedLines()->map(fn($line) => print_r(json_encode($line)));
+        exit();
     }
 
     public function addOutput($text)

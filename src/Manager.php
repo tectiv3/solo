@@ -29,6 +29,8 @@ use ReflectionClass;
 
 class Manager
 {
+    public readonly string $uniqueId;
+
     /**
      * @var array<Command>
      */
@@ -55,11 +57,18 @@ class Manager
 
     public function __construct()
     {
+        $this->uniqueId = substr(md5(base_path()), 0, 8);
+
         // The only classes that are guaranteed to be fully in the user's control.
         $this->commandsAllowedFrom = [
             App::getNamespace() . 'Providers\\AppServiceProvider',
             App::getNamespace() . 'Providers\\SoloServiceProvider',
         ];
+    }
+
+    public function uniqueId(): string
+    {
+        return $this->uniqueId;
     }
 
     /**

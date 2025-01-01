@@ -7,7 +7,6 @@ namespace AaronFrancis\Solo\Support;
 
 use ArrayAccess;
 use ReturnTypeWillChange;
-use Symfony\Component\Process\Process as SymfonyProcess;
 
 class Buffer implements ArrayAccess
 {
@@ -45,7 +44,7 @@ class Buffer implements ArrayAccess
             $cols = $this->normalizeClearColumns($row, $startRow, $startCol, $endRow, $endCol);
 
             $line = $this->buffer[$row];
-            $length = $this->rowLength($row);
+            $length = $this->rowMax($row);
 
             if ($cols[0] === 0 && $cols[1] === $length) {
                 // Clearing an entire line. Benchmarked slightly
@@ -95,7 +94,7 @@ class Buffer implements ArrayAccess
         $this->trim();
     }
 
-    public function rowLength($row)
+    public function rowMax($row)
     {
         $line = $this->buffer[$row];
 
@@ -136,7 +135,7 @@ class Buffer implements ArrayAccess
 
         return [
             max($cols[0], 0),
-            min($cols[1], $this->rowLength($currentRow)),
+            min($cols[1], $this->rowMax($currentRow)),
         ];
     }
 

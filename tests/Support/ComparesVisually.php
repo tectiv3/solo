@@ -1,14 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace AaronFrancis\Solo\Tests\Support;
 
 use AaronFrancis\Solo\Support\Screen;
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Prompts\Terminal;
+
 use function Orchestra\Testbench\package_path;
-use Exception;
 
 trait ComparesVisually
 {
@@ -28,6 +30,7 @@ trait ComparesVisually
 
         if (getenv('ENABLE_SCREENSHOT_TESTING') === false) {
             $this->assertFixtureMatch($content);
+
             return;
         }
 
@@ -39,14 +42,14 @@ trait ComparesVisually
     protected function assertFixtureMatch(string $content)
     {
         if (!file_exists($this->fixturePath())) {
-            $this->markTestSkipped("Fixture does not exist for " . $this->uniqueTestIdentifier()[1]);
+            $this->markTestSkipped('Fixture does not exist for ' . $this->uniqueTestIdentifier()[1]);
         }
 
         $fixture = file_get_contents($this->fixturePath());
         $fixture = json_decode($fixture, true);
 
         if ($fixture['checksum'] !== md5($content)) {
-            $this->markTestSkipped("Fixture out of date for " . $this->uniqueTestIdentifier()[1]);
+            $this->markTestSkipped('Fixture out of date for ' . $this->uniqueTestIdentifier()[1]);
         }
 
         $screen = new Screen($fixture['width'], $fixture['height']);
@@ -70,6 +73,7 @@ trait ComparesVisually
         // Due to the nature of screenshotting etc, these can be flaky.
         if (!$matched && $attempt === 1) {
             $this->assertVisualMatch($content, ++$attempt);
+
             return;
         }
 
@@ -79,10 +83,9 @@ trait ComparesVisually
 
         $this->assertTrue(
             $matched,
-            "Failed asserting that screenshots are identical. Diff available at " . $this->screenshotPath('diff')
+            'Failed asserting that screenshots are identical. Diff available at ' . $this->screenshotPath('diff')
         );
     }
-
 
     protected function writeFixtureFile($content)
     {
@@ -129,7 +132,6 @@ trait ComparesVisually
     /**
      * Execute a callback with output buffering disabled, then restore it.
      *
-     * @param  callable  $cb
      * @return mixed
      */
     protected function withOutputEnabled(callable $cb)
@@ -170,7 +172,7 @@ trait ComparesVisually
      *
      * @param  string  $filename  The filename to save the screenshot to.
      * @param  string  $content  The content to be rendered in iTerm.
-     * @return void
+     *
      * @throws Exception If screencapture fails or iTerm window not found.
      */
     protected function captureCleanOutput(string $filename, string $content): void
@@ -203,11 +205,10 @@ trait ComparesVisually
         }
 
         // Run screencapture
-        exec("screencapture -l " . escapeshellarg($iterm) . " -o -x " . escapeshellarg($filename), $output, $result);
+        exec('screencapture -l ' . escapeshellarg($iterm) . ' -o -x ' . escapeshellarg($filename), $output, $result);
 
         // Crop off the top bar, as it causes false positives
-        exec(sprintf("convert %s -gravity North -chop 0x60 %s", escapeshellarg($filename), escapeshellarg($filename)));
-
+        exec(sprintf('convert %s -gravity North -chop 0x60 %s', escapeshellarg($filename), escapeshellarg($filename)));
 
         $this->restoreTerminal();
 
@@ -218,8 +219,6 @@ trait ComparesVisually
 
     /**
      * Restore terminal styles and show the cursor.
-     *
-     * @return void
      */
     protected function restoreTerminal(): void
     {
@@ -258,7 +257,7 @@ trait ComparesVisually
         }
 
         // Compare images and capture difference count
-        $diff = shell_exec(sprintf("compare -metric AE %s %s %s 2>&1",
+        $diff = shell_exec(sprintf('compare -metric AE %s %s %s 2>&1',
             escapeshellarg($term),
             escapeshellarg($emulated),
             escapeshellarg($diff),
@@ -280,7 +279,7 @@ trait ComparesVisually
      */
     protected function makeIdenticalScreen(): Screen
     {
-        $terminal = new Terminal();
+        $terminal = new Terminal;
         $terminal->initDimensions();
 
         return new Screen($terminal->cols(), $terminal->lines());

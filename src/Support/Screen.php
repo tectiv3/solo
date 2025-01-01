@@ -3,10 +3,8 @@
 namespace AaronFrancis\Solo\Support;
 
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HigherOrderCollectionProxy;
-use SplQueue;
 
 class Screen
 {

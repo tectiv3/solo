@@ -5,8 +5,6 @@
 
 namespace AaronFrancis\Solo\Support;
 
-use Illuminate\Support\Str;
-
 class AnsiMatcher
 {
     public static function split(string $content)

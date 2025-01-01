@@ -68,13 +68,9 @@ class Hotkey
         return $this->callWithParams($this->label);
     }
 
-    public function visible()
-    {
-    }
+    public function visible() {}
 
-    public function active()
-    {
-    }
+    public function active() {}
 
     public function display(?Closure $cb): static
     {

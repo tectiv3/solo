@@ -5,15 +5,10 @@
 
 namespace AaronFrancis\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Commands\EnhancedTailCommand;
 use AaronFrancis\Solo\Commands\MakeCommand;
 use AaronFrancis\Solo\Facades\Solo as SoloAlias;
 use Laravel\Prompts\Key;
-use Log;
 use PHPUnit\Framework\Attributes\Test;
-
-use Str;
-use function Orchestra\Testbench\package_path;
 
 class MakeTest extends Base
 {

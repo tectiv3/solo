@@ -10,7 +10,6 @@ namespace AaronFrancis\Solo\Commands;
 
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Support\AnsiAware;
 use AaronFrancis\Solo\Support\Screen;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;

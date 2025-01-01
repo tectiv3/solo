@@ -14,7 +14,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 class AnsiMatchTest extends Base
 {
-
     #[Test]
     public function all(): void
     {
@@ -246,7 +245,6 @@ class AnsiMatchTest extends Base
             [']710;9x15bold', ['URxvt.keysym.font']],
         ];
 
-
         foreach ($fixtures as $fixture) {
             $sequence = $fixture[0];
             $description = $fixture[1][0];
@@ -256,7 +254,7 @@ class AnsiMatchTest extends Base
             // echo "Testing $sequence ($description) \n";
 
             $this->assertEquals("\e{$sequence}", Arr::get($result, 0));
-            $this->assertEquals("test", Arr::get($result, 1));
+            $this->assertEquals('test', Arr::get($result, 1));
         }
     }
 }

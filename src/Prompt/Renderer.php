@@ -22,7 +22,6 @@ use Illuminate\Support\Collection;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
-use PHPUnit\Event\Runtime\PHP;
 
 class Renderer extends PromptsRenderer
 {
@@ -57,7 +56,6 @@ class Renderer extends PromptsRenderer
         $this->renderProcessState();
         $this->renderContentPane();
         $this->renderHotkeys();
-
 
         $screen = new Screen($this->width, $this->height);
         $screen->write($this->output);
@@ -237,7 +235,7 @@ class Renderer extends PromptsRenderer
         // Try to scroll the content, which may or may not have an
         // effect, depending on how much content there is.
         $scrolled = $this->scrollbar(
-        // Subtract 1 for the left box border and 1 for the space after it.
+            // Subtract 1 for the left box border and 1 for the space after it.
             $visible, $start, $allowedLines, $wrappedLines->count(), $this->width - 2
         );
 

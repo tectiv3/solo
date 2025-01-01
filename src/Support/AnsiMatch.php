@@ -8,6 +8,7 @@ namespace AaronFrancis\Solo\Support;
 readonly class AnsiMatch implements \Stringable
 {
     public ?string $command;
+
     public ?string $params;
 
     public function __construct(public string $raw)

@@ -7,7 +7,6 @@ namespace AaronFrancis\Solo\Tests\Unit;
 
 use AaronFrancis\Solo\Support\Screen;
 use AaronFrancis\Solo\Tests\Support\ComparesVisually;
-use Artisan;
 use PHPUnit\Framework\Attributes\Test;
 
 class ScreenTest extends Base
@@ -18,10 +17,10 @@ class ScreenTest extends Base
     public function clear_screen_test()
     {
         $this->assertTerminalMatch([
-            "Hello World",
-            "Hello World",
+            'Hello World',
+            'Hello World',
             "\e[2J",
-            "New Line after clear"
+            'New Line after clear'
         ]);
     }
 
@@ -143,9 +142,9 @@ class ScreenTest extends Base
     public function test_combined_ansi_codes(): void
     {
         $this->assertTerminalMatch([
-            "Line 1",
-            "Line 2",
-            "Line 3",
+            'Line 1',
+            'Line 2',
+            'Line 3',
             "\e[1A\e[5GInserted"
         ]);
     }
@@ -154,9 +153,9 @@ class ScreenTest extends Base
     public function test_move_down_ansi_code(): void
     {
         $this->assertTerminalMatch([
-            "Line 1: Hello, World!",
-            "Line 2: This is a test.",
-            "Line 3: Goodbye!",
+            'Line 1: Hello, World!',
+            'Line 2: This is a test.',
+            'Line 3: Goodbye!',
             "\e[1B\e[5GInserted Line"
         ]);
     }
@@ -165,7 +164,7 @@ class ScreenTest extends Base
     public function test_cursor_movement_beyond_screen_buffer(): void
     {
         $this->assertTerminalMatch([
-            "Line 1",
+            'Line 1',
             "\e[5AAbove Start"
         ]);
     }
@@ -285,12 +284,11 @@ class ScreenTest extends Base
         $screen = new Screen(180, 30);
 
         // No trailing newline
-        $screen->write("Test");
-        $screen->writeln("New");
+        $screen->write('Test');
+        $screen->writeln('New');
 
         $this->assertEquals("Test\nNew\n", $screen->output());
     }
-
 
     #[Test]
     public function basic_writeln_test_2()
@@ -299,7 +297,7 @@ class ScreenTest extends Base
 
         // Trailing newline
         $screen->write("Test\n");
-        $screen->writeln("New");
+        $screen->writeln('New');
 
         $this->assertEquals("Test\nNew\n", $screen->output());
     }
@@ -331,7 +329,6 @@ class ScreenTest extends Base
     {
         $this->assertTerminalMatch("Test\rBar ");
     }
-
 
     #[Test]
     public function newline_test()
@@ -398,7 +395,7 @@ class ScreenTest extends Base
     {
         $this->assertTerminalMatch([
             "\e[0;2;49mRunning: tail -f -n 100 /Users/",
-            "Running: tail -f -n 100 /Users/",
+            'Running: tail -f -n 100 /Users/',
             "\e[1A\e[1C\e[0mZZZZZZZZ",
         ]);
     }
@@ -408,10 +405,10 @@ class ScreenTest extends Base
     {
         $this->assertTerminalMatch([
             "\e[H\e[2mRunning",
-            "Running",
-            "Running",
-            "Running",
-            "Running",
+            'Running',
+            'Running',
+            'Running',
+            'Running',
             "\e[4A\e[4C\e[103m\nTest",
         ]);
     }
@@ -452,7 +449,7 @@ class ScreenTest extends Base
         $screen->write("\e[2J");
 
         $this->assertEquals(
-            "1
+            '1
 
 
 
@@ -462,7 +459,7 @@ class ScreenTest extends Base
 
 
 
-",
+',
             $screen->output()
         );
     }
@@ -507,5 +504,61 @@ class ScreenTest extends Base
         ];
 
         $this->assertTerminalMatch($content);
+    }
+
+    #[Test]
+    public function extended_color_id()
+    {
+        $output = "\e[0;38;5;208m\"\e[1;38;5;113myo\e[0;38;5;208m\"\e[m \e[90m// \e[39m\e[90m/Users/aaron/Code/solo/src/Console/Commands/About.php:24\e[39m";
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function extended_color_id_with_reset()
+    {
+        $output = "\e[0;38;5;208m\"\e[1;38;5;113myo \e[39mwhats \e[0mgood";
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function extended_color_id_with_reset_all()
+    {
+        $output = "\e[0;38;5;208m\"\e[0myo \e[39mwhats \e[0mgood";
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function extended_color_id_with_malformed_id()
+    {
+        $output = "\e[0;38;5mhey this is bad";
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function extended_color_id_with_decoration()
+    {
+        $output = "\e[38;5;208;4m\"\e[1;38;5;113myo \e[39mwhats \e[0mgood";
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function extended_color_rbg()
+    {
+        $output = "\e[0;38;2;255;0;255mHey hows it going";
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function extended_color_rbg_malformed()
+    {
+        $output = "\e[0;38;2;255;0mHey hows it going";
+
+        $this->assertTerminalMatch($output);
     }
 }

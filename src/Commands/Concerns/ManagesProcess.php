@@ -14,7 +14,6 @@ use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
-use Log;
 use ReflectionClass;
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process as SymfonyProcess;
@@ -113,6 +112,7 @@ trait ManagesProcess
             // tougher. This 1024/4096 method seems to be foolproof.
             if (strlen($buffer) === 1024 || strlen($buffer) === 4096) {
                 $this->partialBuffer .= $buffer;
+
                 return;
             }
 
