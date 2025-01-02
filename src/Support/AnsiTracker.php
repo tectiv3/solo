@@ -154,12 +154,20 @@ class AnsiTracker
 
     public function compressedAnsiBuffer(): array
     {
-        // Conventional placement: bits, extfg, extbg.
-        $previousCell = [0, null, null];
-
         $lines = $this->buffer->getBuffer();
 
-        return array_map(function ($line) use (&$previousCell) {
+        return array_map(function ($line) {
+            // We reset the previous cell on every single line, because we're not guaranteed that the
+            // whole buffer is going to be printed to the screen. Imagine the first line has some
+            // color information, like set foreground to blue. Then there are 300 lines of text.
+
+            // In Solo, only ~50 lines are going to be shown. If the first line (the one that contains
+            // the color info) is not shown, then the next line will have the wrong color. We need
+            // to reset the color on every line, even if it's the same as the previous line.
+
+            // Conventional placement: bits, extfg, extbg.
+            $previousCell = [0, null, null];
+
             return array_filter(array_map(function ($cell) use (&$previousCell) {
                 if (is_int($cell)) {
                     $cell = [$cell, null, null];

@@ -8,6 +8,7 @@ namespace AaronFrancis\Solo\Tests\Unit;
 use AaronFrancis\Solo\Support\Screen;
 use AaronFrancis\Solo\Tests\Support\ComparesVisually;
 use PHPUnit\Framework\Attributes\Test;
+use function Orchestra\Testbench\package_path;
 
 class ScreenTest extends Base
 {
@@ -561,4 +562,25 @@ class ScreenTest extends Base
 
         $this->assertTerminalMatch($output);
     }
+
+    #[Test]
+    public function about_dumps_wrong_color()
+    {
+        $content = <<<TXT
+\e[32mInfo!\e[39m
+\e[32mInfo!\e[39m
+TXT;
+
+
+        $expected = <<<TXT
+\e[32mInfo!
+\e[32mInfo!
+TXT;
+
+        $actual = $this->makeIdenticalScreen()->write($content)->output();
+
+        $this->assertEquals($expected, $actual);
+
+    }
+
 }
