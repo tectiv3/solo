@@ -411,7 +411,7 @@ class Renderer extends PromptsRenderer
 
 // Saving for later! Not sure why!
 // https://antofthy.gitlab.io/info/ascii/Spinners.txt
-//$spinners = [
+// $spinners = [
 //    "⡀⠄⠂⠁⠈⠐⠠⢀",
 //    "⣀⡄⠆⠃⠉⠘⠰⢠",
 //    "⢿⣻⣽⣾⣷⣯⣟⡿",
@@ -427,5 +427,5 @@ class Renderer extends PromptsRenderer
 //    "⢸⣸⢼⢺⢹⢺⢼⣸⢸⡇⣇⡧⡗⡏⡗⡧⣇⡇",
 //    "⠁⠂⠄⡀⡈⡐⡠⣀⣁⣂⣄⣌⣔⣤⣥⣦⣮⣶⣷⣿⡿⠿⢟⠟⡛⠛⠫⢋⠋⠍⡉⠉⠑⠡⢁",
 //    "__\|/__"
-//];
+// ];
 // $prompt->frames->frame(mb_str_split($spinners[2]))
