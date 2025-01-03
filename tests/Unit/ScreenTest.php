@@ -8,7 +8,6 @@ namespace AaronFrancis\Solo\Tests\Unit;
 use AaronFrancis\Solo\Support\Screen;
 use AaronFrancis\Solo\Tests\Support\ComparesVisually;
 use PHPUnit\Framework\Attributes\Test;
-use function Orchestra\Testbench\package_path;
 
 class ScreenTest extends Base
 {
@@ -571,7 +570,6 @@ class ScreenTest extends Base
 \e[32mInfo!\e[39m
 TXT;
 
-
         $expected = <<<TXT
 \e[32mInfo!
 \e[32mInfo!
@@ -582,5 +580,4 @@ TXT;
         $this->assertEquals($expected, $actual);
 
     }
-
 }

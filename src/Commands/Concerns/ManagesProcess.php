@@ -50,7 +50,7 @@ trait ManagesProcess
             ->idleTimeout(0)
             // Regardless of whether or not it's an interactive process, we're
             // still going to register an input stream. This lets command-
-            //specific hotkeys potentially send input even without
+            // specific hotkeys potentially send input even without
             // entering interactive mode.
             ->pty()
             ->input($this->input);
