@@ -32,6 +32,7 @@ class Dumps extends Command
         pcntl_signal(SIGINT, fn() => $this->shouldContinue = false);
         pcntl_signal(SIGTERM, fn() => $this->shouldContinue = false);
         pcntl_signal(SIGQUIT, fn() => $this->shouldContinue = false);
+        pcntl_signal(SIGHUP, fn() => $this->shouldContinue = false);
 
         while ($this->shouldContinue) {
             $read = [$pipe];
