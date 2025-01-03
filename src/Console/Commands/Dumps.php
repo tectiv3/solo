@@ -3,9 +3,11 @@
 namespace AaronFrancis\Solo\Console\Commands;
 
 use AaronFrancis\Solo\Support\CustomDumper;
-use AaronFrancis\Solo\Support\ProcessTracker;
-use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Foundation\Console\CliDumper;
+use Illuminate\Support\Arr;
+use Symfony\Component\VarDumper\Cloner\Data;
+use Symfony\Component\VarDumper\Server\DumpServer;
 
 class Dumps extends Command
 {
@@ -13,103 +15,26 @@ class Dumps extends Command
 
     protected $description = 'Collect dumps from your Laravel application.';
 
-    protected bool $shouldContinue = true;
-
-    protected string $pidFilePath;
-
-    protected string $pipePath;
-
-    public function handle(): void
+    public function handle()
     {
-        $this->pidFilePath = storage_path('solo_dumps.pid');
-        $this->pipePath = CustomDumper::namedDumpPipe();
+        $dumper = new CliDumper(
+            output: $this->getOutput()->getOutput(),
+            basePath: base_path(),
+            compiledViewPath: config('view.compiled')
+        );
 
-        $this->touchPidFile();
-        $pipe = $this->openNamedPipe();
+        $server = new DumpServer(CustomDumper::dumpServerHost());
+        $server->start();
 
-        // Have to register the signal listeners this way so that
-        // they work when using the workbench command runner.
-        pcntl_signal(SIGINT, fn() => $this->shouldContinue = false);
-        pcntl_signal(SIGTERM, fn() => $this->shouldContinue = false);
-        pcntl_signal(SIGQUIT, fn() => $this->shouldContinue = false);
-        pcntl_signal(SIGHUP, fn() => $this->shouldContinue = false);
+        $server->listen(function (Data $data) use ($dumper) {
+            // We added the dump source on the sending side. If we tried to deduce
+            // it here it would only point to this command, not the originator.
+            // Here we set the resolver to just grab it from our context.
+            CliDumper::resolveDumpSourceUsing(function () use ($data) {
+                return Arr::get($data->getContext(), 'dumpSource');
+            });
 
-        while ($this->shouldContinue) {
-            $read = [$pipe];
-            $write = [];
-            $except = [];
-
-            // Block for 100 milliseconds waiting for data. If data is available,
-            // stream_select() returns the number of streams ready to read.
-            $changedStreams = @stream_select($read, $write, $except, 0, 100_000);
-
-            // Error
-            if ($changedStreams === false) {
-                break;
-            }
-
-            // New input
-            if ($changedStreams > 0) {
-                $line = fgets($pipe);
-
-                if ($line !== false) {
-                    echo $line;
-                }
-            }
-
-            if (!$this->isLeaderProcess()) {
-                $this->error('Another process has taken over. Exiting.');
-                break;
-            }
-        }
-
-        @fclose($pipe);
-
-        if ($this->isLeaderProcess() || $this->leaderIsDead()) {
-            $this->info('Cleaning up...');
-            @unlink($this->pipePath);
-            @unlink($this->pidFilePath);
-        }
-    }
-
-    protected function isLeaderProcess(): bool
-    {
-        return file_exists($this->pidFilePath) && (int) file_get_contents($this->pidFilePath) === getmypid();
-    }
-
-    protected function leaderIsDead(): bool
-    {
-        $pid = file_exists($this->pidFilePath) ? (int) file_get_contents($this->pidFilePath) : null;
-
-        return is_null($pid) || !ProcessTracker::isRunning($pid);
-    }
-
-    /**
-     * @return resource
-     *
-     * @throws Exception
-     */
-    protected function openNamedPipe()
-    {
-        if (!file_exists($this->pipePath)) {
-            if (!posix_mkfifo($this->pipePath, 0600)) {
-                throw new Exception("Failed to create FIFO at: {$this->pipePath}");
-            }
-        }
-
-        $pipe = fopen($this->pipePath, 'r+');
-
-        if (!$pipe) {
-            throw new Exception("Failed to open FIFO at: {$this->pipePath}");
-        }
-
-        stream_set_blocking($pipe, false);
-
-        return $pipe;
-    }
-
-    protected function touchPidFile(): void
-    {
-        file_put_contents($this->pidFilePath, getmypid());
+            $dumper->dumpWithSource($data);
+        });
     }
 }
