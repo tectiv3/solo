@@ -21,6 +21,8 @@ class About extends Command
 
     public function handle()
     {
+        echo "0\n";
+
         $banner = <<<EOT
 ███████╗ ██████╗ ██╗      ██████╗ 
 ██╔════╝██╔═══██╗██║     ██╔═══██╗

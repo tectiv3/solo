@@ -2,6 +2,7 @@
 
 namespace AaronFrancis\Solo\Support;
 
+use Closure;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HigherOrderCollectionProxy;
@@ -33,6 +34,8 @@ class Screen
 
     public int $height;
 
+    protected ?Closure $respondVia = null;
+
     protected array $stashedCursor = [];
 
     public function __construct(int $width, int $height)
@@ -43,6 +46,13 @@ class Screen
         $this->buffer = new Buffer(usesStrings: true);
 
         $this->bothBuffers = collect([$this->ansi->buffer, $this->buffer])->each;
+    }
+
+    public function respondToQueriesVia(Closure $closure): static
+    {
+        $this->respondVia = $closure;
+
+        return $this;
     }
 
     public function output(): string
@@ -183,6 +193,12 @@ class Screen
             $this->saveCursor();
         } elseif ($command === '8') {
             $this->restoreCursor();
+        } elseif ($param === '?' && in_array($command, ['10', '11'])) {
+            // Ask for the foreground or background color.
+            $this->handleQueryCode($command, $param);
+        } elseif ($command === 'n' && $param === '6') {
+            // Ask for the cursor position.
+            $this->handleQueryCode($command, $param);
         }
 
         // @TODO Unhandled ansi command. Throw an error? Log it?
@@ -411,6 +427,28 @@ class Screen
                 startRow: $this->cursorRow,
                 endRow: $this->cursorRow
             );
+        }
+    }
+
+    protected function handleQueryCode(string $command, string $param): void
+    {
+        if (!is_callable($this->respondVia)) {
+            return;
+        }
+
+        $response = match ($param . $command) {
+            // Foreground color
+            // @TODO not hardcode this, somehow
+            '?10' => "\e]10;rgb:0000/0000/0000 \e \\",
+            // Background
+            '?11' => "\e]11;rgb:FFFF/FFFF/FFFF \e \\",
+            // Cursor
+            '6n' => "\e[" . ($this->cursorRow + 1) . ';' . ($this->cursorCol + 1) . 'R',
+            default => null,
+        };
+
+        if ($response) {
+            call_user_func($this->respondVia, $response);
         }
     }
 }

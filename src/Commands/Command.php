@@ -47,17 +47,22 @@ class Command implements Loopable
 
     public ?KeyPressListener $keyPressListener = null;
 
+    public static function from(string $command): static
+    {
+        return new static(command: $command);
+    }
+
+    public static function make(mixed ...$arguments): static
+    {
+        return new static(...$arguments);
+    }
+
     public function __construct(
         public ?string $name = null,
         public ?string $command = null,
         public bool $autostart = true,
     ) {
         $this->boot();
-    }
-
-    public static function make(mixed ...$arguments): static
-    {
-        return new static(...$arguments);
     }
 
     public function boot(): void
@@ -275,7 +280,14 @@ class Command implements Loopable
 
     protected function makeNewScreen()
     {
-        return new Screen($this->scrollPaneWidth(), $this->scrollPaneHeight());
+        $screen = new Screen(
+            width: $this->scrollPaneWidth(),
+            height: $this->scrollPaneHeight()
+        );
+
+        return $screen->respondToQueriesVia(function ($output) {
+            $this->input->write($output);
+        });
     }
 
     public function wrapLine($line, $width = null, $continuationIndent = 0): array

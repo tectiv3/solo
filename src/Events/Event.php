@@ -3,6 +3,9 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Hotkeys;
+namespace AaronFrancis\Solo\Events;
 
-class KeyManager {}
+enum Event: string
+{
+    case ActivateTab = 'activate_tab';
+}

@@ -2,7 +2,6 @@
 
 namespace AaronFrancis\Solo\Support;
 
-use Closure;
 use Illuminate\Foundation\Console\CliDumper;
 use Illuminate\Foundation\Console\CliDumper as LaravelCliDumper;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -23,7 +22,7 @@ readonly class CustomDumper
 
     public static function dumpServerHost(): string
     {
-        return config()->string('solo.dumpServerHost', 'tcp://127.0.0.1:9912');
+        return config()->string('solo.dump_server_host', 'tcp://127.0.0.1:9984');
     }
 
     public function __construct(public string $basePath, public string $compiledViewPath)
@@ -31,23 +30,30 @@ readonly class CustomDumper
         $cloner = new VarCloner;
         $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
 
+        $original = VarDumper::setHandler(null);
+
         // We only use this dumper to get the dump source and add it to the context.
         $fake = $this->makeSourceResolvingDumper();
 
-        // This is the original dumper, in case the server is not running or not reachable.
-        $fallback = $this->makeFallbackDumper();
+        $server = new ServerDumper(static::dumpServerHost(), $this->makeFallbackDumper());
 
-        $server = new ServerDumper(static::dumpServerHost(), $fallback);
-
-        VarDumper::setHandler(function (mixed $var) use ($cloner, $server, $fallback, $fake) {
+        VarDumper::setHandler(function (mixed $var) use ($cloner, $server, $fake, $original) {
             $data = $cloner->cloneVar($var)->withContext([
                 'dumpSource' => $fake->resolveDumpSource()
             ]);
 
             try {
-                $server->dump($data);
+                $response = $server->dump($data);
             } catch (Throwable $e) {
-                $fallback->dump($data);
+                $response = 'server_dump_failed';
+            }
+
+            if ($response === 'server_dump_failed') {
+                if (is_callable($original)) {
+                    $original($var);
+                } else {
+                    print_r($var);
+                }
             }
         });
     }
@@ -61,22 +67,11 @@ readonly class CustomDumper
 
     protected function makeFallbackDumper(): DataDumperInterface
     {
-        return new class implements DataDumperInterface {
-            private ?Closure $original;
-
-            public function __construct()
+        return new class implements DataDumperInterface
+        {
+            public function dump(Data $data): string
             {
-                // Passing null explicitly just so we can get the original one out.
-                $this->original = VarDumper::setHandler(null);
-            }
-
-            public function dump(Data $data): void
-            {
-                if (is_callable($this->original)) {
-                    call_user_func($this->original, $data->getValue());
-                } else {
-                    print_r($data->getValue());
-                }
+                return 'server_dump_failed';
             }
         };
     }

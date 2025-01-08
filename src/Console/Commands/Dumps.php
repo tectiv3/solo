@@ -26,6 +26,8 @@ class Dumps extends Command
         $server = new DumpServer(CustomDumper::dumpServerHost());
         $server->start();
 
+        $this->info('Listening for dumps on ' . CustomDumper::dumpServerHost());
+
         $server->listen(function (Data $data) use ($dumper) {
             // We added the dump source on the sending side. If we tried to deduce
             // it here it would only point to this command, not the originator.

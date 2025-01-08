@@ -30,7 +30,7 @@ class EnhancedTailCommand extends Command
 
     private string $invisibleVendorMark = "\e[8mV\e[28m";
 
-    public static function forFile($path)
+    public static function file($path)
     {
         return static::make('Logs', "tail -f -n 100 $path")->setFile($path);
     }
@@ -208,12 +208,12 @@ class EnhancedTailCommand extends Command
     {
         $lines = explode('{"exception":"[object] ', $line);
         $message = array_map(
-            fn($line) => Solo::makeTheme()->exception($line),
+            fn($line) => Solo::theme()->exception($line),
             $this->wrapLine($lines[0])
         );
 
         $exception = array_map(
-            fn($line) => ' ' . Solo::makeTheme()->exception($line),
+            fn($line) => ' ' . Solo::theme()->exception($line),
             $this->wrapLine($lines[1], -1)
         );
 
@@ -225,7 +225,7 @@ class EnhancedTailCommand extends Command
 
     protected function formatLogLine($line): null|array|string
     {
-        $theme = Solo::makeTheme();
+        $theme = Solo::theme();
 
         // 1 space outside of each border.
         $traceBoxWidth = $this->scrollPaneWidth() - 2;

@@ -12,6 +12,14 @@ use Laravel\Prompts\Key;
 class DefaultHotkeys implements HotkeyProvider
 {
     /**
+     * @return array<Hotkey>
+     */
+    public static function keys(): array
+    {
+        return array_values(static::keymap());
+    }
+
+    /**
      * @return array<string, Hotkey>
      */
     public static function keymap()
@@ -22,6 +30,7 @@ class DefaultHotkeys implements HotkeyProvider
         return [
             'clear' => Hotkey::make('c', KeyHandler::Clear)
                 ->label('Clear'),
+
             'pause' => Hotkey::make('p', KeyHandler::Pause)
                 ->label('Pause')
                 ->display(fn(Command $command) => !$command->paused),
@@ -31,7 +40,7 @@ class DefaultHotkeys implements HotkeyProvider
                 ->display(fn(Command $command) => $command->paused),
 
             'start_stop' => Hotkey::make('s', KeyHandler::StartStop)
-                ->label(fn(Command $command) => $command->processRunning() ? 'Stop' : 'Start'),
+                ->label(fn(Command $command) => $command->processRunning() ? 'Stop ' : 'Start'),
 
             'restart' => Hotkey::make('r', KeyHandler::Restart)
                 ->label('Restart'),
@@ -62,15 +71,13 @@ class DefaultHotkeys implements HotkeyProvider
             'dd' => Hotkey::make('d', KeyHandler::DD)
                 ->label('DD')
                 ->hidden(),
+
+            'command_palette' => Hotkey::make('+', KeyHandler::ShowCommandChooser)
+                ->label('Commands'),
+
+            'tab_picker' => Hotkey::make('g', KeyHandler::ShowTabPicker)
+                ->label('Go'),
         ];
 
-    }
-
-    /**
-     * @return array<Hotkey>
-     */
-    public static function keys(): array
-    {
-        return array_values(static::keymap());
     }
 }

@@ -6,6 +6,8 @@
 namespace AaronFrancis\Solo\Hotkeys;
 
 use AaronFrancis\Solo\Commands\Command;
+use AaronFrancis\Solo\Popups\CommandPalette;
+use AaronFrancis\Solo\Popups\TabPicker;
 use AaronFrancis\Solo\Prompt\Dashboard;
 
 enum KeyHandler
@@ -18,6 +20,7 @@ enum KeyHandler
     case ScrollDown;
     case PageUp;
     case PageDown;
+
     // Processes
     case Start;
     case Stop;
@@ -26,9 +29,12 @@ enum KeyHandler
     case PreviousTab;
     case NextTab;
     case Interactive;
+
     // Application
     case Quit;
     case DD;
+    case ShowCommandChooser;
+    case ShowTabPicker;
 
     public function handler(): \Closure
     {
@@ -49,6 +55,8 @@ enum KeyHandler
             self::PageDown => fn(Command $command) => $command->pageDown(),
             self::Interactive => fn(Dashboard $prompt) => $prompt->enterInteractiveMode(),
             self::DD => fn(Command $command) => $command->dd(),
+            self::ShowCommandChooser => fn(Dashboard $prompt) => $prompt->showPopup(new CommandPalette),
+            self::ShowTabPicker => fn(Dashboard $prompt) => $prompt->showPopup(new TabPicker),
         };
     }
 }

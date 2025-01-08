@@ -13,6 +13,7 @@ use AaronFrancis\Solo\Contracts\Theme;
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Hotkeys\KeycodeMap;
+use AaronFrancis\Solo\Popups\Popup;
 use AaronFrancis\Solo\Support\AnsiAware;
 use AaronFrancis\Solo\Support\Screen;
 use Chewie\Concerns\Aligns;
@@ -42,7 +43,7 @@ class Renderer extends PromptsRenderer
     public function setup(Dashboard $dashboard): void
     {
         $this->dashboard = $dashboard;
-        $this->theme = Solo::makeTheme();
+        $this->theme = Solo::theme();
         $this->currentCommand = $dashboard->currentCommand();
         $this->width = $dashboard->width;
         $this->height = $dashboard->height;
@@ -58,31 +59,29 @@ class Renderer extends PromptsRenderer
         $this->renderHotkeys();
 
         $screen = new Screen($this->width, $this->height);
+        $screen->write("\e[0m");
         $screen->write($this->output);
-        $screen->write("\e[H\e[2B");
-        $screen->write("\e[2C" . $this->visibleContent->implode(PHP_EOL . "\e[2C"));
+        // Move home then down two lines to get to the content pane.
+        $screen->write("\e[H\e[0m\e[2B");
+
+        // Write the visible content into the pane, padding with two spaces.
+        $this->visibleContent->each(function ($line) use ($screen) {
+            $screen->writeln("\e[2C" . $line);
+        });
+
+        if ($this->dashboard->popup) {
+            //            $screen = $this->accountForPopup($screen);
+            //
+            //            $old = $this->dashboard->popup;
+
+            //            $this->dashboard->popup = ;
+
+            $screen = $this->accountForPopup($screen, $this->dashboard->popup);
+
+            //            $this->dashboard->popup = $old;
+        }
 
         $this->output = $screen->output();
-
-        return $this;
-
-        $screen = new Screen($this->width, $this->height);
-        $screen->write("\e[2m" . AnsiAware::plain($this->output));
-
-        $popup = "\e[H\e[10B";
-        $popup .= "\e[10C\e[0m ┌─────────────────────────┓ " . PHP_EOL;
-        $popup .= "\e[10C\e[0m │ This is a dialog        ┃ " . PHP_EOL;
-        $popup .= "\e[10C\e[0m ├─────────────────────────┫ " . PHP_EOL;
-        $popup .= "\e[10C\e[0m │  yo yo yo yo yo yoy yo  ┃ " . PHP_EOL;
-        $popup .= "\e[10C\e[0m │  yo yo yo yo yo yoy yo  ┃ " . PHP_EOL;
-        $popup .= "\e[10C\e[0m │  yo yo yo yo yo yoy yo  ┃ " . PHP_EOL;
-        $popup .= "\e[10C\e[0m └━━━━━━━━━━━━━━━━━━━━━━━━━┛ " . PHP_EOL;
-
-        $screen->write($popup);
-
-        $this->output = $screen->output();
-
-        dd($this->output);
 
         return $this;
     }
@@ -99,6 +98,26 @@ class Renderer extends PromptsRenderer
         $message = $this->pad($message, $this->width);
 
         return parent::line($message);
+    }
+
+    protected function accountForPopup(Screen $screen, ?Popup $popup = null): Screen
+    {
+        if (is_null($popup)) {
+            return $screen;
+        }
+
+        $plain = new Screen($this->width, $this->height);
+
+        // Write the current output into a new screen, but remove all
+        // the ANSI codes and forcibly set it to dim and gray.
+        $plain->write("\e[0;2;38;5;251m" . AnsiAware::plain($screen->output()));
+
+        $screen = $plain;
+
+        $offset = ($this->width - 80) / 2;
+        $screen->write($popup->render($offset, 2));
+
+        return $screen;
     }
 
     protected function renderTabs(): void
@@ -224,6 +243,8 @@ class Renderer extends PromptsRenderer
 
         $this->visibleContent = $visible;
 
+        // Replace all content with spaces. We add the content
+        // into the pane separately in the __invoke method.
         $visible = $visible->map(function ($line) {
             return str_repeat(' ', mb_strlen(AnsiAware::plain($line), 'UTF-8'));
         });

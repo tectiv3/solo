@@ -9,24 +9,24 @@
 namespace AaronFrancis\Solo\Prompt;
 
 use AaronFrancis\Solo\Commands\Command;
+use AaronFrancis\Solo\Events\Event;
 use AaronFrancis\Solo\Facades\Solo;
 use AaronFrancis\Solo\Hotkeys\Hotkey;
+use AaronFrancis\Solo\Popups\Popup;
 use AaronFrancis\Solo\Support\Frames;
+use AaronFrancis\Solo\Support\Screen;
 use Carbon\CarbonImmutable;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;
-use Chewie\Concerns\RegistersRenderers;
 use Chewie\Concerns\SetsUpAndResets;
 use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Sleep;
-use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
 
 class Dashboard extends Prompt
 {
-    use CreatesAnAltScreen, Loops, RegistersRenderers, SetsUpAndResets;
+    use CreatesAnAltScreen, Loops, SetsUpAndResets;
 
     /**
      * @var array<Command>
@@ -45,6 +45,8 @@ class Dashboard extends Prompt
 
     public KeyPressListener $listener;
 
+    public ?Popup $popup = null;
+
     public static function start(): void
     {
         (new static)->run();
@@ -52,19 +54,13 @@ class Dashboard extends Prompt
 
     public function __construct()
     {
-        $this->registerRenderer(Solo::getRenderer());
         $this->createAltScreen();
+        $this->listenForSignals();
+        $this->listenForEvents();
 
         $this->listener = KeyPressListener::for($this);
 
         [$this->width, $this->height] = $this->getDimensions();
-
-        pcntl_signal(SIGWINCH, [$this, 'handleResize']);
-
-        pcntl_signal(SIGINT, [$this, 'quit']);
-        pcntl_signal(SIGTERM, [$this, 'quit']);
-        pcntl_signal(SIGHUP, [$this, 'quit']);
-        pcntl_signal(SIGQUIT, [$this, 'quit']);
 
         $this->frames = new Frames;
 
@@ -82,6 +78,38 @@ class Dashboard extends Prompt
             ->all();
 
         $this->registerLoopables(...$this->commands);
+    }
+
+    public function listenForEvents()
+    {
+        Solo::on(Event::ActivateTab, function (string $name) {
+            foreach (Solo::commands() as $i => $command) {
+                if ($command->name === $name) {
+                    $this->selectTab($i);
+                    break;
+                }
+            }
+        });
+    }
+
+    public function listenForSignals()
+    {
+        pcntl_signal(SIGWINCH, [$this, 'handleResize']);
+
+        pcntl_signal(SIGINT, [$this, 'quit']);
+        pcntl_signal(SIGTERM, [$this, 'quit']);
+        pcntl_signal(SIGHUP, [$this, 'quit']);
+        pcntl_signal(SIGQUIT, [$this, 'quit']);
+    }
+
+    public function showPopup(Popup $popup)
+    {
+        $this->popup = $popup;
+    }
+
+    public function exitPopup()
+    {
+        $this->popup = null;
     }
 
     public function run(): void
@@ -153,18 +181,25 @@ class Dashboard extends Prompt
         $this->currentCommand()->setMode(Command::MODE_PASSIVE);
     }
 
-    public function nextTab()
+    public function selectTab(int $index)
     {
         $this->currentCommand()->blur();
-        $this->selectedCommand = ($this->selectedCommand + 1) % count($this->commands);
+        $this->selectedCommand = $index;
         $this->currentCommand()->focus();
+    }
+
+    public function nextTab()
+    {
+        $this->selectTab(
+            ($this->selectedCommand + 1) % count($this->commands)
+        );
     }
 
     public function previousTab()
     {
-        $this->currentCommand()->blur();
-        $this->selectedCommand = ($this->selectedCommand - 1 + count($this->commands)) % count($this->commands);
-        $this->currentCommand()->focus();
+        $this->selectTab(
+            ($this->selectedCommand - 1 + count($this->commands)) % count($this->commands)
+        );
     }
 
     protected function showDashboard(): void
@@ -183,9 +218,21 @@ class Dashboard extends Prompt
 
         $this->currentCommand()->catchUpScroll();
 
+        if ($this->popup) {
+            if ($this->popup->shouldClose()) {
+                $this->exitPopup();
+            } else {
+                $this->popup->renderSingleFrame();
+            }
+        }
+
         $this->render();
 
-        $this->currentCommand()->isInteractive() ? $this->handleInteractiveInput() : $this->listener->once();
+        if ($this->popup) {
+            $this->handlePopupInput();
+        } else {
+            $this->currentCommand()->isInteractive() ? $this->handleInteractiveInput() : $this->listener->once();
+        }
 
         $this->frames->next();
     }
@@ -198,14 +245,28 @@ class Dashboard extends Prompt
         // padded all the way to the width of the terminal. Since that's the case,
         // we can merely move the cursor up and to (1,1) and rewrite everything.
         // Since much of the screen stays the same, it just overwrite in place.
-        // But the good news is, because we never cleared we don't get any flicker.
-        $frame = $this->renderTheme();
+        // The good news is since we never cleared we don't get any flicker.
+        $renderer = Solo::getRenderer();
+        $frame = (new $renderer($this))($this);
 
         if ($frame !== $this->prevFrame) {
             static::writeDirectly("\e[{$this->height}F");
             $this->output()->write($frame);
 
             $this->prevFrame = $frame;
+        }
+    }
+
+    protected function handlePopupInput()
+    {
+        $read = [STDIN];
+        $write = null;
+        $except = null;
+
+        // Shorten the wait time since we're expecting keystrokes.
+        if (stream_select($read, $write, $except, 0, 5_000) === 1) {
+            $key = fread(STDIN, 10);
+            $this->popup->handleInput($key);
         }
     }
 
@@ -224,6 +285,11 @@ class Dashboard extends Prompt
         // Shorten the wait time since we're expecting keystrokes.
         if (stream_select($read, $write, $except, 0, 5_000) === 1) {
             $key = fread(STDIN, 10);
+
+            // For max compatibility, convert newlines to carriage returns.
+            if ($key === "\n") {
+                $key = "\r";
+            }
 
             // Exit interactive mode without stopping the underlying process.
             if ($key === "\x18") {
@@ -273,57 +339,6 @@ class Dashboard extends Prompt
         }, 25_000);
 
         $this->terminal()->exit();
-    }
-
-    public function loopWithListener(KeyPressListener $listener, $cb, int $frameDuration = 100_000): void
-    {
-        // Call immediately before we start looping.
-        $cb($this);
-
-        $lastTick = microtime(true);
-
-        while (true) {
-            $read = [STDIN];
-            $write = [];
-            $except = [];
-
-            // Use stream_select to implement the sleep, but also respond immediately to key presses
-            $changed = stream_select($read, $write, $except, 0, $frameDuration);
-
-            if ($changed === false) {
-                echo "An error occurred while waiting for input.\n";
-                exit;
-            }
-
-            // A key was pressed, so execute this listener.
-            if ($changed > 0) {
-                $listener->once();
-            }
-
-            // Calculate the time elapsed since the last tick
-            $currentTime = microtime(true);
-
-            // Convert seconds to microseconds
-            $elapsedMicroseconds = ($currentTime - $lastTick) * 1e6;
-
-            // Respond to key presses immediately
-            $continue = $cb($this);
-
-            if ($continue === false) {
-                break;
-            }
-
-            // Only tick if it's been greater than minSleep microseconds.
-            if ($elapsedMicroseconds < $frameDuration) {
-                continue;
-            }
-
-            $lastTick = $currentTime;
-
-            foreach ($this->loopables as $component) {
-                $component->tick();
-            }
-        }
     }
 
     public function value(): mixed

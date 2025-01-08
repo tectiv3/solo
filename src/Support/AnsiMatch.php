@@ -15,15 +15,24 @@ readonly class AnsiMatch implements \Stringable
     {
         $pattern = <<<PATTERN
 /
+    ]
     (?<command_1>
+        (10|11)
+    )
+    ;
+    (?<params_1>
+        \?
+    )
+|
+    (?<command_2>
         [ABCDEHIJKMNOSTZ=><12su78c]
     )
 |
 \\[
-    (?<params_2>
+    (?<params_3>
         [0-9;?]*
     )
-    (?<command_2>
+    (?<command_3>
         [@-~]
     )
 /x

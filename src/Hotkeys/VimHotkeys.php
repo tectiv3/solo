@@ -9,11 +9,19 @@ use Laravel\Prompts\Key;
 
 class VimHotkeys extends DefaultHotkeys
 {
-    /*
+    /**
+     * @return array<string, Hotkey>
+     */
+    public static function keymap(): array
+    {
+        return static::remap(parent::keymap());
+    }
+
+    /**
      * In case you want VimKeys in addition to something else, you
      * can just use this function from your HotkeyProvider.
      */
-    public static function remap($map)
+    public static function remap($map): array
     {
         $map['previous_tab']->remap('h');
         $map['next_tab']->remap('l');
@@ -23,13 +31,5 @@ class VimHotkeys extends DefaultHotkeys
         $map['page_down']->remap(Key::CTRL_D);
 
         return $map;
-    }
-
-    /**
-     * @return array<string, Hotkey>
-     */
-    public function keymap(): array
-    {
-        return static::remap(parent::keymap());
     }
 }

@@ -62,6 +62,7 @@ trait ManagesProcess
         // Add some default env variables to hopefully
         // make output more manageable.
         return $process->env([
+            'TERM' => 'xterm-256color',
             'FORCE_COLOR' => '1',
             'COLUMNS' => $this->scrollPaneWidth(),
             'LINES' => $this->scrollPaneHeight(),
@@ -125,6 +126,8 @@ trait ManagesProcess
                 $type === SymfonyProcess::OUT ? $this->clearStdOut() : $this->clearStdErr();
             }
         });
+
+        $this->sendSizeViaStty();
     }
 
     public function stop(): void
@@ -172,6 +175,38 @@ trait ManagesProcess
     public function processStopped(): bool
     {
         return !$this->processRunning();
+    }
+
+    public function sendSizeViaStty(): void
+    {
+        // If the process is not running or has no PID, we can’t do anything
+        $pid = $this->process->id();
+
+        if (!$pid) {
+            return;
+        }
+
+        // List all open files for the child process
+        $output = [];
+
+        exec(sprintf('lsof -p %d 2>/dev/null', $pid), $output);
+
+        foreach ($output as $line) {
+            if (!preg_match('#(/dev/tty\S+|/dev/pty\S+)#', $line, $matches)) {
+                continue;
+            }
+
+            $device = $matches[1];
+
+            exec(sprintf(
+                'stty rows %d cols %d < %s',
+                $this->scrollPaneHeight(),
+                $this->scrollPaneWidth(),
+                escapeshellarg($device)
+            ));
+
+            break;
+        }
     }
 
     protected function clearStdOut()

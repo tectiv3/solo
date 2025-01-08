@@ -94,6 +94,7 @@ class AnsiTracker
             throw new RuntimeException(static::class . ' requires a 64-bit PHP environment.');
         }
 
+        // https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
         $this->decoration = range(1, 9);
         $this->resets = range(22, 29);
         // Standard and bright.

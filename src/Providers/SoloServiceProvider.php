@@ -14,7 +14,6 @@ use AaronFrancis\Solo\Console\Commands\Install;
 use AaronFrancis\Solo\Console\Commands\Make;
 use AaronFrancis\Solo\Console\Commands\Monitor;
 use AaronFrancis\Solo\Console\Commands\Solo;
-use AaronFrancis\Solo\Console\Commands\Test;
 use AaronFrancis\Solo\Manager;
 use AaronFrancis\Solo\Support\CustomDumper;
 use Illuminate\Support\Facades\App;
@@ -25,6 +24,8 @@ class SoloServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(Manager::class);
+
+        $this->mergeConfigFrom(__DIR__ . '/../../config/solo.php', 'solo');
     }
 
     public function boot()
@@ -35,7 +36,7 @@ class SoloServiceProvider extends ServiceProvider
 
         $this->registerCommands();
         $this->registerDumper();
-        $this->publishProviders();
+        $this->publishFiles();
     }
 
     protected function registerCommands()
@@ -46,21 +47,27 @@ class SoloServiceProvider extends ServiceProvider
             Install::class,
             About::class,
             Make::class,
-            Test::class,
             Dumps::class
         ]);
+
+        if (class_exists('\AaronFrancis\Solo\Console\Commands\Test')) {
+            $this->commands([
+                '\AaronFrancis\Solo\Console\Commands\Test',
+            ]);
+        }
     }
 
     protected function registerDumper()
     {
-        $basePath = $this->app->basePath();
-        $compiledViewPath = $this->app['config']->get('view.compiled');
-
-        CustomDumper::register($basePath, $compiledViewPath);
+        CustomDumper::register($this->app->basePath(), $this->app['config']->get('view.compiled'));
     }
 
-    protected function publishProviders()
+    protected function publishFiles()
     {
+        $this->publishes([
+            __DIR__ . '/../../config/solo.php' => config_path('solo.php'),
+        ], 'solo-config');
+
         $this->publishes([
             __DIR__ . '/../Stubs/SoloServiceProvider.stub' => App::path('Providers/SoloServiceProvider.php'),
         ], 'solo-provider');

@@ -580,4 +580,42 @@ TXT;
         $this->assertEquals($expected, $actual);
 
     }
+
+    #[Test]
+    public function capturing_prompts_didnt_work()
+    {
+        $output = <<<TXT
+\e[?25l
+\e[90m ┌\e[39m \e[36mPick a command\e[39m \e[90m──────────────────────────────────────────────┐\e[39m
+\e[90m │\e[39m \e[36m›\e[39m ◻ About                                                    \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mLogs\e[22m                                                     \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mVite\e[22m                                                     \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mReverb\e[22m                                                   \e[90m│\e[39m
+\e[90m └──────────────────────────────────────────────────────────────┘\e[39m
+
+\e[1G\e[8A\e[J
+\e[90m ┌\e[39m \e[36mPick a command\e[39m \e[90m──────────────────────────────────────────────┐\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mAbout\e[22m                                                    \e[90m│\e[39m
+\e[90m │\e[39m \e[36m›\e[39m ◻ Logs                                                     \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mVite\e[22m                                                     \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mReverb\e[22m                                                   \e[90m│\e[39m
+\e[90m └──────────────────────────────────────────────────────────────┘\e[39m
+
+\e[1G\e[8A\e[J
+\e[90m ┌\e[39m \e[36mPick a command\e[39m \e[90m──────────────────────────────────────────────┐\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mAbout\e[22m                                                    \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mLogs\e[22m                                                     \e[90m│\e[39m
+\e[90m │\e[39m \e[36m›\e[39m ◻ Vite                                                     \e[90m│\e[39m
+\e[90m │\e[39m   \e[2m◻\e[22m \e[2mReverb\e[22m                                                   \e[90m│\e[39m
+\e[90m └──────────────────────────────────────────────────────────────┘\e[39m
+TXT;
+
+        $this->assertTerminalMatch($output);
+    }
+
+    #[Test]
+    public function single_zero_doesnt_work_wtf()
+    {
+        $this->assertTerminalMatch('0');
+    }
 }
