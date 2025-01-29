@@ -1,12 +1,16 @@
+<p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="">
+      <source media="(prefers-color-scheme: light)" srcset="">
+      <img alt="Solo for Laravel" src="" style="max-width: 80%; height: auto;">
+    </picture>
+</p>
+
+<h3 align="center">Your all-in-one Laravel command to tame local development</h3>
+
+---
+
 # Solo for Laravel
-```
-███████╗ ██████╗ ██╗      ██████╗ 
-██╔════╝██╔═══██╗██║     ██╔═══██╗
-███████╗██║   ██║██║     ██║   ██║
-╚════██║██║   ██║██║     ██║   ██║
-███████║╚██████╔╝███████╗╚██████╔╝
-╚══════╝ ╚═════╝ ╚══════╝ ╚═════╝  (for Laravel)
-```
 
 > [!WARNING]  
 > This is still beta software. Use with caution.
