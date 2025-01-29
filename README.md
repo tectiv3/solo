@@ -1,8 +1,8 @@
 <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="">
-      <source media="(prefers-color-scheme: light)" srcset="">
-      <img alt="Solo for Laravel" src="" style="max-width: 80%; height: auto;">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_light.png">
+      <img alt="Solo for Laravel" src="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_light.png" style="max-width: 80%; height: auto;">
     </picture>
 </p>
 
