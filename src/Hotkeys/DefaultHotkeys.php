@@ -36,12 +36,12 @@ class DefaultHotkeys implements HotkeyProvider
                 ->label('Clear'),
 
             'pause' => Hotkey::make('p', KeyHandler::Pause)
-                ->label('Pause')
-                ->display(fn(Command $command) => !$command->paused),
+                ->label('Pause ')
+                ->visible(fn(Command $command) => !$command->paused),
 
             'follow' => Hotkey::make('f', KeyHandler::Follow)
                 ->label('Follow')
-                ->display(fn(Command $command) => $command->paused),
+                ->visible(fn(Command $command) => $command->paused),
 
             'start_stop' => Hotkey::make('s', KeyHandler::StartStop)
                 ->label(fn(Command $command) => $command->processRunning() ? 'Stop ' : 'Start'),
@@ -52,32 +52,48 @@ class DefaultHotkeys implements HotkeyProvider
             'quit' => Hotkey::make(['q', Key::CTRL_C], KeyHandler::Quit)
                 ->label('Quit'),
 
+            // This is a no-op, display only key. The real scroll handlers are
+            // right below, but they're invisible. We do this to save space.
+            'prev_next' => Hotkey::make()
+                ->keyDisplay('←/→')
+                ->label('Prev/Next'),
+
             'previous_tab' => Hotkey::make([Key::LEFT, Key::LEFT_ARROW], KeyHandler::PreviousTab)
-                ->label('Previous'),
+                ->label('Previous')
+                ->invisible(),
 
             'next_tab' => Hotkey::make([Key::RIGHT, Key::RIGHT_ARROW], KeyHandler::NextTab)
-                ->label('Next'),
+                ->label('Next')
+                ->invisible(),
+
+            // This is a no-op, display only key. The real scroll handlers are
+            // right below, but they're invisible. We do this to save space.
+            'scroll' => Hotkey::make()
+                ->keyDisplay('↑↓')
+                ->label('Scroll'),
 
             'scroll_up' => Hotkey::make([Key::UP, Key::UP_ARROW], KeyHandler::ScrollUp)
-                ->label('Scroll up'),
+                ->label('Scroll up')
+                ->invisible(),
 
             'scroll_down' => Hotkey::make([Key::DOWN, Key::DOWN_ARROW], KeyHandler::ScrollDown)
-                ->label('Scroll down'),
+                ->label('Scroll down')
+                ->invisible(),
 
             'page_up' => Hotkey::make(Key::SHIFT_UP, KeyHandler::PageUp)
                 ->label('Page up')
-                ->hidden(),
+                ->invisible(),
 
             'page_down' => Hotkey::make(Key::SHIFT_DOWN, KeyHandler::PageDown)
                 ->label('Page down')
-                ->hidden(),
+                ->invisible(),
 
-            'dd' => Hotkey::make('d', KeyHandler::DD)
-                ->label('DD')
-                ->hidden(),
+            // 'dd' => Hotkey::make('d', KeyHandler::DD)
+            //     ->label('DD')
+            //     ->invisible(),
 
-            'command_palette' => Hotkey::make('+', KeyHandler::ShowCommandChooser)
-                ->label('Commands'),
+            // 'command_palette' => Hotkey::make('+', KeyHandler::ShowCommandChooser)
+            //     ->label('Commands'),
 
             'tab_picker' => Hotkey::make('g', KeyHandler::ShowTabPicker)
                 ->label('Go'),

@@ -9,4 +9,5 @@ workbench:
   health: true
   discovers:
     web: true
+    config: true
     commands: true

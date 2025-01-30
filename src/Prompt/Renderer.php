@@ -491,10 +491,10 @@ class Renderer extends PromptsRenderer
         collect($hotkeys)->map(function (Hotkey $hotkey) {
             $hotkey->init($this->currentCommand, $this->dashboard);
 
-            $key = is_array($hotkey->keys) ? $hotkey->keys[0] : $hotkey->keys;
-            $key = KeycodeMap::toDisplay($key);
 
-            $this->hotkey($key, $hotkey->makeLabel() ?? 'TODO');
+
+            if ($hotkey->visible())
+            $this->hotkey($hotkey->keyDisplay(), $hotkey->makeLabel() ?? '');
         });
 
         $this->line(

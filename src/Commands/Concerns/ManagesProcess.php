@@ -297,6 +297,6 @@ trait ManagesProcess
         // Calling `running` on it defers to the Symfony process `isRunning` method. That
         // method calls a protected method `updateStatus` which calls a private method
         // `readPipes` which invokes the output callback, adding it to our buffer.
-        $this->process->running();
+        $this->process?->running();
     }
 }

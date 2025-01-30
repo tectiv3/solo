@@ -36,15 +36,18 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         Solo::addCommands([
-            'About' => Command::from('php artisan solo:about')->interactive(),
-            'Dumps' => 'php artisan solo:dumps',
+            'About' => 'php artisan solo:about',
             'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
-            'Tail' => 'tail -f -n 100 ' . storage_path('logs/laravel.log'),
-            //                'HTTP' => implode(' ', [
-            //                    'php',
-            //                    ProcessUtils::escapeArgument(package_path('vendor', 'bin', 'testbench')),
-            //                    'serve'
-            //                ]),
+            'Vite' => 'npm run dev',
+            'Make' => 'php artisan solo:make',
+
+            // Lazy commands do no automatically start when Solo starts.
+            'HTTP' => Command::from('php artisan serve')->lazy(),
+            'Dumps' => Command::from('php artisan solo:dumps')->lazy(),
+            'Reverb' => Command::from('php artisan reverb')->lazy(),
+            'Pint' => Command::from('./vendor/bin/pint --ansi')->lazy(),
+            'Queue' => Command::from('php artisan queue:work')->lazy(),
+            'Tests' => Command::from('php artisan test --colors=always')->lazy(),
         ]);
     }
 

@@ -22,7 +22,11 @@ class Hotkey
 
     protected Command $command;
 
-    protected ?Closure $displayUsing = null;
+    protected ?Closure $visibleWhen = null;
+
+    protected ?Closure $activeWhen = null;
+
+    protected ?Closure $keyDisplay = null;
 
     protected Closure $handler;
 
@@ -35,12 +39,22 @@ class Hotkey
         return new static(...$arguments);
     }
 
-    public function __construct(public array|string $keys, KeyHandler|Closure $handler)
+    public function __construct(public array|string|null $keys = [], KeyHandler|Closure|null $handler = null)
     {
         if ($handler instanceof KeyHandler) {
             $this->fromKeyHandler = $handler;
             $handler = $handler->handler();
         }
+
+        // A no-op, display only key.
+        if (is_null($handler)) {
+            $handler = fn() => null;
+        }
+
+        $this->keyDisplay = function () {
+            $key = is_array($this->keys) ? $this->keys[0] : $this->keys;
+            return KeycodeMap::toDisplay($key);
+        };
 
         $this->handler = $handler;
     }
@@ -51,9 +65,11 @@ class Hotkey
         $this->prompt = $prompt;
     }
 
-    public function handle(): mixed
+    public function handle(): void
     {
-        return $this->callWithParams($this->handler);
+        if ($this->active()) {
+            $this->callWithParams($this->handler);
+        }
     }
 
     public function remap(array|string $keys): static
@@ -75,20 +91,54 @@ class Hotkey
         return $this->callWithParams($this->label);
     }
 
-    public function visible() {}
-
-    public function active() {}
-
-    public function display(?Closure $cb): static
+    public function keyDisplay(Closure|string|null $cb = null): string|static
     {
-        $this->displayUsing = $cb;
+        if (is_null($cb)) {
+            return $this->callWithParams($this->keyDisplay);
+        }
+
+        if (is_string($cb)) {
+            $cb = fn() => $cb;
+        }
+
+        $this->keyDisplay = $cb;
 
         return $this;
     }
 
-    public function hidden()
+    public function visible(Closure|bool|null $cb = null): bool|static
     {
-        return $this->display(fn() => false);
+        if (is_bool($cb)) {
+            $cb = fn() => $cb;
+        }
+
+        if (is_null($cb)) {
+            return is_null($this->visibleWhen) ? true : $this->callWithParams($this->visibleWhen);
+        }
+
+        $this->visibleWhen = $cb;
+
+        return $this;
+    }
+
+    public function invisible()
+    {
+        return $this->visible(false);
+    }
+
+    public function active(Closure|bool|null $cb = null): bool|static
+    {
+        if (is_bool($cb)) {
+            $cb = fn() => $cb;
+        }
+
+        if (is_null($cb)) {
+            return is_null($this->activeWhen) ? true : $this->callWithParams($this->activeWhen);
+        }
+
+        $this->activeWhen = $cb;
+
+        return $this;
     }
 
     public function callWithParams(string|Closure|null $value): mixed
