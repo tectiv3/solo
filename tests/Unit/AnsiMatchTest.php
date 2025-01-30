@@ -14,16 +14,15 @@ use PHPUnit\Framework\Attributes\Test;
 
 class AnsiMatchTest extends Base
 {
-//    #[Test]
-//    public function michell_hashimoto()
-//    {
-//        // https://x.com/mitchellh/status/1878915045524124097
-//        $sequence ="[4:3;38;2;175;175;215;58:2::190:80:70m";
-//        $result = AnsiMatcher::split("\e{$sequence}test");
-//
-//        dd($result);
-//    }
-
+    //    #[Test]
+    //    public function michell_hashimoto()
+    //    {
+    //        // https://x.com/mitchellh/status/1878915045524124097
+    //        $sequence ="[4:3;38;2;175;175;215;58:2::190:80:70m";
+    //        $result = AnsiMatcher::split("\e{$sequence}test");
+    //
+    //        dd($result);
+    //    }
 
     #[Test]
     public function all(): void

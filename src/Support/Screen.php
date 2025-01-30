@@ -422,7 +422,7 @@ class Screen
                 endCol: $this->cursorCol
             );
         } elseif ($param === 2) {
-            //\e[2K - Erase the entire line
+            // \e[2K - Erase the entire line
             $this->bothBuffers->clear(
                 startRow: $this->cursorRow,
                 endRow: $this->cursorRow

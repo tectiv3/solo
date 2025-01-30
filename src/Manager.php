@@ -36,7 +36,7 @@ class Manager
      */
     protected array $commands = [];
 
-  protected ?Theme $cachedTheme = null;
+    protected ?Theme $cachedTheme = null;
 
     protected string $renderer = Renderer::class;
 
