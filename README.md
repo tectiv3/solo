@@ -220,6 +220,10 @@ If you want to support me you can either buy one of my courses or tell your frie
 - High Performance SQLite: https://highperformancesqlite.com
 - Screencasting: https://screencasting.com
 
+## Credits
+
+Special thanks to [Will King](https://x.com/wking__) for the Solo logo.
+
 ## FAQ
 
 
