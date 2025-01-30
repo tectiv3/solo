@@ -21,19 +21,18 @@ class About extends Command
 
     public function handle()
     {
-        echo "0\n";
-
         $banner = <<<EOT
-███████╗ ██████╗ ██╗      ██████╗ 
-██╔════╝██╔═══██╗██║     ██╔═══██╗
-███████╗██║   ██║██║     ██║   ██║
-╚════██║██║   ██║██║     ██║   ██║
-███████║╚██████╔╝███████╗╚██████╔╝
-╚══════╝ ╚═════╝ ╚══════╝ ╚═════╝ 
+┃┃┃┃┃╰━━━━━━━╯┃┃┃┃┃   ███████╗ ██████╗ ██╗      ██████╗ 
+┃┃┃┃╰━━━━━━━━━╯┃┃┃┃   ██╔════╝██╔═══██╗██║     ██╔═══██╗
+┃┃┃╰━━━━━━━━━━━╯┃┃┃   ███████╗██║   ██║██║     ██║   ██║
+┃┃╰━━━━━━━━━━━━━╯┃┃   ╚════██║██║   ██║██║     ██║   ██║
+┃╰━━━━━━━━━━━━━━━╯┃   ███████║╚██████╔╝███████╗╚██████╔╝
+╰━━━━━━━━━━━━━━━━━╯   ╚══════╝ ╚═════╝ ╚══════╝ ╚═════╝ 
 EOT;
 
-        $banner = preg_replace_callback('/[║╔╗╚═╝]/u', fn($matches) => $this->dim($matches[0]), $banner);
-        $banner = preg_replace_callback('/█/u', fn($matches) => $this->black($matches[0]), $banner);
+        $banner = preg_replace_callback('/[║╔╗╚═╝]/u', fn($matches) => $this->dim($this->blue($matches[0])), $banner);
+        $banner = preg_replace_callback('/█/u', fn($matches) => $this->blue($matches[0]), $banner);
+        $banner = preg_replace_callback('/[┃╰━━╯]/u', fn($matches) => $this->blue($matches[0]), $banner);
 
         echo "$banner\n";
 

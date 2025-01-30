@@ -43,41 +43,20 @@ return [
     | Commands
     |--------------------------------------------------------------------------
     |
-    | You can organize your commands into groups, which is helpful for teams
-    | working on different parts of the stack. You can use the magic key
-    | "prompt" if you want Solo to ask you which group you want to run.
-    |
     */
-    'group' => env('SOLO_COMMAND_GROUP', 'default'),
-
     'commands' => [
         'About' => 'php artisan solo:about',
         'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
         'Vite' => 'npm run dev',
+        'Make' => 'php artisan solo:make',
 
-        'HTTP' => 'php artisan serve',
-        'Dumps' => 'php artisan solo:dumps',
-        'Queue' => 'php artisan queue:work',
+        // 'HTTP' => 'php artisan serve',
+        // 'Dumps' => 'php artisan solo:dumps',
+        // 'Queue' => 'php artisan queue:work',
 
         // Lazy commands do no automatically start when Solo starts.
         'Reverb' => Command::from('php artisan reverb')->lazy(),
         'Pint' => Command::from('php artisan pint')->lazy(),
-    ],
-
-    'groups' => [
-        'default' => [
-            'About' => 'php artisan solo:about',
-            'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
-            'Vite' => 'npm run dev',
-
-            // 'HTTP' => 'php artisan serve',
-            // 'Dumps' => 'php artisan solo:dumps',
-            // 'Queue' => 'php artisan queue:work',
-
-            // Lazy commands do no automatically start when Solo starts.
-            'Reverb' => Command::from('php artisan reverb')->lazy(),
-            // 'Pint' => Command::make('php artisan pint')->lazy(),
-        ],
     ],
 
     /*

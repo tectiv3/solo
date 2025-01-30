@@ -12,17 +12,12 @@
 
 # Solo for Laravel
 
-> [!WARNING]  
-> This is still beta software. Use with caution.
-
 > [!IMPORTANT]
-> This package requires ext-pcntl, so it will not work on Windows. Sorry about that.
+> This package requires ext-pcntl, so it will not work on Windows. Sorry about that. If you know how to fix that, let me know
 
 ## About 
 
-Solo for Laravel is a package to run multiple commands at once, to aid in local development. After installing, you can open the SoloServiceProvider to add or remove commands.
-
-You can have all the commands needed to run your application behind a single command: 
+Solo for Laravel is a package to run multiple commands at once, to aid in local development. All the commands needed to run your application live behind a single artisan command: 
 
 ```shell
 php artisan solo
@@ -40,10 +35,12 @@ Require the package:
 composer require aaronfrancis/solo --dev
 ```
 
-Install the Service Provider:
+Install the package:
 ```shell
 php artisan solo:install
 ```
+
+You can configure the commands you would like to run by modifying `config/solo.php`.
 
 ## Usage
 

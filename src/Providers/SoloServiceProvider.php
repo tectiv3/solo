@@ -30,12 +30,13 @@ class SoloServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->registerDumper();
+
         if (!$this->app->runningInConsole()) {
             return;
         }
 
         $this->registerCommands();
-        $this->registerDumper();
         $this->publishFiles();
     }
 
@@ -67,10 +68,5 @@ class SoloServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../../config/solo.php' => config_path('solo.php'),
         ], 'solo-config');
-
-        $this->publishes([
-            __DIR__ . '/../Stubs/SoloServiceProvider.stub' => App::path('Providers/SoloServiceProvider.php'),
-        ], 'solo-provider');
-
     }
 }
