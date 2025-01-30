@@ -32,22 +32,6 @@ Each command runs in its own tab in Solo.
 
 ![Screenshot](https://github.com/aarondfrancis/solo/blob/main/art/screenshot.png?raw=true)
 
-## Credits 
-
-Solo was developed by Aaron Francis. If you like it, please let me know!
- 
-- Twitter: https://twitter.com/aarondfrancis
-- Website: https://aaronfrancis.com
-- YouTube: https://youtube.com/@aarondfrancis
-- GitHub: https://github.com/aarondfrancis/solo
-
-Special thanks to
-- [Joe Tannenbaum](https://x.com/joetannenbaum) for his [Laracasts course](https://laracasts.com/series/cli-experiments)
-- Joe's [Chewie package](https://github.com/joetannenbaum/chewie), on which Solo relies
-- [Laravel Prompts](https://laravel.com/docs/11.x/prompts) for paving the way
-- [Will King](https://x.com/wking__) for the Solo logo
-- And you, dear reader
-
 ## Installation
 
 Require the package:
@@ -225,8 +209,25 @@ If you want to support me you can either buy one of my courses or tell your frie
 - High Performance SQLite: https://highperformancesqlite.com
 - Screencasting: https://screencasting.com
 
-## FAQ
+## Credits
 
+Solo was developed by Aaron Francis. If you like it, please let me know!
+
+- Twitter: https://twitter.com/aarondfrancis
+- Website: https://aaronfrancis.com
+- YouTube: https://youtube.com/@aarondfrancis
+- GitHub: https://github.com/aarondfrancis/solo
+
+Special thanks to
+
+- [Joe Tannenbaum](https://x.com/joetannenbaum) for his [Laracasts course](https://laracasts.com/series/cli-experiments)
+- Joe's [Chewie package](https://github.com/joetannenbaum/chewie), on which Solo relies
+- [Laravel Prompts](https://laravel.com/docs/11.x/prompts) for paving the way
+- [Will King](https://x.com/wking__) for the Solo logo
+- And you, dear reader
+
+
+## FAQ
 
 #### My command isn't working
 (That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi`
