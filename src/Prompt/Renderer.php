@@ -1,13 +1,21 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Prompt;
 
+use Chewie\Concerns\Aligns;
+use Chewie\Concerns\DrawsHotkeys;
+use Chewie\Output\Util;
+use Illuminate\Support\Collection;
+use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
+use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
+use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 use SoloTerm\Solo\Commands\Command;
 use SoloTerm\Solo\Contracts\Theme;
 use SoloTerm\Solo\Facades\Solo;
@@ -16,13 +24,6 @@ use SoloTerm\Solo\Hotkeys\KeycodeMap;
 use SoloTerm\Solo\Popups\Popup;
 use SoloTerm\Solo\Support\AnsiAware;
 use SoloTerm\Solo\Support\Screen;
-use Chewie\Concerns\Aligns;
-use Chewie\Concerns\DrawsHotkeys;
-use Chewie\Output\Util;
-use Illuminate\Support\Collection;
-use Laravel\Prompts\Themes\Default\Concerns\DrawsScrollbars;
-use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
-use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 
 class Renderer extends PromptsRenderer
 {

@@ -1,18 +1,19 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace App\Providers;
 
+use Illuminate\Support\ProcessUtils;
+use Illuminate\Support\ServiceProvider;
 use SoloTerm\Solo\Commands\Command;
 use SoloTerm\Solo\Commands\EnhancedTailCommand;
 use SoloTerm\Solo\Facades\Solo;
-use Illuminate\Support\ProcessUtils;
-use Illuminate\Support\ServiceProvider;
 
 use function Orchestra\Testbench\package_path;
 

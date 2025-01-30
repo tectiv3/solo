@@ -1,15 +1,16 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Unit;
 
-use SoloTerm\Solo\Support\SafeBytes;
 use PHPUnit\Framework\Attributes\Test;
+use SoloTerm\Solo\Support\SafeBytes;
 
 class ByteSpliceTest extends Base
 {

@@ -1,16 +1,15 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 
 class Install extends Command
 {
@@ -26,5 +25,4 @@ class Install extends Command
         $this->info('Solo installed successfully.');
         $this->info('Run `php artisan solo` to start.');
     }
-
 }

@@ -1,20 +1,14 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Prompt;
 
-use SoloTerm\Solo\Commands\Command;
-use SoloTerm\Solo\Events\Event;
-use SoloTerm\Solo\Facades\Solo;
-use SoloTerm\Solo\Hotkeys\Hotkey;
-use SoloTerm\Solo\Popups\Popup;
-use SoloTerm\Solo\Support\Frames;
-use SoloTerm\Solo\Support\Screen;
 use Carbon\CarbonImmutable;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;
@@ -23,6 +17,13 @@ use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Collection;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Events\Event;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Popups\Popup;
+use SoloTerm\Solo\Support\Frames;
+use SoloTerm\Solo\Support\Screen;
 
 class Dashboard extends Prompt
 {

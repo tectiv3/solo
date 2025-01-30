@@ -1,20 +1,21 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Commands\Concerns;
 
-use SoloTerm\Solo\Support\PendingProcess;
-use SoloTerm\Solo\Support\ProcessTracker;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
 use ReflectionClass;
+use SoloTerm\Solo\Support\PendingProcess;
+use SoloTerm\Solo\Support\ProcessTracker;
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process as SymfonyProcess;
 

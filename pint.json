@@ -11,9 +11,11 @@
         "function_declaration": {
             "closure_fn_spacing": "none"
         },
-        "phpdoc_separation": {
-            "groups": [["author","link"],["param","return"]]
-        },
         "trailing_comma_in_multiline": false
+    },
+    "xxx_header_comment": {
+        "header": "@author Aaron Francis <aaron@tryhardstudios.com>\n\n@link https://aaronfrancis.com\n@link https://x.com/aarondfrancis",
+        "comment_type": "PHPDoc",
+        "location": "after_declare_strict"
     }
 }

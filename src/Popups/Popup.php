@@ -1,14 +1,17 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Popups;
 
+use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use SoloTerm\Solo\Hotkeys\KeycodeMap;
 use SoloTerm\Solo\Support\Screen;
-use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 
 abstract class Popup
 {

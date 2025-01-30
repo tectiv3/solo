@@ -1,22 +1,14 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo;
 
-use SoloTerm\Solo\Commands\Command;
-use SoloTerm\Solo\Commands\UnsafeCommand;
-use SoloTerm\Solo\Concerns\HasEvents;
-use SoloTerm\Solo\Contracts\HotkeyProvider;
-use SoloTerm\Solo\Contracts\Theme;
-use SoloTerm\Solo\Hotkeys\DefaultHotkeys;
-use SoloTerm\Solo\Hotkeys\Hotkey;
-use SoloTerm\Solo\Prompt\Renderer;
-use SoloTerm\Solo\Themes\LightTheme;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -26,6 +18,15 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 use ReflectionClass;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Commands\UnsafeCommand;
+use SoloTerm\Solo\Concerns\HasEvents;
+use SoloTerm\Solo\Contracts\HotkeyProvider;
+use SoloTerm\Solo\Contracts\Theme;
+use SoloTerm\Solo\Hotkeys\DefaultHotkeys;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Prompt\Renderer;
+use SoloTerm\Solo\Themes\LightTheme;
 
 class Manager
 {

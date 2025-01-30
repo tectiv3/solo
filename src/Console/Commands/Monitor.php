@@ -1,10 +1,17 @@
 <?php
 
+/**
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
+ */
+
 namespace SoloTerm\Solo\Console\Commands;
 
-use SoloTerm\Solo\Support\ProcessTracker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use SoloTerm\Solo\Support\ProcessTracker;
 
 class Monitor extends Command
 {

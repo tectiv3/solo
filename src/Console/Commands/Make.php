@@ -1,8 +1,14 @@
 <?php
 
+/**
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
+ */
+
 namespace SoloTerm\Solo\Console\Commands;
 
-use SoloTerm\Solo\Support\PendingProcess;
 use Illuminate\Console\Command;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Collection;
@@ -11,6 +17,7 @@ use Illuminate\Support\Str;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Terminal;
+use SoloTerm\Solo\Support\PendingProcess;
 use Symfony\Component\Process\InputStream;
 use Throwable;
 

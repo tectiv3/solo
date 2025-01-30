@@ -1,15 +1,14 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Integration;
 
-use SoloTerm\Solo\Providers\SoloServiceProvider;
-use SoloTerm\Solo\Support\AnsiAware;
-use SoloTerm\Solo\Support\PendingProcess;
-use SoloTerm\Solo\Tests\Support\SoloTestServiceProvider;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Process\ProcessResult;
@@ -17,6 +16,10 @@ use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;
 use Orchestra\Testbench\TestCase;
+use SoloTerm\Solo\Providers\SoloServiceProvider;
+use SoloTerm\Solo\Support\AnsiAware;
+use SoloTerm\Solo\Support\PendingProcess;
+use SoloTerm\Solo\Tests\Support\SoloTestServiceProvider;
 use Symfony\Component\Process\InputStream;
 
 use function Orchestra\Testbench\package_path;

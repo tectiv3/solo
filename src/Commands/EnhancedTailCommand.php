@@ -1,20 +1,21 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Commands;
 
-use SoloTerm\Solo\Facades\Solo;
-use SoloTerm\Solo\Hotkeys\Hotkey;
-use SoloTerm\Solo\Support\Screen;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Support\Screen;
 
 class EnhancedTailCommand extends Command
 {

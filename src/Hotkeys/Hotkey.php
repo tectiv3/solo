@@ -1,13 +1,20 @@
 <?php
 
+/**
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
+ */
+
 namespace SoloTerm\Solo\Hotkeys;
 
-use SoloTerm\Solo\Commands\Command;
-use SoloTerm\Solo\Prompt\Dashboard;
 use Chewie\Input\KeyPressListener;
 use Closure;
 use ReflectionFunction;
 use ReflectionParameter;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Prompt\Dashboard;
 
 class Hotkey
 {

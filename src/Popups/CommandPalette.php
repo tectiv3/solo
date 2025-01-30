@@ -1,14 +1,17 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Popups;
 
+use Generator;
 use SoloTerm\Solo\Support\CapturedMultiSelectPrompt;
 use SoloTerm\Solo\Support\CapturedTextPrompt;
-use Generator;
 
 class CommandPalette extends Popup
 {

@@ -1,15 +1,16 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Themes;
 
-use SoloTerm\Solo\Contracts\Theme;
 use Laravel\Prompts\Concerns\Colors;
+use SoloTerm\Solo\Contracts\Theme;
 
 class LightTheme implements Theme
 {

@@ -2,13 +2,20 @@
 
 declare(strict_types=1);
 
+/**
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
+ */
+
 namespace SoloTerm\Solo\Tests\Support;
 
-use SoloTerm\Solo\Support\Screen;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Prompts\Terminal;
+use SoloTerm\Solo\Support\Screen;
 
 use function Orchestra\Testbench\package_path;
 

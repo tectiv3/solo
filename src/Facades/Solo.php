@@ -1,15 +1,16 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Facades;
 
-use SoloTerm\Solo\Manager;
 use Illuminate\Support\Facades\Facade;
+use SoloTerm\Solo\Manager;
 
 class Solo extends Facade
 {

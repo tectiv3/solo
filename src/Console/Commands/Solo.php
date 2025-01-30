@@ -1,15 +1,16 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Console\Commands;
 
-use SoloTerm\Solo\Prompt\Dashboard;
 use Illuminate\Console\Command;
+use SoloTerm\Solo\Prompt\Dashboard;
 use Symfony\Component\Process\Process;
 
 class Solo extends Command

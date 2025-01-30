@@ -1,22 +1,23 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Commands;
 
+use Chewie\Concerns\Ticks;
+use Chewie\Contracts\Loopable;
+use Chewie\Input\KeyPressListener;
+use Illuminate\Support\Collection;
 use SoloTerm\Solo\Commands\Concerns\ManagesProcess;
 use SoloTerm\Solo\Hotkeys\Hotkey;
 use SoloTerm\Solo\Hotkeys\KeyHandler;
 use SoloTerm\Solo\Support\AnsiAware;
 use SoloTerm\Solo\Support\Screen;
-use Chewie\Concerns\Ticks;
-use Chewie\Contracts\Loopable;
-use Chewie\Input\KeyPressListener;
-use Illuminate\Support\Collection;
 use SplQueue;
 
 class Command implements Loopable

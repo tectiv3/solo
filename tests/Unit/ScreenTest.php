@@ -1,14 +1,17 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
 use SoloTerm\Solo\Support\Screen;
 use SoloTerm\Solo\Tests\Support\ComparesVisually;
-use PHPUnit\Framework\Attributes\Test;
 
 class ScreenTest extends Base
 {

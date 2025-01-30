@@ -1,16 +1,17 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Unit;
 
-use SoloTerm\Solo\Commands\Command;
 use Laravel\Prompts\Concerns\Colors;
 use PHPUnit\Framework\Attributes\Test;
+use SoloTerm\Solo\Commands\Command;
 
 class LineWrapTest extends Base
 {

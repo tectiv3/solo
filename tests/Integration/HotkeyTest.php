@@ -1,14 +1,17 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Integration;
 
+use PHPUnit\Framework\Attributes\Test;
 use SoloTerm\Solo\Facades\Solo as SoloAlias;
 use SoloTerm\Solo\Hotkeys\VimHotkeys;
-use PHPUnit\Framework\Attributes\Test;
 
 class HotkeyTest extends Base
 {

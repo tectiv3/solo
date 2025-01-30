@@ -1,13 +1,16 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Popups;
 
-use SoloTerm\Solo\Support\CapturedPromptInterface;
 use Generator;
+use SoloTerm\Solo\Support\CapturedPromptInterface;
 
 trait HasForm
 {

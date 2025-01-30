@@ -1,17 +1,20 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Popups;
 
-use SoloTerm\Solo\Events\Event;
-use SoloTerm\Solo\Facades\Solo;
-use SoloTerm\Solo\Support\CapturedQuickPickPrompt;
 use Cache;
 use Generator;
 use Laravel\Prompts\Key;
+use SoloTerm\Solo\Events\Event;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Support\CapturedQuickPickPrompt;
 use Str;
 
 class TabPicker extends Popup

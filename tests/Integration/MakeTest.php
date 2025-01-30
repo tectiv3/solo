@@ -1,15 +1,18 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Integration;
 
-use SoloTerm\Solo\Commands\MakeCommand;
-use SoloTerm\Solo\Facades\Solo as SoloAlias;
 use Laravel\Prompts\Key;
 use PHPUnit\Framework\Attributes\Test;
+use SoloTerm\Solo\Commands\MakeCommand;
+use SoloTerm\Solo\Facades\Solo as SoloAlias;
 
 class MakeTest extends Base
 {

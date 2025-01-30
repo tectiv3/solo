@@ -1,16 +1,17 @@
 <?php
 
 /**
- * @author Aaron Francis <aarondfrancis@gmail.com>
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
  * @link https://aaronfrancis.com
- * @link https://twitter.com/aarondfrancis
+ * @link https://x.com/aarondfrancis
  */
 
 namespace SoloTerm\Solo\Tests\Unit;
 
+use Orchestra\Testbench\TestCase;
 use SoloTerm\Solo\Providers\SoloServiceProvider;
 use SoloTerm\Solo\Tests\Support\SoloTestServiceProvider;
-use Orchestra\Testbench\TestCase;
 
 abstract class Base extends TestCase
 {

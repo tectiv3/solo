@@ -1,11 +1,18 @@
 <?php
 
+/**
+ * @author Aaron Francis <aaron@tryhardstudios.com>
+ *
+ * @link https://aaronfrancis.com
+ * @link https://x.com/aarondfrancis
+ */
+
 namespace SoloTerm\Solo\Console\Commands;
 
-use SoloTerm\Solo\Support\CustomDumper;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Console\CliDumper;
 use Illuminate\Support\Arr;
+use SoloTerm\Solo\Support\CustomDumper;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Symfony\Component\VarDumper\Server\DumpServer;
 
