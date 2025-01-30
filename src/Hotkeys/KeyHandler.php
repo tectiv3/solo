@@ -11,6 +11,7 @@ namespace SoloTerm\Solo\Hotkeys;
 
 use SoloTerm\Solo\Commands\Command;
 use SoloTerm\Solo\Popups\CommandPalette;
+use SoloTerm\Solo\Popups\Help;
 use SoloTerm\Solo\Popups\TabPicker;
 use SoloTerm\Solo\Prompt\Dashboard;
 
@@ -39,6 +40,7 @@ enum KeyHandler
     case DD;
     case ShowCommandChooser;
     case ShowTabPicker;
+    case ShowHelp;
 
     public function handler(): \Closure
     {
@@ -61,6 +63,7 @@ enum KeyHandler
             self::DD => fn(Command $command) => $command->dd(),
             self::ShowCommandChooser => fn(Dashboard $prompt) => $prompt->showPopup(new CommandPalette),
             self::ShowTabPicker => fn(Dashboard $prompt) => $prompt->showPopup(new TabPicker),
+            self::ShowHelp => fn(Dashboard $prompt) => $prompt->showPopup(new Help),
         };
     }
 }

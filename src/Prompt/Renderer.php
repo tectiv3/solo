@@ -20,7 +20,6 @@ use SoloTerm\Solo\Commands\Command;
 use SoloTerm\Solo\Contracts\Theme;
 use SoloTerm\Solo\Facades\Solo;
 use SoloTerm\Solo\Hotkeys\Hotkey;
-use SoloTerm\Solo\Hotkeys\KeycodeMap;
 use SoloTerm\Solo\Popups\Popup;
 use SoloTerm\Solo\Support\AnsiAware;
 use SoloTerm\Solo\Support\Screen;
@@ -115,6 +114,7 @@ class Renderer extends PromptsRenderer
 
         $screen = $plain;
 
+        // @TODO make the width configurable / determined by the popup itself.
         $offset = ($this->width - 80) / 2;
         $screen->write($popup->render($offset, 2));
 
@@ -491,10 +491,9 @@ class Renderer extends PromptsRenderer
         collect($hotkeys)->map(function (Hotkey $hotkey) {
             $hotkey->init($this->currentCommand, $this->dashboard);
 
-
-
-            if ($hotkey->visible())
-            $this->hotkey($hotkey->keyDisplay(), $hotkey->makeLabel() ?? '');
+            if ($hotkey->visible()) {
+                $this->hotkey($hotkey->keyDisplay(), $hotkey->makeLabel() ?? '');
+            }
         });
 
         $this->line(

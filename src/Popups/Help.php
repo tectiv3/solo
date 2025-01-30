@@ -9,6 +9,7 @@
 
 namespace SoloTerm\Solo\Popups;
 
+use Laravel\Prompts\Key;
 use SoloTerm\Solo\Support\Screen;
 
 class Help extends Popup
@@ -29,11 +30,16 @@ class Help extends Popup
 
     public function handleInput($key)
     {
-        if ($key === "\x18") {
+        if ($key === Key::ESCAPE) {
             $this->exitRequested = true;
 
             return;
         }
+    }
+
+    public function footer()
+    {
+        return 'Press ESC to close.';
     }
 
     public function shouldClose(): bool

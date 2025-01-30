@@ -22,6 +22,7 @@ use SoloTerm\Solo\Events\Event;
 use SoloTerm\Solo\Facades\Solo;
 use SoloTerm\Solo\Hotkeys\Hotkey;
 use SoloTerm\Solo\Popups\Popup;
+use SoloTerm\Solo\Popups\Quitting;
 use SoloTerm\Solo\Support\Frames;
 use SoloTerm\Solo\Support\Screen;
 
@@ -303,18 +304,11 @@ class Dashboard extends Prompt
         }
     }
 
-    public function loopCallback(?KeyPressListener $listener = null)
-    {
-        $this->currentCommand()->catchUpScroll();
-        $this->render();
-
-        $listener?->once();
-        $this->frames->next();
-    }
-
     public function quit(): void
     {
         $initiated = CarbonImmutable::now();
+
+        $quitting = (new Quitting)->setCommands($this->commands);
 
         foreach ($this->commands as $command) {
             /** @var Command $command */
@@ -328,13 +322,17 @@ class Dashboard extends Prompt
         // in the loop. We'll break the loop after all processes are dead or after
         // 3 seconds. If all the processes aren't dead after three seconds then
         // the monitoring process should clean it up in the background.
-        $this->loop(function () use ($initiated) {
+        $this->loop(function () use ($initiated, $quitting) {
             // Run the renderer so it doesn't look like Solo is frozen.
-            $this->loopCallback();
+            $this->renderSingleFrame();
 
             $allDead = array_reduce($this->commands, function ($carry, Command $command) {
                 return $carry && $command->processStopped();
             }, true);
+
+            if (!$allDead && !($this->popup instanceof Quitting)) {
+                $this->showPopup($quitting);
+            }
 
             return !($allDead || $initiated->addSeconds(3)->isPast());
         }, 25_000);

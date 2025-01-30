@@ -2,6 +2,7 @@
 
 use SoloTerm\Solo\Commands\Command;
 use SoloTerm\Solo\Commands\EnhancedTailCommand;
+use SoloTerm\Solo\Commands\MakeCommand;
 use SoloTerm\Solo\Hotkeys as Hotkeys;
 use SoloTerm\Solo\Themes as Themes;
 
@@ -48,7 +49,7 @@ return [
         'About' => 'php artisan solo:about',
         'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
         'Vite' => 'npm run dev',
-        'Make' => 'php artisan solo:make',
+        'Make' => new MakeCommand,
         // 'HTTP' => 'php artisan serve',
 
         // Lazy commands do no automatically start when Solo starts.

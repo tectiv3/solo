@@ -9,6 +9,8 @@
 
 namespace SoloTerm\Solo\Commands;
 
+use Laravel\Prompts\Key;
+
 class MakeCommand extends Command
 {
     public function boot(): void
@@ -19,10 +21,10 @@ class MakeCommand extends Command
         $this->autostart = true;
     }
 
-    public function hotkeys(): array
+    public function whenStopping()
     {
-        return [
-            //
-        ];
+        $this->input->write(Key::CTRL_C);
+        $this->input->write(Key::CTRL_C);
+        $this->input->write(Key::CTRL_C);
     }
 }

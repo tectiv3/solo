@@ -85,7 +85,11 @@ class TabPicker extends Popup
         return $this->exitRequested;
     }
 
-    public function render(int $offsetX = 0, int $offsetY = 0)
+    /**
+     * We extend the render function to make this popup "frameless".
+     * Perhaps we should make that a built in option?
+     */
+    public function render(int $offsetX = 0, int $offsetY = 0): string
     {
         $output = $this->output();
 

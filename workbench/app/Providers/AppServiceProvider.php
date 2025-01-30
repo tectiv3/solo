@@ -9,13 +9,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ProcessUtils;
 use Illuminate\Support\ServiceProvider;
 use SoloTerm\Solo\Commands\Command;
 use SoloTerm\Solo\Commands\EnhancedTailCommand;
+use SoloTerm\Solo\Commands\MakeCommand;
 use SoloTerm\Solo\Facades\Solo;
-
-use function Orchestra\Testbench\package_path;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
             'About' => 'php artisan solo:about',
             'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
             'Vite' => 'npm run dev',
-            'Make' => 'php artisan solo:make',
+            'Make' => MakeCommand::class,
 
             // Lazy commands do no automatically start when Solo starts.
             'HTTP' => Command::from('php artisan serve')->lazy(),

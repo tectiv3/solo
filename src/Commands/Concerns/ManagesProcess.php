@@ -133,9 +133,16 @@ trait ManagesProcess
         $this->sendSizeViaStty();
     }
 
+    public function whenStopping()
+    {
+        //
+    }
+
     public function stop(): void
     {
         $this->stopping = true;
+
+        $this->whenStopping();
 
         if ($this->processRunning()) {
             $this->children = ProcessTracker::children($this->process->id());

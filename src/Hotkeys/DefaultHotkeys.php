@@ -97,6 +97,9 @@ class DefaultHotkeys implements HotkeyProvider
 
             'tab_picker' => Hotkey::make('g', KeyHandler::ShowTabPicker)
                 ->label('Go'),
+
+            // 'help' => Hotkey::make('?', KeyHandler::ShowHelp)
+            //     ->label('Help'),
         ];
 
     }

@@ -75,8 +75,14 @@ abstract class Popup
 
         $rendered .= "\e[{$offsetX}C\e[0m ┕" . str_repeat('━', 81) . '┛ '
             . PHP_EOL
-            . "\e[{$offsetX}C\e[0;2m Press " . KeycodeMap::toDisplay("\x18") . ' to exit without saving.';
+            . "\e[{$offsetX}C\e[0;2m  "
+            . $this->footer();
 
         return $rendered;
+    }
+
+    public function footer()
+    {
+        return 'Press ' . KeycodeMap::toDisplay("\x18") . ' to exit without saving.';
     }
 }

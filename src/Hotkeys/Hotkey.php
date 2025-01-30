@@ -53,6 +53,7 @@ class Hotkey
 
         $this->keyDisplay = function () {
             $key = is_array($this->keys) ? $this->keys[0] : $this->keys;
+
             return KeycodeMap::toDisplay($key);
         };
 
