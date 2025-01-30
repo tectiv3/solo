@@ -102,17 +102,17 @@ trait ManagesProcess
             // stdio buffering (https://www.pixelbeat.org/programming/stdio_buffering).
 
             // According to that article, it could be 1024 or 4096, depending on whether a terminal
-            // is connected or not. We'll check both. If there are more than 1024 bytes in
-            // stdout, they might end up in stderr! No idea why. Not sure if that's
-            // Symfony or just normal system stuff. Regardless, for that reason
-            // we don't differentiate between stdout and stderr here.
+            // is connected or not. We'll check both along with 2048. If there are more than 1024
+            // bytes in stdout, they might end up in stderr! No idea why. Not sure if that's
+            // a Symfony thing or just normal system stuff. Regardless, for that reason we
+            // don't differentiate between stdout and stderr here and listen for both.
 
-            // So when we do get a chunk that seems like it might have a continuation, we need to
-            // buffer it, because there's more output coming right behind it. If we don't
-            // buffer, we could splice a multibyte character or an ANSI code. Much
-            // effort went into fixing byte splices, but ANSI splices are way
-            // tougher. This 1024/4096 method seems to be foolproof.
-            if (strlen($buffer) === 1024 || strlen($buffer) === 4096) {
+            // So when we do get a chunk that seems like it might have a continuation, we need
+            // to buffer it, because there's more output coming right behind it. If we don't
+            // buffer, we could splice a multibyte character or an ANSI code. Much effort
+            // went into fixing byte splices, but ANSI splices are way tougher. Checking
+            // if it's a perfect multiple of 1024 seems to be foolproof. Hopefully.
+            if (strlen($buffer) % 1024 === 0) {
                 $this->partialBuffer .= $buffer;
 
                 return;

@@ -11,7 +11,6 @@ namespace SoloTerm\Solo\Tests\Integration;
 
 use PHPUnit\Framework\Attributes\Test;
 use SoloTerm\Solo\Facades\Solo as SoloAlias;
-use SoloTerm\Solo\Hotkeys\VimHotkeys;
 
 class HotkeyTest extends Base
 {
@@ -31,7 +30,7 @@ class HotkeyTest extends Base
         ];
 
         $this->runSolo($actions, function () {
-            config()->set('solo.hotkeys', VimHotkeys::class);
+            config()->set('solo.keybinding', 'vim');
 
             SoloAlias::addCommands([
                 'About' => 'php artisan solo:about',
