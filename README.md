@@ -1,12 +1,16 @@
+<p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_light.png">
+      <img alt="Solo for Laravel" src="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_light.png" style="max-width: 80%; height: auto;">
+    </picture>
+</p>
+
+<h3 align="center">Your all-in-one Laravel command to tame local development</h3>
+
+---
+
 # Solo for Laravel
-```
-███████╗ ██████╗ ██╗      ██████╗ 
-██╔════╝██╔═══██╗██║     ██╔═══██╗
-███████╗██║   ██║██║     ██║   ██║
-╚════██║██║   ██║██║     ██║   ██║
-███████║╚██████╔╝███████╗╚██████╔╝
-╚══════╝ ╚═════╝ ╚══════╝ ╚═════╝  (for Laravel)
-```
 
 > [!WARNING]  
 > This is still beta software. Use with caution.
@@ -89,6 +93,7 @@ class SoloServiceProvider extends ServiceProvider
                 EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
                 'Vite' => 'npm run dev',
                 // 'HTTP' => 'php artisan serve',
+                new Command(name: 'Foo', command: 'pwd"', autostart: false, customHotKeys: []),
                 'About' => 'php artisan solo:about'
             ])
             // Not auto-started
@@ -130,6 +135,7 @@ Solo::useTheme('dark')
         EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
         'Vite' => 'npm run dev',
         // 'HTTP' => 'php artisan serve',
+        new Command(name: 'Foo', command: 'pwd"', autostart: false, customHotKeys: []),
         'About' => 'php artisan solo:about'
     ])
 ```
@@ -137,6 +143,15 @@ Solo::useTheme('dark')
 `EnhancedTailCommand` is a subclass of `Command` with a little bit of logic to make the logs more readable. You're free to create your own subclasses if you want!
 
 To remove a command, simply delete the command. No need to create a PR to fix the stub. We've provided a reasonable set of starting commands, but the `SoloServiceProvider` lives in your application, so you have full control of it.
+
+
+## Usage
+
+To use Solo, you simply need to run `php artisan solo`.
+
+You'll be presented with a dashboard. To navigate between processes use the left/right arrows. You can scroll the output by using the up/down keys. **Shift + up/down** scrolls by 10 lines instead of one.
+
+See the hotkeys on the dashboard for further details.
 
 ## Theming
 
@@ -205,22 +220,20 @@ If you want to support me you can either buy one of my courses or tell your frie
 - High Performance SQLite: https://highperformancesqlite.com
 - Screencasting: https://screencasting.com
 
-
 ## FAQ
 
-<dl>
-    <dt>My command isn't working</dt>
-    <dd>(That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi`
-        option? Is it writing to somewhere besides `STDOUT`? Is there an option to force it to write to `STDOUT`? If
-        you've tried all that, feel free to open an issue.
-    </dd>
-    <dt>Can I run Sail commands?</dt>
-    <dd>Yes! This seems to be the way to do it: `vendor/bin/sail artisan schedule:work --ansi` (Read more at #29.)
-    </dd>
-    <dt>Does Solo support Windows?</dt>
-    <dd>It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the
-        roadmap.
-    </dd>
-    <dt>Can I use this in production?</dt>
-    <dd>I wouldn't. I'd use something more robust, like supervisor or something.</dd>
-</dl>
+
+#### My command isn't working
+(That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi`
+option? Is it writing to somewhere besides `STDOUT`? Is there an option to force it to write to `STDOUT`? If
+you've tried all that, feel free to open an issue.
+    
+#### Can I run Sail commands?
+Yes! This seems to be the way to do it: `vendor/bin/sail artisan schedule:work --ansi` (Read more at #29.)
+   
+#### Does Solo support Windows?
+It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the
+roadmap.
+    
+#### Can I use this in production?
+I wouldn't. I'd use something more robust, like supervisor or something.

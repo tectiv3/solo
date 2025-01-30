@@ -10,9 +10,12 @@ namespace AaronFrancis\Solo;
 
 use AaronFrancis\Solo\Commands\Command;
 use AaronFrancis\Solo\Commands\UnsafeCommand;
+use AaronFrancis\Solo\Concerns\HasEvents;
+use AaronFrancis\Solo\Contracts\HotkeyProvider;
 use AaronFrancis\Solo\Contracts\Theme;
+use AaronFrancis\Solo\Hotkeys\DefaultHotkeys;
+use AaronFrancis\Solo\Hotkeys\Hotkey;
 use AaronFrancis\Solo\Prompt\Renderer;
-use AaronFrancis\Solo\Themes\DarkTheme;
 use AaronFrancis\Solo\Themes\LightTheme;
 use Exception;
 use Illuminate\Support\Arr;
@@ -26,24 +29,16 @@ use ReflectionClass;
 
 class Manager
 {
+    use HasEvents;
+
     /**
      * @var array<Command>
      */
     protected array $commands = [];
 
-    protected string $theme;
-
-    protected ?Theme $cachedTheme = null;
+  protected ?Theme $cachedTheme = null;
 
     protected string $renderer = Renderer::class;
-
-    /**
-     * @var array<string, class-string<Theme>>
-     */
-    protected array $themes = [
-        'light' => LightTheme::class,
-        'dark' => DarkTheme::class,
-    ];
 
     /**
      * @var array<class-string>
@@ -88,76 +83,22 @@ class Manager
         return $this;
     }
 
-    public function registerTheme(string $name, string $theme): static
-    {
-        if (!class_exists($theme)) {
-            throw new InvalidArgumentException("Theme class '{$theme}' does not exist.");
-        }
-
-        $reflected = new ReflectionClass($theme);
-
-        if (!$reflected->implementsInterface(Theme::class)) {
-            throw new InvalidArgumentException("Theme class '{$theme}' must implement the SoloTheme interface.");
-        }
-
-        if ($reflected->isAbstract()) {
-            throw new InvalidArgumentException("Theme class '{$theme}' is not instantiable.");
-        }
-
-        // Totally fine to overwrite one of the existing themes, since we
-        // ship light and dark defaults that may not be preferable.
-        $this->themes[$name] = $theme;
-
-        return $this;
-    }
-
-    public function useTheme($key): static
-    {
-        $this->theme = $key;
-        $this->cachedTheme = null;
-
-        return $this;
-    }
-
-    public function makeTheme(): Theme
-    {
-        if ($this->cachedTheme) {
-            return $this->cachedTheme;
-        }
-
-        // Manually set, configuration, then just default to dark.
-        $coalesced = $this->theme ?? Config::get('solo.theme') ?? 'dark';
-
-        // They may have manually set a theme that doesn't exist.
-        $theme = Arr::get($this->themes, $coalesced) ?? $this->themes['dark'];
-
-        return $this->cachedTheme = new $theme;
-    }
-
-    public function setRenderer($renderer)
-    {
-        if (!is_subclass_of($renderer, PromptsRenderer::class)) {
-            throw new InvalidArgumentException(
-                "[$renderer] must be a subclass of [" . PromptsRenderer::class . ']'
-            );
-        }
-
-        $this->renderer = $renderer;
-    }
-
-    public function getRenderer(): string
-    {
-        return $this->renderer;
-    }
-
     public function addCommand(string|Command $command, ?string $name = null): static
     {
+        if (is_string($command) && is_a($command, Command::class, allow_string: true)) {
+            $command = app($command);
+        }
+
         if (is_string($command)) {
             if (is_null($name)) {
                 throw new InvalidArgumentException('Name must be provided when command is a string.');
             }
 
             $command = new Command(name: $name, command: $command);
+        }
+
+        if (!is_null($name)) {
+            $command->name = $name;
         }
 
         if (!$command instanceof Command) {
@@ -172,6 +113,13 @@ class Manager
         }
 
         $this->commands[] = $command;
+
+        return $this;
+    }
+
+    public function clearCommands(): static
+    {
+        $this->commands = [];
 
         return $this;
     }
@@ -203,6 +151,71 @@ class Manager
         }
 
         return $this;
+    }
+
+    /**
+     * @return array<Hotkey>
+     *
+     * @throws Exception
+     */
+    public function hotkeys(): array
+    {
+        $bindings = Config::array('solo.keybindings', []);
+        $binding = Config::string('solo.keybinding', 'default');
+
+        $hotkeys = Arr::get($bindings, $binding, DefaultHotkeys::class);
+
+        if (!is_a($hotkeys, HotkeyProvider::class, allow_string: true)) {
+            throw new InvalidArgumentException('Hotkeys must implement [' . HotkeyProvider::class . ']');
+        }
+
+        return $hotkeys::keys();
+    }
+
+    public function theme(bool $reinitialize = false): Theme
+    {
+        if ($this->cachedTheme && !$reinitialize) {
+            return $this->cachedTheme;
+        }
+
+        $theme = Config::string('solo.theme', 'light');
+        $themes = Config::array('solo.themes', [
+            'light' => LightTheme::class,
+        ]);
+
+        $theme = Arr::get($themes, $theme, $theme);
+
+        if (!$theme || !class_exists($theme)) {
+            throw new InvalidArgumentException("Theme class '{$theme}' does not exist.");
+        }
+
+        $reflected = new ReflectionClass($theme);
+
+        if (!$reflected->implementsInterface(Theme::class)) {
+            throw new InvalidArgumentException("Theme class '{$theme}' must implement the SoloTheme interface.");
+        }
+
+        if ($reflected->isAbstract()) {
+            throw new InvalidArgumentException("Theme class '{$theme}' is not instantiable.");
+        }
+
+        return $this->cachedTheme = new $theme;
+    }
+
+    public function setRenderer($renderer)
+    {
+        if (!is_subclass_of($renderer, PromptsRenderer::class)) {
+            throw new InvalidArgumentException(
+                "[$renderer] must be a subclass of [" . PromptsRenderer::class . ']'
+            );
+        }
+
+        $this->renderer = $renderer;
+    }
+
+    public function getRenderer(): string
+    {
+        return $this->renderer;
     }
 
     protected function caller(): string

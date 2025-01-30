@@ -19,9 +19,8 @@ class SoloServiceProvider extends ServiceProvider
 
     public function configure()
     {
-        Solo::useTheme('dark')
-            // Commands that auto start.
-            ->addCommands([
+        // Commands that auto start.
+        Solo::addCommands([
                 EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
                 'Vite' => 'npm run dev',
                 // 'HTTP' => 'php artisan serve',
