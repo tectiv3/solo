@@ -11,15 +11,11 @@ namespace SoloTerm\Solo;
 
 use Exception;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Facade;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Prompts\Themes\Default\Renderer as PromptsRenderer;
 use ReflectionClass;
 use SoloTerm\Solo\Commands\Command;
-use SoloTerm\Solo\Commands\UnsafeCommand;
 use SoloTerm\Solo\Concerns\HasEvents;
 use SoloTerm\Solo\Contracts\HotkeyProvider;
 use SoloTerm\Solo\Contracts\Theme;
@@ -41,18 +37,9 @@ class Manager
 
     protected string $renderer = Renderer::class;
 
-    /**
-     * @var array<class-string>
-     */
-    protected array $commandsAllowedFrom = [];
-
     public function __construct()
     {
-        // The only classes that are guaranteed to be fully in the user's control.
-        $this->commandsAllowedFrom = [
-            App::getNamespace() . 'Providers\\AppServiceProvider',
-            App::getNamespace() . 'Providers\\SoloServiceProvider',
-        ];
+        $this->loadCommands();
     }
 
     /**
@@ -61,27 +48,6 @@ class Manager
     public function commands(): array
     {
         return $this->commands;
-    }
-
-    /**
-     * To ensure third-party packages cannot run scripts without permission,
-     * they must allowlisted here. Any classes you add here will be
-     * able to add commands, so make sure you trust them!
-     *
-     * @param  array<class-string>  $classes
-     * @return $this
-     *
-     * @throws Exception
-     */
-    public function allowCommandsAddedFrom(array $classes): static
-    {
-        // Make sure this can't be called from a package,
-        // because that would defeat the point.
-        $this->ensureSafeConfigurationLocation(__FUNCTION__);
-
-        $this->commandsAllowedFrom = array_merge($this->commandsAllowedFrom, $classes);
-
-        return $this;
     }
 
     public function addCommand(string|Command $command, ?string $name = null): static
@@ -108,11 +74,6 @@ class Manager
             );
         }
 
-        if (!$this->registrationIsAllowed()) {
-            $command = new UnsafeCommand($command->name, $command->process, false);
-            $command->logCaller($this->caller());
-        }
-
         $this->commands[] = $command;
 
         return $this;
@@ -125,30 +86,17 @@ class Manager
         return $this;
     }
 
-    public function addCommands(array $commands): static
+    public function loadCommands(): static
     {
-        foreach ($commands as $name => $command) {
-            $this->addCommand($command, $name);
-        }
+        $this->addCommands(config('solo.commands'));
 
         return $this;
     }
 
-    public function addLazyCommand(string $command, ?string $name = null): static
+    public function addCommands(array $commands): static
     {
-        return $this->addLazyCommands([
-            $name => $command
-        ]);
-    }
-
-    public function addLazyCommands(array $commands): static
-    {
-        $existing = count($this->commands);
-
-        $this->addCommands($commands);
-
-        for ($i = $existing; $i < count($this->commands); $i++) {
-            $this->commands[$i]->lazy();
+        foreach ($commands as $name => $command) {
+            $this->addCommand($command, $name);
         }
 
         return $this;
@@ -217,40 +165,5 @@ class Manager
     public function getRenderer(): string
     {
         return $this->renderer;
-    }
-
-    protected function caller(): string
-    {
-        return collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS))
-            ->reject(function ($frame) {
-                // Ignore frames from inside this class as we're
-                // bouncing around the different methods
-                return Arr::get($frame, 'class') === static::class
-                    // Ignore frames that are just going through the Facade
-                    || Arr::get($frame, 'class') === Facade::class
-                    // Or ones where there is no class, like a closure.
-                    || !Arr::has($frame, 'class');
-            })
-            ->pluck('class')
-            ->first();
-    }
-
-    protected function registrationIsAllowed(): bool
-    {
-        return in_array($this->caller(), $this->commandsAllowedFrom);
-    }
-
-    protected function ensureSafeConfigurationLocation($func): void
-    {
-        $caller = $this->caller();
-        $namespace = App::getNamespace();
-
-        if (Str::startsWith($caller, $namespace)) {
-            return;
-        }
-
-        throw new Exception(
-            "`$func` may only be called from the [$namespace] namespace."
-        );
     }
 }

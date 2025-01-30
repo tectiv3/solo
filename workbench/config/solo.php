@@ -5,4 +5,5 @@
 
 return [
     'theme' => 'light',
+
 ];

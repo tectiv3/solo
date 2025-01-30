@@ -27,7 +27,7 @@ class BasicTest extends Base
         ];
 
         $this->runSolo($actions, function () {
-            SoloAlias::addCommands([
+            config()->set('solo.commands', [
                 'About' => 'php artisan solo:about'
             ]);
         });
@@ -71,7 +71,7 @@ class BasicTest extends Base
         ];
 
         $this->runSolo($actions, function () {
-            SoloAlias::addCommands([
+            config()->set('solo.commands', [
                 'Logs' => 'tail -f -n 100 ' . storage_path('logs/laravel.log')
             ]);
         });
@@ -92,7 +92,7 @@ class BasicTest extends Base
         ];
 
         $this->runSolo($actions, function () {
-            SoloAlias::addCommands([
+            config()->set('solo.commands', [
                 'Logs' => 'tail -f -n 100 ' . storage_path('logs/laravel.log')
             ]);
         });

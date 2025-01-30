@@ -85,7 +85,7 @@ class Command implements Loopable
         $hotkeys = $this->hotkeys();
 
         if ($this->canBeInteractive()) {
-            $hotkeys['interactive'] = Hotkey::make('i', KeyHandler::Interactive)->label('Interactive mode');
+            $hotkeys['interactive'] = Hotkey::make('i', KeyHandler::Interactive)->label('Enter interactive mode');
         }
 
         return array_filter($hotkeys);

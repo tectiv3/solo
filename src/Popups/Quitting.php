@@ -39,7 +39,7 @@ class Quitting extends Popup
             $name = $command->name;
 
             if (!$command->processRunning()) {
-                $name = $this->dim($this->strikethrough($name));
+                $name = '✓ ' . $this->dim($this->strikethrough($name));
             }
 
             $name .= ' ';

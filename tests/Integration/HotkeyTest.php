@@ -10,7 +10,6 @@
 namespace SoloTerm\Solo\Tests\Integration;
 
 use PHPUnit\Framework\Attributes\Test;
-use SoloTerm\Solo\Facades\Solo as SoloAlias;
 
 class HotkeyTest extends Base
 {
@@ -31,8 +30,7 @@ class HotkeyTest extends Base
 
         $this->runSolo($actions, function () {
             config()->set('solo.keybinding', 'vim');
-
-            SoloAlias::addCommands([
+            config()->set('solo.commands', [
                 'About' => 'php artisan solo:about',
                 'Logs' => 'tail -f -n 100 ' . storage_path('logs/laravel.log')
             ]);

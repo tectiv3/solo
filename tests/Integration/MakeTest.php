@@ -12,7 +12,6 @@ namespace SoloTerm\Solo\Tests\Integration;
 use Laravel\Prompts\Key;
 use PHPUnit\Framework\Attributes\Test;
 use SoloTerm\Solo\Commands\MakeCommand;
-use SoloTerm\Solo\Facades\Solo as SoloAlias;
 
 class MakeTest extends Base
 {
@@ -20,6 +19,7 @@ class MakeTest extends Base
     public function basic_test()
     {
         $actions = [
+
             'i',
             fn($plain) => $this->assertStringContainsString('Interactive', $plain),
             'Mo',
@@ -31,11 +31,11 @@ class MakeTest extends Base
             fn($plain) => $this->assertStringContainsString('Make another class', $plain),
             fn($plain) => $this->assertStringContainsString('Exit interactive mode', $plain),
             "\x18",
-            fn($plain) => $this->assertStringContainsString('Interactive mode', $plain),
+            fn($plain) => $this->assertStringContainsString('Enter interactive mode', $plain),
         ];
 
         $this->runSolo($actions, function () {
-            SoloAlias::addCommands([
+            config()->set('solo.commands', [
                 'Make' => MakeCommand::class,
             ]);
         });

@@ -10,6 +10,7 @@
 namespace SoloTerm\Solo\Popups;
 
 use Generator;
+use SoloTerm\Solo\Facades\Solo;
 use SoloTerm\Solo\Support\CapturedMultiSelectPrompt;
 use SoloTerm\Solo\Support\CapturedTextPrompt;
 
@@ -26,7 +27,7 @@ class CommandPalette extends Popup
 
     public function form(): Generator
     {
-        $commands = collect(config('solo.commands'))->map(function ($command, $name) {
+        $commands = collect(Solo::commands())->map(function ($command, $name) {
             if (is_string($command)) {
                 return $name;
             }

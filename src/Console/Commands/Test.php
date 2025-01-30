@@ -9,7 +9,6 @@
 
 namespace SoloTerm\Solo\Console\Commands;
 
-use App\Providers\AppServiceProvider;
 use Laravel\SerializableClosure\Serializers\Signed;
 use SoloTerm\Solo\Facades\Solo as SoloAlias;
 
@@ -21,13 +20,14 @@ class Test extends Solo
 
     public function handle(): void
     {
-        AppServiceProvider::allowCommandsFromTest($this->argument('class'));
         Signed::$signer = null;
         SoloAlias::clearCommands();
 
         $closure = unserialize($this->argument('provider'))->getClosure();
 
         call_user_func($closure);
+
+        SoloAlias::loadCommands();
 
         parent::handle();
     }
