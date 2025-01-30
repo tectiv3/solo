@@ -53,10 +53,11 @@ return [
         // 'HTTP' => 'php artisan serve',
         // 'Dumps' => 'php artisan solo:dumps',
         // 'Queue' => 'php artisan queue:work',
+        // 'Tests' => 'php artisan test --colors=always',
 
         // Lazy commands do no automatically start when Solo starts.
         'Reverb' => Command::from('php artisan reverb')->lazy(),
-        'Pint' => Command::from('php artisan pint')->lazy(),
+        'Pint' => Command::from('./vendor/bin/pint --ansi')->lazy(),
     ],
 
     /*
