@@ -115,6 +115,8 @@ trait ManagesProcess
             if (strlen($buffer) % 1024 === 0) {
                 $this->partialBuffer .= $buffer;
 
+                // @TODO add a timer to just force the partial buffer through, in case
+                // it's a legit block of 1024 bytes with nothing coming after.
                 return;
             }
 
