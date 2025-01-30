@@ -1,8 +1,8 @@
 <?php
 
-namespace AaronFrancis\Solo\Console\Commands;
+namespace SoloTerm\Solo\Console\Commands;
 
-use AaronFrancis\Solo\Support\CustomDumper;
+use SoloTerm\Solo\Support\CustomDumper;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Console\CliDumper;
 use Illuminate\Support\Arr;

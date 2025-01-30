@@ -6,10 +6,10 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Commands\Concerns;
+namespace SoloTerm\Solo\Commands\Concerns;
 
-use AaronFrancis\Solo\Support\PendingProcess;
-use AaronFrancis\Solo\Support\ProcessTracker;
+use SoloTerm\Solo\Support\PendingProcess;
+use SoloTerm\Solo\Support\ProcessTracker;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Carbon;

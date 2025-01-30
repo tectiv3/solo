@@ -4,10 +4,10 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Popups;
+namespace SoloTerm\Solo\Popups;
 
-use AaronFrancis\Solo\Hotkeys\KeycodeMap;
-use AaronFrancis\Solo\Support\Screen;
+use SoloTerm\Solo\Hotkeys\KeycodeMap;
+use SoloTerm\Solo\Support\Screen;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 
 abstract class Popup

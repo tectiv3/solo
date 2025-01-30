@@ -6,7 +6,7 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Tests\Support;
+namespace SoloTerm\Solo\Tests\Support;
 
 use Illuminate\Support\ServiceProvider;
 

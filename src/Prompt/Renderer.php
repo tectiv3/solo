@@ -6,16 +6,16 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Prompt;
+namespace SoloTerm\Solo\Prompt;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Contracts\Theme;
-use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Hotkeys\KeycodeMap;
-use AaronFrancis\Solo\Popups\Popup;
-use AaronFrancis\Solo\Support\AnsiAware;
-use AaronFrancis\Solo\Support\Screen;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Contracts\Theme;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Hotkeys\KeycodeMap;
+use SoloTerm\Solo\Popups\Popup;
+use SoloTerm\Solo\Support\AnsiAware;
+use SoloTerm\Solo\Support\Screen;
 use Chewie\Concerns\Aligns;
 use Chewie\Concerns\DrawsHotkeys;
 use Chewie\Output\Util;

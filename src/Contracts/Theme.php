@@ -6,7 +6,7 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Contracts;
+namespace SoloTerm\Solo\Contracts;
 
 interface Theme
 {

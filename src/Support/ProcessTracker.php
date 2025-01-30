@@ -1,6 +1,6 @@
 <?php
 
-namespace AaronFrancis\Solo\Support;
+namespace SoloTerm\Solo\Support;
 
 use RuntimeException;
 

@@ -4,10 +4,10 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Hotkeys;
+namespace SoloTerm\Solo\Hotkeys;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Contracts\HotkeyProvider;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Contracts\HotkeyProvider;
 use Laravel\Prompts\Key;
 
 class DefaultHotkeys implements HotkeyProvider

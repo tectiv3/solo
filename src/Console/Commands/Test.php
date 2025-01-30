@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Console\Commands;
+namespace SoloTerm\Solo\Console\Commands;
 
-use AaronFrancis\Solo\Facades\Solo as SoloAlias;
+use SoloTerm\Solo\Facades\Solo as SoloAlias;
 use App\Providers\AppServiceProvider;
 use Laravel\SerializableClosure\Serializers\Signed;
 

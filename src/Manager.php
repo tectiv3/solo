@@ -6,17 +6,17 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo;
+namespace SoloTerm\Solo;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Commands\UnsafeCommand;
-use AaronFrancis\Solo\Concerns\HasEvents;
-use AaronFrancis\Solo\Contracts\HotkeyProvider;
-use AaronFrancis\Solo\Contracts\Theme;
-use AaronFrancis\Solo\Hotkeys\DefaultHotkeys;
-use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Prompt\Renderer;
-use AaronFrancis\Solo\Themes\LightTheme;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Commands\UnsafeCommand;
+use SoloTerm\Solo\Concerns\HasEvents;
+use SoloTerm\Solo\Contracts\HotkeyProvider;
+use SoloTerm\Solo\Contracts\Theme;
+use SoloTerm\Solo\Hotkeys\DefaultHotkeys;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Prompt\Renderer;
+use SoloTerm\Solo\Themes\LightTheme;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;

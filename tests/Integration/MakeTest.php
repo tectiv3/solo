@@ -4,10 +4,10 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Tests\Integration;
+namespace SoloTerm\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Commands\MakeCommand;
-use AaronFrancis\Solo\Facades\Solo as SoloAlias;
+use SoloTerm\Solo\Commands\MakeCommand;
+use SoloTerm\Solo\Facades\Solo as SoloAlias;
 use Laravel\Prompts\Key;
 use PHPUnit\Framework\Attributes\Test;
 

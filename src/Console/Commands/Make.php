@@ -1,8 +1,8 @@
 <?php
 
-namespace AaronFrancis\Solo\Console\Commands;
+namespace SoloTerm\Solo\Console\Commands;
 
-use AaronFrancis\Solo\Support\PendingProcess;
+use SoloTerm\Solo\Support\PendingProcess;
 use Illuminate\Console\Command;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Collection;

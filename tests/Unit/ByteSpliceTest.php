@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Tests\Unit;
+namespace SoloTerm\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Support\SafeBytes;
+use SoloTerm\Solo\Support\SafeBytes;
 use PHPUnit\Framework\Attributes\Test;
 
 class ByteSpliceTest extends Base

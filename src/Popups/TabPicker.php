@@ -4,11 +4,11 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Popups;
+namespace SoloTerm\Solo\Popups;
 
-use AaronFrancis\Solo\Events\Event;
-use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Support\CapturedQuickPickPrompt;
+use SoloTerm\Solo\Events\Event;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Support\CapturedQuickPickPrompt;
 use Cache;
 use Generator;
 use Laravel\Prompts\Key;

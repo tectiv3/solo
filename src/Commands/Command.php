@@ -6,13 +6,13 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Commands;
+namespace SoloTerm\Solo\Commands;
 
-use AaronFrancis\Solo\Commands\Concerns\ManagesProcess;
-use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Hotkeys\KeyHandler;
-use AaronFrancis\Solo\Support\AnsiAware;
-use AaronFrancis\Solo\Support\Screen;
+use SoloTerm\Solo\Commands\Concerns\ManagesProcess;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Hotkeys\KeyHandler;
+use SoloTerm\Solo\Support\AnsiAware;
+use SoloTerm\Solo\Support\Screen;
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Chewie\Input\KeyPressListener;

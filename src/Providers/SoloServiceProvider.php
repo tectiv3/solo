@@ -6,16 +6,16 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Providers;
+namespace SoloTerm\Solo\Providers;
 
-use AaronFrancis\Solo\Console\Commands\About;
-use AaronFrancis\Solo\Console\Commands\Dumps;
-use AaronFrancis\Solo\Console\Commands\Install;
-use AaronFrancis\Solo\Console\Commands\Make;
-use AaronFrancis\Solo\Console\Commands\Monitor;
-use AaronFrancis\Solo\Console\Commands\Solo;
-use AaronFrancis\Solo\Manager;
-use AaronFrancis\Solo\Support\CustomDumper;
+use SoloTerm\Solo\Console\Commands\About;
+use SoloTerm\Solo\Console\Commands\Dumps;
+use SoloTerm\Solo\Console\Commands\Install;
+use SoloTerm\Solo\Console\Commands\Make;
+use SoloTerm\Solo\Console\Commands\Monitor;
+use SoloTerm\Solo\Console\Commands\Solo;
+use SoloTerm\Solo\Manager;
+use SoloTerm\Solo\Support\CustomDumper;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 
@@ -51,9 +51,9 @@ class SoloServiceProvider extends ServiceProvider
             Dumps::class
         ]);
 
-        if (class_exists('\AaronFrancis\Solo\Console\Commands\Test')) {
+        if (class_exists('\SoloTerm\Solo\Console\Commands\Test')) {
             $this->commands([
-                '\AaronFrancis\Solo\Console\Commands\Test',
+                '\SoloTerm\Solo\Console\Commands\Test',
             ]);
         }
     }

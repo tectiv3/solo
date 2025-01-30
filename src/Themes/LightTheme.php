@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Themes;
+namespace SoloTerm\Solo\Themes;
 
-use AaronFrancis\Solo\Contracts\Theme;
+use SoloTerm\Solo\Contracts\Theme;
 use Laravel\Prompts\Concerns\Colors;
 
 class LightTheme implements Theme

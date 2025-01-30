@@ -6,11 +6,11 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Commands;
+namespace SoloTerm\Solo\Commands;
 
-use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Support\Screen;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Support\Screen;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Prompts\Concerns\Colors;

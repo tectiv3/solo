@@ -6,7 +6,7 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Commands;
+namespace SoloTerm\Solo\Commands;
 
 class UnsafeCommand extends Command
 {

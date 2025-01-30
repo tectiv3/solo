@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Tests\Unit;
+namespace SoloTerm\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Support\AnsiAware;
+use SoloTerm\Solo\Support\AnsiAware;
 use Laravel\Prompts\Concerns\Colors;
 use PHPUnit\Framework\Attributes\Test;
 

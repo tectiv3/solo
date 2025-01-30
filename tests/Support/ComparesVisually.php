@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AaronFrancis\Solo\Tests\Support;
+namespace SoloTerm\Solo\Tests\Support;
 
-use AaronFrancis\Solo\Support\Screen;
+use SoloTerm\Solo\Support\Screen;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;

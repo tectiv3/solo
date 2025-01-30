@@ -4,12 +4,12 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Hotkeys;
+namespace SoloTerm\Solo\Hotkeys;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Popups\CommandPalette;
-use AaronFrancis\Solo\Popups\TabPicker;
-use AaronFrancis\Solo\Prompt\Dashboard;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Popups\CommandPalette;
+use SoloTerm\Solo\Popups\TabPicker;
+use SoloTerm\Solo\Prompt\Dashboard;
 
 enum KeyHandler
 {

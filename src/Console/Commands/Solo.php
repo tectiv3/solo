@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Console\Commands;
+namespace SoloTerm\Solo\Console\Commands;
 
-use AaronFrancis\Solo\Prompt\Dashboard;
+use SoloTerm\Solo\Prompt\Dashboard;
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Process;
 

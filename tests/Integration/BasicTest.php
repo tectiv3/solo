@@ -4,9 +4,9 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Tests\Integration;
+namespace SoloTerm\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Facades\Solo as SoloAlias;
+use SoloTerm\Solo\Facades\Solo as SoloAlias;
 use Log;
 use PHPUnit\Framework\Attributes\Test;
 use Str;

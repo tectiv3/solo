@@ -65,8 +65,8 @@ By default, it will look something like this:
 ```php
 namespace App\Providers;
 
-use AaronFrancis\Solo\Commands\EnhancedTailCommand;
-use AaronFrancis\Solo\Facades\Solo;
+use SoloTerm\Solo\Commands\EnhancedTailCommand;
+use SoloTerm\Solo\Facades\Solo;
 use Illuminate\Support\ServiceProvider;
 
 class SoloServiceProvider extends ServiceProvider
@@ -110,7 +110,7 @@ To add new commands, you can pass a key/value pair of name/command to `addComman
 
 Lazy commands do not auto start. That can be helpful when you don't need to run a command everytime, but it might be useful from time to time. Like Queues or Reverb.
 
-You may also pass a `AaronFrancis\Solo\Commands\Command` instance (with no key) to the `addCommands` or `addLazyCommands` methods.
+You may also pass a `SoloTerm\Solo\Commands\Command` instance (with no key) to the `addCommands` or `addLazyCommands` methods.
 
 For example, notice the `EnhancedTailCommand` command here:
 

@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Tests\Unit;
+namespace SoloTerm\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Commands\Command;
+use SoloTerm\Solo\Commands\Command;
 use Laravel\Prompts\Concerns\Colors;
 use PHPUnit\Framework\Attributes\Test;
 

@@ -8,9 +8,9 @@
 
 namespace App\Providers;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Commands\EnhancedTailCommand;
-use AaronFrancis\Solo\Facades\Solo;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Commands\EnhancedTailCommand;
+use SoloTerm\Solo\Facades\Solo;
 use Illuminate\Support\ProcessUtils;
 use Illuminate\Support\ServiceProvider;
 
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Solo::allowCommandsAddedFrom([
-            \AaronFrancis\Solo\Console\Commands\Test::class
+            \SoloTerm\Solo\Console\Commands\Test::class
         ]);
 
         Solo::addCommands([

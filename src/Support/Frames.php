@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-namespace AaronFrancis\Solo\Support;
+namespace SoloTerm\Solo\Support;
 
 class Frames
 {

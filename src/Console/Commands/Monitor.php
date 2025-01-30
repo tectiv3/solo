@@ -1,8 +1,8 @@
 <?php
 
-namespace AaronFrancis\Solo\Console\Commands;
+namespace SoloTerm\Solo\Console\Commands;
 
-use AaronFrancis\Solo\Support\ProcessTracker;
+use SoloTerm\Solo\Support\ProcessTracker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 

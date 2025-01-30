@@ -6,7 +6,7 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Themes;
+namespace SoloTerm\Solo\Themes;
 
 class DarkTheme extends LightTheme
 {

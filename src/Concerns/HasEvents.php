@@ -4,9 +4,9 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Concerns;
+namespace SoloTerm\Solo\Concerns;
 
-use AaronFrancis\Solo\Events\Event;
+use SoloTerm\Solo\Events\Event;
 
 trait HasEvents
 {

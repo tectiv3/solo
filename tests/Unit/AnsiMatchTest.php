@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Tests\Unit;
+namespace SoloTerm\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Support\AnsiMatcher;
+use SoloTerm\Solo\Support\AnsiMatcher;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Attributes\Test;
 

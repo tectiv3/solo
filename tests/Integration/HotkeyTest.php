@@ -4,10 +4,10 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Tests\Integration;
+namespace SoloTerm\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Facades\Solo as SoloAlias;
-use AaronFrancis\Solo\Hotkeys\VimHotkeys;
+use SoloTerm\Solo\Facades\Solo as SoloAlias;
+use SoloTerm\Solo\Hotkeys\VimHotkeys;
 use PHPUnit\Framework\Attributes\Test;
 
 class HotkeyTest extends Base

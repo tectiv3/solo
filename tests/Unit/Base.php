@@ -6,10 +6,10 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Tests\Unit;
+namespace SoloTerm\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Providers\SoloServiceProvider;
-use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
+use SoloTerm\Solo\Providers\SoloServiceProvider;
+use SoloTerm\Solo\Tests\Support\SoloTestServiceProvider;
 use Orchestra\Testbench\TestCase;
 
 abstract class Base extends TestCase

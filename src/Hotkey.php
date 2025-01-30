@@ -4,10 +4,10 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo;
+namespace SoloTerm\Solo;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Prompt\Dashboard;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Prompt\Dashboard;
 use Chewie\Input\KeyPressListener;
 
 class Hotkey

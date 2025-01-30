@@ -4,9 +4,9 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Tests\Unit;
+namespace SoloTerm\Solo\Tests\Unit;
 
-use AaronFrancis\Solo\Support\AnsiTracker;
+use SoloTerm\Solo\Support\AnsiTracker;
 use Illuminate\Support\Benchmark;
 use PHPUnit\Framework\Attributes\Test;
 

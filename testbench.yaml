@@ -1,5 +1,5 @@
 providers:
-  - AaronFrancis\Solo\Providers\SoloServiceProvider
+  - SoloTerm\Solo\Providers\SoloServiceProvider
   - App\Providers\AppServiceProvider
 
 migrations: false

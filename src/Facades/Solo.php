@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Facades;
+namespace SoloTerm\Solo\Facades;
 
-use AaronFrancis\Solo\Manager;
+use SoloTerm\Solo\Manager;
 use Illuminate\Support\Facades\Facade;
 
 class Solo extends Facade

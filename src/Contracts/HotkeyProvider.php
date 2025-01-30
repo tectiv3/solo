@@ -6,9 +6,9 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Contracts;
+namespace SoloTerm\Solo\Contracts;
 
-use AaronFrancis\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Hotkeys\Hotkey;
 
 interface HotkeyProvider
 {

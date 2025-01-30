@@ -4,10 +4,10 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Popups;
+namespace SoloTerm\Solo\Popups;
 
-use AaronFrancis\Solo\Support\CapturedMultiSelectPrompt;
-use AaronFrancis\Solo\Support\CapturedTextPrompt;
+use SoloTerm\Solo\Support\CapturedMultiSelectPrompt;
+use SoloTerm\Solo\Support\CapturedTextPrompt;
 use Generator;
 
 class CommandPalette extends Popup

@@ -1,9 +1,9 @@
 <?php
 
-namespace AaronFrancis\Solo\Hotkeys;
+namespace SoloTerm\Solo\Hotkeys;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Prompt\Dashboard;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Prompt\Dashboard;
 use Chewie\Input\KeyPressListener;
 use Closure;
 use ReflectionFunction;

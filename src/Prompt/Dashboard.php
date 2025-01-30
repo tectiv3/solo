@@ -6,15 +6,15 @@
  * @link https://twitter.com/aarondfrancis
  */
 
-namespace AaronFrancis\Solo\Prompt;
+namespace SoloTerm\Solo\Prompt;
 
-use AaronFrancis\Solo\Commands\Command;
-use AaronFrancis\Solo\Events\Event;
-use AaronFrancis\Solo\Facades\Solo;
-use AaronFrancis\Solo\Hotkeys\Hotkey;
-use AaronFrancis\Solo\Popups\Popup;
-use AaronFrancis\Solo\Support\Frames;
-use AaronFrancis\Solo\Support\Screen;
+use SoloTerm\Solo\Commands\Command;
+use SoloTerm\Solo\Events\Event;
+use SoloTerm\Solo\Facades\Solo;
+use SoloTerm\Solo\Hotkeys\Hotkey;
+use SoloTerm\Solo\Popups\Popup;
+use SoloTerm\Solo\Support\Frames;
+use SoloTerm\Solo\Support\Screen;
 use Carbon\CarbonImmutable;
 use Chewie\Concerns\CreatesAnAltScreen;
 use Chewie\Concerns\Loops;

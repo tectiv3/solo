@@ -4,7 +4,7 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Support;
+namespace SoloTerm\Solo\Support;
 
 interface CapturedPromptInterface
 {

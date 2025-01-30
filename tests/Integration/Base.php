@@ -4,12 +4,12 @@
  * @author Aaron Francis <aarondfrancis@gmail.com|https://twitter.com/aarondfrancis>
  */
 
-namespace AaronFrancis\Solo\Tests\Integration;
+namespace SoloTerm\Solo\Tests\Integration;
 
-use AaronFrancis\Solo\Providers\SoloServiceProvider;
-use AaronFrancis\Solo\Support\AnsiAware;
-use AaronFrancis\Solo\Support\PendingProcess;
-use AaronFrancis\Solo\Tests\Support\SoloTestServiceProvider;
+use SoloTerm\Solo\Providers\SoloServiceProvider;
+use SoloTerm\Solo\Support\AnsiAware;
+use SoloTerm\Solo\Support\PendingProcess;
+use SoloTerm\Solo\Tests\Support\SoloTestServiceProvider;
 use Closure;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Process\ProcessResult;
