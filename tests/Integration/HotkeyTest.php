@@ -18,8 +18,8 @@ class HotkeyTest extends Base
     {
         $actions = [
             function (string $ansi, string $plain) {
-                $this->assertStringContainsString('h Previous', $plain);
-                $this->assertStringContainsString('l Next', $plain);
+                $this->assertStringContainsString('h/l ', $plain);
+                $this->assertStringContainsString('j/k ', $plain);
                 $this->assertStringContainsString('Solo for Laravel is a package to run multiple', $plain);
             },
             'l',

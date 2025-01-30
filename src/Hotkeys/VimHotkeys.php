@@ -27,6 +27,9 @@ class VimHotkeys extends DefaultHotkeys
      */
     public static function remap($map): array
     {
+        $map['prev_next']->keyDisplay('h/l');
+        $map['scroll']->keyDisplay('j/k');
+
         $map['previous_tab']->remap('h');
         $map['next_tab']->remap('l');
         $map['scroll_up']->remap('k');
