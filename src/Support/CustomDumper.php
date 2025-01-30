@@ -29,7 +29,7 @@ readonly class CustomDumper
 
     public static function dumpServerHost(): string
     {
-        return config()->string('solo.dump_server_host', 'tcp://127.0.0.1:9984');
+        return config()->get('solo.dump_server_host', 'tcp://127.0.0.1:9984');
     }
 
     public function __construct(public string $basePath, public string $compiledViewPath)
