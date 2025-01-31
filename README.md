@@ -1,8 +1,8 @@
 <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_dark.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_light.png">
-      <img alt="Solo for Laravel" src="https://raw.githubusercontent.com/mergehez/solo/refs/heads/main/art/solo_logo_light.png" style="max-width: 80%; height: auto;">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/soloterm/solo/refs/heads/main/art/solo_logo_dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/soloterm/solo/refs/heads/main/art/solo_logo_light.png">
+      <img alt="Solo for Laravel" src="https://raw.githubusercontent.com/soloterm/solo/refs/heads/main/art/solo_logo_light.png" style="max-width: 80%; height: auto;">
     </picture>
 </p>
 
@@ -25,14 +25,14 @@ php artisan solo
 
 Each command runs in its own tab in Solo.
 
-![Screenshot](https://github.com/aarondfrancis/solo/blob/main/art/screenshot.png?raw=true)
+![Screenshot](https://github.com/soloterm/solo/blob/main/art/screenshot.png?raw=true)
 
 ## Installation
 
 Require the package:
 
 ```shell
-composer require aaronfrancis/solo --dev
+composer require soloterm/solo --dev
 ```
 
 Install the package:
