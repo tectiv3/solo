@@ -86,7 +86,14 @@ You can define commands in several ways:
 
 A simple string command is the easiest way, but if you need more control you're free to create your own custom class. The `EnhancedTailCommand` is a good example of what you can do in a custom command.
 
-If you want to define a command that does not start automatically, you can use the `Command::from('...')->lazy()` style.
+#### Lazy Commands
+
+If you want to define a command that does not start automatically, you can append `lazy()` to a Command instance:
+
+```php
+// You might need Reverb, but maybe not always, so don't autostart it.
+'Reverb' => Command::from('php artisan reverb')->lazy()
+```
  
 ### Themes
 
@@ -135,18 +142,18 @@ php artisan solo
     - 'g' to quickly jump to any tab
 
 - **Command Controls**:
-    - 's' to start/stop the current command
-    - 'r' to restart
-    - 'c' to clear output
-    - 'p' to pause output
-    - 'f' to resume (follow) output
+    - <kbd>s</kbd> to start/stop the current command
+    - <kbd>r</kbd> to restart
+    - <kbd>c</kbd> to clear output
+    - <kbd>p</kbd> to pause output
+    - <kbd>f</kbd> to resume (follow) output
 
 - **Interactive Mode**:
-    - 'i' to enter interactive mode
-    - Ctrl+X to exit interactive mode
+    - <kbd>i</kbd> to enter interactive mode
+    - <kbd>Ctrl</kbd>+<kbd>X</kbd> to exit interactive mode
 
 - **Global**:
-    - 'q' or Ctrl+C to quit Solo
+    - <kbd>q</kbd> or <kbd>Ctrl</kbd>+<kbd>C</kbd> to quit Solo
 
 ## Special Commands
 
