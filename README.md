@@ -165,7 +165,7 @@ The `EnhancedTailCommand` provides improved log viewing with features like:
 
 - Vendor frame collapsing
 - Stack trace formatting
-- Toggle vendor frames with 'v'
+- Toggle vendor frames with <kbd>v</kbd>
 - File truncating
 
 ```php
@@ -180,6 +180,14 @@ The `MakeCommand` provides an interactive interface for Laravel's make commands:
 'Make' => new MakeCommand,
 ```
 
+### `solo:make`
+
+Solo ships with a special `php artisan solo:make` command that proxies to all of the underlying `php artisan make:*` commands. It serves as a universal entry point to Laravel's make commands.
+
+### `solo:dumps`
+
+Solo also ships with a custom "[Dump Server](https://symfony.com/doc/current/components/var_dumper.html)" that will intercept `dump` commands from your code and show them in Solo instead of inline. You can run this as a normal artisan command via `php artisan solo:make`.
+
 ## FAQ
 
 #### My command isn't working
@@ -187,7 +195,7 @@ The `MakeCommand` provides an interactive interface for Laravel's make commands:
 Try these steps:
 
 1. Test if it works outside of Solo
-2. Check if it has an `--ansi` option
+2. Check if it has an `--ansi` or `--colors=always` option
 3. Verify it's writing to STDOUT
 4. Look for options to force STDOUT output
 
@@ -197,11 +205,11 @@ Yes! Use this format: `vendor/bin/sail artisan schedule:work --ansi`
 
 #### Does Solo support Windows?
 
-No, Solo requires `ext-pcntl` and other Unix-specific features. If you know hwo to fix that, please open a PR.
+No, Solo requires `ext-pcntl` and other Unix-specific features. If you know how to fix that, please open a PR.
 
 #### Can I use this in production?
 
-Not recommended. Use supervisor or similar tools for production environments.
+I wouldn't! Use supervisor or similar tools for production environments.
 
 ## Support
 
