@@ -135,11 +135,13 @@ php artisan solo
 
 ### Key Controls
 
+> Note these are the default bindings. They will be slightly different if you use the Vim bindings.
+
 - **Navigation**:
-    - Left/Right arrows to switch between tabs
-    - Up/Down arrows to scroll output
-    - Shift + Up/Down to page scroll
-    - 'g' to quickly jump to any tab
+    - <kbd>Left</kbd>/<kbd>Right</kbd> arrows to switch between tabs
+    - <kbd>Up</kbd>/<kbd>Down</kbd> arrows to scroll output
+    - <kbd>Shift</kbd> + <kbd>Up</kbd>/<kbd>Down</kbd> to page scroll
+    - <kbd>g</kbd> to quickly jump to any tab
 
 - **Command Controls**:
     - <kbd>s</kbd> to start/stop the current command
