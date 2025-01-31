@@ -13,198 +13,183 @@
 # Solo for Laravel
 
 > [!IMPORTANT]
-> This package requires ext-pcntl, so it will not work on Windows. Sorry about that. If you know how to fix that, let me know
+> This package requires ext-pcntl, so it will not work on Windows. Sorry about that. If you know how to fix that, let me
+know!
 
-## About 
+## About
 
-Solo for Laravel is a package to run multiple commands at once, to aid in local development. All the commands needed to run your application live behind a single artisan command: 
+Solo for Laravel is a package to run multiple commands at once, to aid in local development. All the commands needed to
+run your application live behind a single artisan command:
 
 ```shell
 php artisan solo
 ```
 
-Each command runs in its own tab in Solo.
+Each command runs in its own tab in Solo. Use the left/right arrow keys to navigate between tabs and enjoy a powerful,
+unified development environment.
 
-![Screenshot](https://github.com/soloterm/solo/blob/main/art/screenshot.png?raw=true)
+![Screenshot](https://github.com/aarondfrancis/solo/blob/main/art/screenshot.png?raw=true)
 
 ## Installation
 
-Require the package:
+1. Require the package:
 
 ```shell
-composer require soloterm/solo --dev
+composer require aaronfrancis/solo --dev
 ```
 
-Install the package:
+2. Install the package:
+
 ```shell
 php artisan solo:install
 ```
 
-You can configure the commands you would like to run by modifying `config/solo.php`.
+This will publish the configuration file to `config/solo.php`.
+
+## Configuration
+
+Solo is entirely config-driven through `config/solo.php`. Here's a quick overview of what you can configure:
+
+### Commands
+
+Define your commands in the `commands` array:
+
+```php
+'commands' => [
+    'About' => 'php artisan solo:about',
+    'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
+    'Vite' => 'npm run dev',
+    'Make' => new MakeCommand,
+    
+    // Lazy commands don't start automatically
+    'Dumps' => Command::from('php artisan solo:dumps')->lazy(),
+    'Queue' => Command::from('php artisan queue:work')->lazy(),
+    'Tests' => Command::from('php artisan test --colors=always')->lazy(),
+],
+```
+
+You can define commands in several ways:
+
+- Simple string: `'name' => 'php artisan [...]'`
+- Using Command class: `'name' => Command::from('php artisan [...]')->lazy()`
+- Using custom Command classes: `'Logs' => EnhancedTailCommand::file($path)`
+
+### Themes
+
+Solo ships with both light and dark themes. Configure your preference in `config/solo.php`:
+
+```php
+'theme' => env('SOLO_THEME', 'dark'),
+
+'themes' => [
+    'light' => Themes\LightTheme::class,
+    'dark' => Themes\DarkTheme::class,
+],
+```
+
+You can define your own theme if you'd like. It's probably easiest to subclass one of the existing themes.
+
+### Keybindings
+
+Choose between default and vim-style keybindings:
+
+```php
+'keybinding' => env('SOLO_KEYBINDING', 'default'),
+
+'keybindings' => [
+    'default' => Hotkeys\DefaultHotkeys::class,
+    'vim' => Hotkeys\VimHotkeys::class,
+],
+```
+
+Again, you're welcome to define and register your own keybidings.
 
 ## Usage
 
-You can run Solo with the following command:
+Start Solo with:
 
 ```shell
 php artisan solo
 ```
 
-This will start every command defined in your `SoloServiceProvider`.
+### Key Controls
 
-You'll be presented with a dashboard. To navigate between processes use the left/right arrows. You can scroll the output by using the up/down keys. **Shift + up/down** scrolls by 10 lines instead of one.
+- **Navigation**:
+    - Left/Right arrows to switch between tabs
+    - Up/Down arrows to scroll output
+    - Shift + Up/Down to page scroll
+    - 'g' to quickly jump to any tab
 
-See the hotkeys on the dashboard for further details.
+- **Command Controls**:
+    - 's' to start/stop the current command
+    - 'r' to restart
+    - 'c' to clear output
+    - 'p' to pause output
+    - 'f' to resume (follow) output
 
-## Customization
+- **Interactive Mode**:
+    - 'i' to enter interactive mode
+    - Ctrl+X to exit interactive mode
 
-To customize Solo, you can open your `SoloServiceProvider` and make changes there.
+- **Global**:
+    - 'q' or Ctrl+C to quit Solo
 
-By default, it will look something like this:
+## Special Commands
 
-```php
-namespace App\Providers;
+### EnhancedTailCommand
 
-use SoloTerm\Solo\Commands\EnhancedTailCommand;
-use SoloTerm\Solo\Facades\Solo;
-use Illuminate\Support\ServiceProvider;
+The `EnhancedTailCommand` provides improved log viewing with features like:
 
-class SoloServiceProvider extends ServiceProvider
-{
-    public function register()
-    {
-        Solo::useTheme('dark')
-            // Commands that auto start.
-            ->addCommands([
-                EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
-                'Vite' => 'npm run dev',
-                // 'HTTP' => 'php artisan serve',
-                new Command(name: 'Foo', command: 'pwd"', autostart: false, customHotKeys: []),
-                'About' => 'php artisan solo:about'
-            ])
-            // Not auto-started
-            ->addLazyCommands([
-                'Queue' => 'php artisan queue:listen --tries=1',
-                // 'Reverb' => 'php artisan reverb:start',
-                // 'Pint' => './vendor/bin/pint --ansi',
-                // 'Tests' => 'php artisan test --colors=always',
-            ])
-            // FQCNs of trusted classes that can add commands.
-            ->allowCommandsAddedFrom([
-                //
-            ]);
-    }
-
-    public function boot()
-    {
-        //
-    }
-}
-```
-
-Several commands are provided to get you started in the right direction.
-
-## Adding / removing commands
-
-To add new commands, you can pass a key/value pair of name/command to `addCommands` or `addLazyCommands`.
-
-Lazy commands do not auto start. That can be helpful when you don't need to run a command everytime, but it might be useful from time to time. Like Queues or Reverb.
-
-You may also pass a `SoloTerm\Solo\Commands\Command` instance (with no key) to the `addCommands` or `addLazyCommands` methods.
-
-For example, notice the `EnhancedTailCommand` command here:
+- Vendor frame collapsing
+- Stack trace formatting
+- Toggle vendor frames with 'v'
+- File truncating
 
 ```php
-Solo::useTheme('dark')
-    // Commands that auto start.
-    ->addCommands([
-        EnhancedTailCommand::make('Logs', 'tail -f -n 100 ' . storage_path('logs/laravel.log')),
-        'Vite' => 'npm run dev',
-        // 'HTTP' => 'php artisan serve',
-        new Command(name: 'Foo', command: 'pwd"', autostart: false, customHotKeys: []),
-        'About' => 'php artisan solo:about'
-    ])
+'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
 ```
 
-`EnhancedTailCommand` is a subclass of `Command` with a little bit of logic to make the logs more readable. You're free to create your own subclasses if you want!
+### MakeCommand
 
-To remove a command, simply delete the command. No need to create a PR to fix the stub. We've provided a reasonable set of starting commands, but the `SoloServiceProvider` lives in your application, so you have full control of it.
-
-
-## Usage
-
-To use Solo, you simply need to run `php artisan solo`.
-
-You'll be presented with a dashboard. To navigate between processes use the left/right arrows. You can scroll the output by using the up/down keys. **Shift + up/down** scrolls by 10 lines instead of one.
-
-See the hotkeys on the dashboard for further details.
-
-## Theming
-
-Two themes are shipped by default: light and dark.
-
-To change the theme you can pass 'light' or 'dark' to the `useTheme` method.
+The `MakeCommand` provides an interactive interface for Laravel's make commands:
 
 ```php
-Solo::useTheme('dark');
+'Make' => new MakeCommand,
 ```
 
-If you prefer to have it .env driven so that you and your teammates can have different themes, you can create a `config/solo.php` with a `theme` key. Manually set configuration takes precedence over configuration, so you'll need to remove the `useTheme` call.
+## FAQ
 
-### Creating a new theme
+#### My command isn't working
 
-You can create a new theme by either subclassing the `LightTheme` or `DarkTheme` or by implementing the `Theme` interface. 
+Try these steps:
 
-After you create the theme, you'll need to register it by calling:
+1. Test if it works outside of Solo
+2. Check if it has an `--ansi` option
+3. Verify it's writing to STDOUT
+4. Look for options to force STDOUT output
 
-```php
-// overwrite the default light theme
-Solo::registerTheme('light', AaronsAwesomeLightTheme::class);
+#### Can I run Sail commands?
 
-// or create something totally new
-Solo::registerTheme('synth', SynthWave::class);
-```
+Yes! Use this format: `vendor/bin/sail artisan schedule:work --ansi`
 
-### Modifying the dashboard
+#### Does Solo support Windows?
 
-If you want, you can register a new Renderer to render the entire dashboard. This is out of scope for documentation and only for the brave of heart, but once you do you can register it thusly:
+No, Solo requires `ext-pcntl` and other Unix-specific features. If you know hwo to fix that, please open a PR.
 
-```php
-Solo::setRenderer(MyFancyDashboardRenderer::class);
-```
+#### Can I use this in production?
 
-## Allowing packages to register commands
+Not recommended. Use supervisor or similar tools for production environments.
 
-By default, packages are not allowed to register commands. If they do register commands, they'll be marked as "unsafe." They'll still show up on your dashboard, but they will not run.
+## Support
 
-To allow a package to register a command, you must add the caller to your service provider:
+This is free! If you want to support me:
 
-```php
-Solo::allowCommandsAddedFrom([
-  // Note that Pint doesn't actually register Solo commands, this is just an example!
-  \Laravel\Pint\PintServiceProvider::class,
-]);
-```
-
-## Service provider in a custom location.
-
-By default, your `SoloServiceProvider` is created in the `App\Providers` namespace, which is pre-registered as a "safe" location to add commands from. If your `SoloServiceProvider` is in a custom location, it will still be deemed "safe" as long as it resides in your application's namespace (usually `App`, but custom root namespaces are supported.)  
-
-
-## Contributing
-Please help.
-
-Also there are gonna be _so_ many edge cases with commands, terminals, etc. I need a good way to test these things. If you're good at testing, please help me set up a good scaffold. 
-
-## Support me
-
-This is free! I also don't take donations.
-
-If you want to support me you can either buy one of my courses or tell your friends about them or just generally help me spread the word about the things I make. That's all!
-
-- Mastering Postgres: https://masteringpostgres.com
-- High Performance SQLite: https://highperformancesqlite.com
-- Screencasting: https://screencasting.com
+- Check out my courses:
+    - [Mastering Postgres](https://masteringpostgres.com)
+    - [High Performance SQLite](https://highperformancesqlite.com)
+    - [Screencasting](https://screencasting.com)
+- Share them with friends
+- Help spread the word about things I make
 
 ## Credits
 
@@ -215,28 +200,9 @@ Solo was developed by Aaron Francis. If you like it, please let me know!
 - YouTube: https://youtube.com/@aarondfrancis
 - GitHub: https://github.com/aarondfrancis/solo
 
-Special thanks to
+Special thanks to:
 
 - [Joe Tannenbaum](https://x.com/joetannenbaum) for his [Laracasts course](https://laracasts.com/series/cli-experiments)
-- Joe's [Chewie package](https://github.com/joetannenbaum/chewie), on which Solo relies
-- [Laravel Prompts](https://laravel.com/docs/11.x/prompts) for paving the way
+- Joe's [Chewie package](https://github.com/joetannenbaum/chewie)
+- [Laravel Prompts](https://laravel.com/docs/11.x/prompts)
 - [Will King](https://x.com/wking__) for the Solo logo
-- And you, dear reader
-
-
-## FAQ
-
-#### My command isn't working
-(That's not really a question, but I'll allow it.) Does it work outside of Solo? Does it have an `--ansi`
-option? Is it writing to somewhere besides `STDOUT`? Is there an option to force it to write to `STDOUT`? If
-you've tried all that, feel free to open an issue.
-    
-#### Can I run Sail commands?
-Yes! This seems to be the way to do it: `vendor/bin/sail artisan schedule:work --ansi` (Read more at #29.)
-   
-#### Does Solo support Windows?
-It does not, sorry. Solo relies on `ext-pcntl` and a few other Linux-y things, so Windows support is not on the
-roadmap.
-    
-#### Can I use this in production?
-I wouldn't. I'd use something more robust, like supervisor or something.
