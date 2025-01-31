@@ -70,10 +70,24 @@ Define your commands in the `commands` array:
 
 You can define commands in several ways:
 
-- Simple string: `'name' => 'php artisan [...]'`
-- Using Command class: `'name' => Command::from('php artisan [...]')->lazy()`
-- Using custom Command classes: `'Logs' => EnhancedTailCommand::file($path)`
+```php
+'commands' => [
+    // A simple string
+    'About' => 'php artisan solo:about',
+    
+    // A custom Command class
+    'Logs' => EnhancedTailCommand::file(storage_path('logs/laravel.log')),
+    'Make' => new MakeCommand,
+    
+    // Using the Command::from() static constructor
+    'Dumps' => Command::from('php artisan solo:dumps')->lazy(),
+],
+```
 
+A simple string command is the easiest way, but if you need more control you're free to create your own custom class. The `EnhancedTailCommand` is a good example of what you can do in a custom command.
+
+If you want to define a command that does not start automatically, you can use the `Command::from('...')->lazy()` style.
+ 
 ### Themes
 
 Solo ships with both light and dark themes. Configure your preference in `config/solo.php`:
