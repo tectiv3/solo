@@ -174,15 +174,14 @@ The `EnhancedTailCommand` provides improved log viewing with features like:
 
 ### MakeCommand
 
-The `MakeCommand` provides an interactive interface for Laravel's make commands:
+Solo ships with a special `php artisan solo:make` command that proxies to all of the underlying `php artisan make:*`
+commands. It serves as a universal entry point to Laravel's make commands.
+
+It lives in a custom `MakeCommand` class.
 
 ```php
 'Make' => new MakeCommand,
 ```
-
-### `solo:make`
-
-Solo ships with a special `php artisan solo:make` command that proxies to all of the underlying `php artisan make:*` commands. It serves as a universal entry point to Laravel's make commands.
 
 ### `solo:dumps`
 
