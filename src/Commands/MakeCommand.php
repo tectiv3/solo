@@ -23,8 +23,15 @@ class MakeCommand extends Command
 
     public function whenStopping()
     {
-        $this->input->write(Key::CTRL_C);
-        $this->input->write(Key::CTRL_C);
-        $this->input->write(Key::CTRL_C);
+        $this->potentiallyExitOpenPrompts();
+        $this->potentiallyExitOpenPrompts();
+        $this->potentiallyExitOpenPrompts();
+    }
+
+    protected function potentiallyExitOpenPrompts()
+    {
+        if (!$this->input->isClosed()) {
+            $this->input->write(Key::CTRL_C);
+        }
     }
 }
