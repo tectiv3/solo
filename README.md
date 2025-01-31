@@ -35,7 +35,7 @@ unified development environment.
 1. Require the package:
 
 ```shell
-composer require aaronfrancis/solo --dev
+composer require soloterm/solo --dev
 ```
 
 2. Install the package:
