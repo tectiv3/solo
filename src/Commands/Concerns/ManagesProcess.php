@@ -44,6 +44,11 @@ trait ManagesProcess
 
         $command = explode(' ', $this->command);
 
+        // ??
+        // alias screen='TERM=xterm-256color screen'
+        // https://superuser.com/questions/800126/gnu-screen-changes-vim-syntax-highlighting-colors
+        // https://github.com/derailed/k9s/issues/2810
+
         // We have to make our own so that we can control pty.
         $process = app(PendingProcess::class)
             //->command($command)
