@@ -291,7 +291,7 @@ class Command implements Loopable
         });
     }
 
-    public function wrapLine($line, $width = null, $continuationIndent = 0): array
+    public function wrapLine($line, $width = null, $continuationIndent = 0, $recursive = false): array
     {
         $defaultWidth = $this->scrollPaneWidth();
 
@@ -327,11 +327,11 @@ class Command implements Loopable
             }
         }
 
-        $rest = $indent . implode(PHP_EOL, $exploded);
+        $rest = $indent . ltrim(implode('', $exploded));
 
         return [
             $first,
-            ...$this->wrapLine($rest, $width, $continuationIndent)
+            ...$this->wrapLine($rest, $width, $continuationIndent, true)
         ];
     }
 
