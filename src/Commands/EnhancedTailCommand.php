@@ -94,7 +94,6 @@ class EnhancedTailCommand extends Command
         $this->wrapLines = !$this->wrapLines;
     }
 
-
     protected function prepareToEnableWrapping()
     {
         $lines = $this->wrappedLines();

@@ -13,7 +13,6 @@ use Closure;
 use Generator;
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Process\ProcessResult;
-use Illuminate\Support\Facades\Log;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Terminal;
 use Laravel\SerializableClosure\SerializableClosure;

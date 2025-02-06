@@ -10,11 +10,10 @@
 namespace SoloTerm\Solo\Tests\Integration;
 
 use Laravel\Prompts\Key;
-use Log;
 use PHPUnit\Framework\Attributes\Test;
 use SoloTerm\Solo\Commands\EnhancedTailCommand;
-use SoloTerm\Solo\Facades\Solo as SoloAlias;
 use Str;
+
 use function Orchestra\Testbench\package_path;
 
 class EnhancedTailCommandTest extends Base
@@ -53,7 +52,7 @@ class EnhancedTailCommandTest extends Base
 
         $this->runSolo($actions, function () {
             config()->set('solo.commands', [
-                'Logs' => EnhancedTailCommand::file(package_path("tests/Fixtures/enhance-log-wrap-vendor-test.log"))
+                'Logs' => EnhancedTailCommand::file(package_path('tests/Fixtures/enhance-log-wrap-vendor-test.log'))
             ]);
         });
     }
@@ -93,9 +92,8 @@ class EnhancedTailCommandTest extends Base
 
         $this->runSolo($actions, function () {
             config()->set('solo.commands', [
-                'Logs' => EnhancedTailCommand::file(package_path("tests/Fixtures/enhance-log-wrap-vendor-test.log"))
+                'Logs' => EnhancedTailCommand::file(package_path('tests/Fixtures/enhance-log-wrap-vendor-test.log'))
             ]);
         });
     }
-
 }
