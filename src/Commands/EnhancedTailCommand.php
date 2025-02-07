@@ -33,7 +33,9 @@ class EnhancedTailCommand extends Command
 
     protected string $file;
 
-    private string $invisibleVendorMark = "\e[31mV\e[0m";
+    protected string $invisibleVendorMark;
+
+    protected string $invisibleWrapMark;
 
     public static function file($path)
     {
@@ -45,6 +47,12 @@ class EnhancedTailCommand extends Command
         $this->file = $path;
 
         return $this;
+    }
+
+    public function beforeStart(): void
+    {
+        $this->invisibleVendorMark = Solo::theme()->invisible('V');
+        $this->invisibleWrapMark = Solo::theme()->invisible('W');
     }
 
     /**
@@ -103,9 +111,11 @@ class EnhancedTailCommand extends Command
         while ($cursor >= 0) {
             $line = $lines->get($cursor - 1);
 
+            $pattern = str($this->dim(' ...') . Solo::theme()->invisible('XXX'))->before('XXX')->value();
+
             // Invisible compressed line count.
-            if (Str::contains($line, "...\e[35m")) {
-                $count = str($line)->afterLast("...\e[35m")->before("\e")->value();
+            if (Str::contains($line, $pattern)) {
+                $count = str($line)->afterLast($pattern)->before("\e")->value();
                 $count = BaseConverter::toInt($count);
 
                 $this->pendingScrollIndex += $count;
@@ -125,7 +135,7 @@ class EnhancedTailCommand extends Command
         while ($cursor >= 0) {
             $line = $lines->get($cursor - 1);
 
-            if (Str::contains($line, "\e[35mW\e[0m")) {
+            if (Str::contains($line, $this->invisibleWrapMark)) {
                 $this->pendingScrollIndex -= 1;
             }
 
@@ -142,7 +152,7 @@ class EnhancedTailCommand extends Command
 
         if (!$this->wrapLines && count($wrapped) > 1 && !$recursive) {
             $width += 2;
-            $remainder = ' ...' . "\e[35m" . BaseConverter::toString(count($wrapped) - 1) . "\e[0m";
+            $remainder = $this->dim(' ...') . Solo::theme()->invisible(BaseConverter::toString(count($wrapped) - 1));
             $len = AnsiAware::mb_strlen($remainder);
 
             $wrapped = parent::wrapLine($wrapped[0], (int) $width - $len, $continuationIndent);
@@ -151,7 +161,7 @@ class EnhancedTailCommand extends Command
         }
 
         if (count($wrapped) > 1) {
-            $wrapped[1] .= "\e[35mW\e[0m";
+            $wrapped[1] .= $this->invisibleWrapMark;
         }
 
         return $wrapped;
@@ -174,7 +184,7 @@ class EnhancedTailCommand extends Command
             $line = $lines->get($cursor);
 
             // Invisible compressed line count.
-            if ($count = Str::match("/\\e\[36m\[(\d+)]\\e\[0m/", $line)) {
+            if ($count = Str::match("/\[C:(\d+)]/", $line)) {
                 $compressed ??= intval($count);
             }
 
@@ -349,7 +359,7 @@ class EnhancedTailCommand extends Command
             // Add the running total, invisibly, to this line. When we turn vendor
             // frames back on we search through the lines above the current index
             // to figure out how many compressed vendor frames there are.
-            $invisibleCount = "\e[36m[$this->compressed]\e[0m";
+            $invisibleCount = Solo::theme()->invisible("[C:$this->compressed]");
 
             // We also add the invisible vendor mark to denote that these
             // are vendor frames, albeit collapsed ones.

@@ -94,8 +94,15 @@ trait ManagesProcess
         return $this;
     }
 
+    public function beforeStart()
+    {
+        //
+    }
+
     public function start(): void
     {
+        $this->beforeStart();
+
         $this->process = $this->createPendingProcess()->start(null, function ($type, $buffer) {
             // After many, many hours of frustration I've figured out that for some reason the max
             // number of bytes that come through at any time is 1024. I think it has to do with
