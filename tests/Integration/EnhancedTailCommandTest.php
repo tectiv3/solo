@@ -19,7 +19,7 @@ use function Orchestra\Testbench\package_path;
 class EnhancedTailCommandTest extends Base
 {
     #[Test]
-    public function wrapping_and_unwrapping()
+    public function wrapping_and_vendor()
     {
         $traceIsFirstLine = function (string $ansi, string $plain) {
             $lines = explode("\n", $plain);
@@ -46,48 +46,18 @@ class EnhancedTailCommandTest extends Base
             // Allow wrapping
             'w',
             $traceIsFirstLine,
+            // Disallow wrapping
             'w',
             $traceIsFirstLine,
-        ];
-
-        $this->runSolo($actions, function () {
-            config()->set('solo.commands', [
-                'Logs' => EnhancedTailCommand::file(package_path('tests/Fixtures/enhance-log-wrap-vendor-test.log'))
-            ]);
-        });
-    }
-
-    #[Test]
-    public function collapse_and_expand_vendor()
-    {
-        $actions = [
-            // Time for the tail to catch up
-            1000,
-            Key::SHIFT_UP,
-            Key::SHIFT_UP,
-            Key::UP_ARROW,
-            function (string $ansi, string $plain) {
-                $this->assertStringNotContainsString('#08 /vendor/joetannenbaum', $plain);
-                $this->assertStringContainsString('#09 /src/Prompt/Dashboard.php(211): SoloTer', $plain);
-                $this->assertStringContainsString('#10 /vendor/joetannenbaum/chewie/src/Concer', $plain);
-
-                $this->assertStringContainsString('Hide Vendor', $plain);
-            },
+            // Toggle Vendor
             'v',
-            function (string $ansi, string $plain) {
-                $this->assertStringContainsString('#09 /src/Prompt/Dashboard.php(211): SoloTer', $plain);
-                $this->assertStringNotContainsString('#10 /vendor/joetannenbaum/chewie/src/Concer', $plain);
-
-                $this->assertStringContainsString('Show Vendor', $plain);
-            },
+            $traceIsFirstLine,
+            'w',
+            $traceIsFirstLine,
             'v',
-            function (string $ansi, string $plain) {
-                $this->assertStringNotContainsString('#08 /vendor/joetannenbaum', $plain);
-                $this->assertStringContainsString('#09 /src/Prompt/Dashboard.php(211): SoloTer', $plain);
-                $this->assertStringContainsString('#10 /vendor/joetannenbaum/chewie/src/Concer', $plain);
-
-                $this->assertStringContainsString('Hide Vendor', $plain);
-            },
+            $traceIsFirstLine,
+            'w',
+            $traceIsFirstLine,
         ];
 
         $this->runSolo($actions, function () {

@@ -11,12 +11,12 @@ namespace SoloTerm\Solo\Commands;
 
 use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
-use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Collection;
 use SoloTerm\Solo\Commands\Concerns\ManagesProcess;
 use SoloTerm\Solo\Hotkeys\Hotkey;
 use SoloTerm\Solo\Hotkeys\KeyHandler;
 use SoloTerm\Solo\Support\AnsiAware;
+use SoloTerm\Solo\Support\KeyPressListener;
 use SoloTerm\Solo\Support\Screen;
 use SplQueue;
 
