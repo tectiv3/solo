@@ -1,59 +1,52 @@
 <?php
 
-/**
- * @author Aaron Francis <aaron@tryhardstudios.com>
- *
- * @link https://aaronfrancis.com
- * @link https://x.com/aarondfrancis
- */
-
 namespace SoloTerm\Solo\Support;
 
-use Exception;
+use InvalidArgumentException;
 
 class BaseConverter
 {
-    public static string $characters = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~';
+    public const ALPHABET = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~';
 
-    public static function toString(int $integer)
+    public static function toString(int $integer): string
     {
         if ($integer < 0) {
-            throw new Exception('Invalid input. Integer must be non-negative.');
+            throw new InvalidArgumentException('Invalid input. Integer must be non-negative.');
+        }
+
+        $base = strlen(self::ALPHABET);
+
+        if ($integer === 0) {
+            return self::ALPHABET[0];
         }
 
         $result = '';
-        $base = strlen(static::$characters);
 
-        while (true) {
-            $whole = (int) ($integer / $base);
-
-            if ($whole >= 1) {
-                $result .= static::$characters[$whole];
-                $integer -= $whole * $base;
-            } else {
-                $result .= static::$characters[$integer];
-                break;
-            }
+        while ($integer > 0) {
+            $remainder = $integer % $base;
+            $result = self::ALPHABET[$remainder] . $result;
+            $integer = intdiv($integer, $base);
         }
 
         return $result;
     }
 
-    public static function toInt(string $string)
+    public static function toInt(string $string): int
     {
-        $string = strrev($string);
-        $base = strlen(static::$characters);
-        $int = 0;
-        foreach (str_split($string) as $mult => $char) {
-            $value = strpos(static::$characters, $char);
+        $base = strlen(self::ALPHABET);
+        $length = strlen($string);
+        $integer = 0;
 
-            if ($mult > 0) {
-                $value *= ($mult * $base);
+        for ($i = 0; $i < $length; $i++) {
+            $digit = strpos(self::ALPHABET, $string[$i]);
+
+            if ($digit === false) {
+                throw new InvalidArgumentException(sprintf('Invalid character "%s" in input.', $string[$i]));
             }
 
-            $int += $value;
+            $integer = $integer * $base + $digit;
         }
 
-        return $int;
+        return $integer;
     }
 }

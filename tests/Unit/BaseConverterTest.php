@@ -17,7 +17,7 @@ class BaseConverterTest extends Base
     #[Test]
     public function it_works(): void
     {
-        for ($i = 0; $i <= 8835; $i++) {
+        for ($i = 0; $i < 100_000; $i++) {
             $encoded = BaseConverter::toString($i);
             $decoded = BaseConverter::toInt($encoded);
 
