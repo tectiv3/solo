@@ -340,4 +340,18 @@ class Command implements Loopable
         // Primarily here for any subclasses.
         return $lines;
     }
+
+    public static function __set_state(array $data)
+    {
+        $instance = new static();
+
+        // Set all the properties on the instance.
+        foreach ($data as $key => $value) {
+            $reflection = new \ReflectionProperty($instance, $key);
+            $reflection->setAccessible(true);
+            $reflection->setValue($instance, $value);
+        }
+
+        return $instance;
+    }
 }
