@@ -105,10 +105,10 @@ class Command implements Loopable
     public static function __set_state(array $data)
     {
         static $properties = [];
-        $instance = new static();
+        $instance = new static;
 
         foreach ($data as $key => $value) {
-            if (! isset($Properties[$key])) {
+            if (!isset($Properties[$key])) {
                 $properties[$key] = new ReflectionProperty(static::class, $key);
                 $properties[$key]->setAccessible(true);
             }
