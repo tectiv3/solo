@@ -10,7 +10,6 @@ use SoloTerm\Solo\Commands\Command;
 
 class CommandSerializationTest extends TestCase
 {
-
     #[Test]
     public function command_config_can_be_serialized_and_cached(): void
     {
