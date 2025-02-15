@@ -3,13 +3,12 @@
 namespace Tests\Unit;
 
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Artisan;
 use Orchestra\Testbench\TestCase;
 use SoloTerm\Solo\Commands\Command;
-use Illuminate\Support\Facades\Artisan;
 
 class CommandSerializationTest extends TestCase
 {
-
     public function test_command_config_is_properly_cached()
     {
         $this->artisan('config:clear');
@@ -29,7 +28,7 @@ class CommandSerializationTest extends TestCase
         $this->assertEquals($config, $cachedConfig['solo']);
 
         $this->assertSerializedConfig($fileSystem->get($cachedConfigPath));
-        
+
         $this->artisan('config:clear');
         $this->assertFileDoesNotExist($cachedConfigPath, 'Config cache file still exists');
     }
