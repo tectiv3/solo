@@ -5,11 +5,14 @@ namespace Tests\Unit;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Artisan;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use SoloTerm\Solo\Commands\Command;
 
 class CommandSerializationTest extends TestCase
 {
-    public function test_command_config_is_properly_cached()
+
+    #[Test]
+    public function command_config_can_be_serialized_and_cached(): void
     {
         $this->artisan('config:clear');
         $fileSystem = app(Filesystem::class);
