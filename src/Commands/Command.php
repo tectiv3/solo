@@ -13,6 +13,7 @@ use Chewie\Concerns\Ticks;
 use Chewie\Contracts\Loopable;
 use Chewie\Input\KeyPressListener;
 use Illuminate\Support\Collection;
+use ReflectionProperty;
 use SoloTerm\Solo\Commands\Concerns\ManagesProcess;
 use SoloTerm\Solo\Hotkeys\Hotkey;
 use SoloTerm\Solo\Hotkeys\KeyHandler;
@@ -99,6 +100,23 @@ class Command implements Loopable
         return [
             //
         ];
+    }
+
+    public static function __set_state(array $data)
+    {
+        static $properties = [];
+        $instance = new static();
+
+        foreach ($data as $key => $value) {
+            if (! isset($Properties[$key])) {
+                $properties[$key] = new ReflectionProperty(static::class, $key);
+                $properties[$key]->setAccessible(true);
+            }
+
+            $properties[$key]->setValue($instance, $value);
+        }
+
+        return $instance;
     }
 
     public function setDimensions($width, $height): static
