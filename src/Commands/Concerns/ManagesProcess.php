@@ -182,7 +182,6 @@ trait ManagesProcess
 
         exec(sprintf('lsof -p %d 2>/dev/null', $pid), $output);
 
-        dump($output);
         foreach ($output as $line) {
             if (!preg_match('#(/dev/tty\S+|/dev/pty\S+)#', $line, $matches)) {
                 continue;

@@ -167,8 +167,6 @@ class Command implements Loopable
     {
         $text = str_replace('[screen is terminating]', '', $text);
 
-        file_put_contents('debug.txt', $text, FILE_APPEND);
-
         $this->screen->write($text);
     }
 
