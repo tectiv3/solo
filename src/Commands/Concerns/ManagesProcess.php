@@ -51,7 +51,7 @@ trait ManagesProcess
 
         // We have to make our own so that we can control pty.
         $process = app(PendingProcess::class)
-            //->command($command)
+            // ->command($command)
             ->command([
                 'bash',
                 '-c',
