@@ -105,8 +105,15 @@ trait ManagesProcess
         return $this;
     }
 
+    public function beforeStart()
+    {
+        //
+    }
+
     public function start(): void
     {
+        $this->beforeStart();
+
         $this->process = $this->createPendingProcess()->start(null, function ($type, $buffer) {
             $this->partialBuffer .= $buffer;
         });
