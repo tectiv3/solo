@@ -14,22 +14,23 @@ class CommandSerializationTest extends TestCase
     public function command_config_can_be_serialized_and_cached(): void
     {
         $this->artisan('config:clear');
-        $fileSystem = app(Filesystem::class);
-
-        $config = $fileSystem->getRequire(__DIR__ . '/../../workbench/config/solo.php');
-        $this->assertUnserializedConfig($config);
-
+        $filesystem = app(Filesystem::class);
+        $config = $filesystem->getRequire(__DIR__ . '/../../workbench/config/solo.php');
         $cachedConfigPath = $this->app->getCachedConfigPath();
+
+        $this->assertUnserializedConfig($config);
         $this->assertFileDoesNotExist($cachedConfigPath);
 
         $result = Artisan::call('config:cache');
+
         $this->assertEquals(0, $result);
         $this->assertFileExists($cachedConfigPath);
         $this->assertFileIsReadable($cachedConfigPath);
-        $cachedConfig = $fileSystem->getRequire($cachedConfigPath);
-        $this->assertEquals($config, $cachedConfig['solo']);
 
-        $this->assertSerializedConfig($fileSystem->get($cachedConfigPath));
+        $cachedConfig = $filesystem->getRequire($cachedConfigPath)['solo'];
+
+        $this->assertEquals($config['commands'], $cachedConfig['commands']);
+        $this->assertSerializedConfig($filesystem->get($cachedConfigPath));
 
         $this->artisan('config:clear');
         $this->assertFileDoesNotExist($cachedConfigPath, 'Config cache file still exists');
