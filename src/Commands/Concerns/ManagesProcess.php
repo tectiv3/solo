@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use SoloTerm\Solo\Support\ErrorBox;
 use SoloTerm\Solo\Support\PendingProcess;
 use SoloTerm\Solo\Support\ProcessTracker;
 use Symfony\Component\Process\InputStream;
@@ -67,6 +68,8 @@ trait ManagesProcess
             ->pty()
             ->input($this->input);
 
+        $this->setWorkingDirectory();
+
         if ($this->processModifier) {
             call_user_func($this->processModifier, $process);
         }
@@ -80,6 +83,32 @@ trait ManagesProcess
             'LINES' => $this->scrollPaneHeight(),
             ...$process->environment
         ]);
+    }
+
+    protected function setWorkingDirectory(): void
+    {
+        if (!$this->workingDirectory) {
+            return;
+        }
+
+        if (is_dir($this->workingDirectory)) {
+            $this->withProcess(function (PendingProcess $process) {
+                $process->path($this->workingDirectory);
+            });
+
+            return;
+        }
+
+        $errorBox = new ErrorBox([
+            "Directory not found: {$this->workingDirectory}",
+            'Please check the working directory in config.'
+        ]);
+
+        $this->addOutput($errorBox->render());
+
+        $this->withProcess(function (PendingProcess $process) {
+            return $process->command('')->input(null);
+        });
     }
 
     public function sendInput(mixed $input)
