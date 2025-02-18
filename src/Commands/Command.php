@@ -159,12 +159,14 @@ class Command implements Loopable
     */
     public function dd()
     {
-        $this->wrappedLines()->map(fn($line) => print_r(json_encode($line)));
+        $this->wrappedLines()->dd();
         exit();
     }
 
     public function addOutput($text)
     {
+        $text = str_replace('[screen is terminating]', '', $text);
+
         $this->screen->write($text);
     }
 
