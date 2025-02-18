@@ -51,6 +51,8 @@ class EnhancedTailCommand extends Command
 
     public function beforeStart(): void
     {
+        $this->touchFile();
+
         $this->invisibleVendorMark = Solo::theme()->invisible('V');
         $this->invisibleWrapMark = Solo::theme()->invisible('W');
     }
@@ -94,6 +96,13 @@ class EnhancedTailCommand extends Command
 
         // Clear the logs held in memory.
         $this->clear();
+    }
+
+    protected function touchFile(): void
+    {
+        if (!is_null($this->file) && !file_exists($this->file)) {
+            touch($this->file);
+        }
     }
 
     protected function toggleWrappedLines()
