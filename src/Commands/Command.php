@@ -345,7 +345,7 @@ class Command implements Loopable
 
     public static function __set_state(array $data)
     {
-        $instance = new static();
+        $instance = new static;
 
         // Set all the properties on the instance.
         foreach ($data as $key => $value) {
