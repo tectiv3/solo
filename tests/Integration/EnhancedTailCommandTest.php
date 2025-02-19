@@ -45,26 +45,23 @@ class EnhancedTailCommandTest extends Base
             // Then arrow up one more time, to get to the trace line.
             Key::UP_ARROW,
             'v',
-            function (string $ansi, string $plain) {
-                dd($plain);
-            },
-            //            'v',
+            'v',
             $traceIsFirstLine,
             // Allow wrapping
-            //            'w',
-            //            $traceIsFirstLine,
+            'w',
+            $traceIsFirstLine,
             // Disallow wrapping
-            //            'w',
-            //            $traceIsFirstLine,
+            'w',
+            $traceIsFirstLine,
             // Toggle Vendor
-            //            'v',
-            //            $traceIsFirstLine,
-            //            'w',
-            //            $traceIsFirstLine,
-            //            'v',
-            //            $traceIsFirstLine,
-            //            'w',
-            //            $traceIsFirstLine,
+            'v',
+            $traceIsFirstLine,
+            'w',
+            $traceIsFirstLine,
+            'v',
+            $traceIsFirstLine,
+            'w',
+            $traceIsFirstLine,
         ];
 
         $this->runSolo($actions, function () {
