@@ -64,7 +64,7 @@ class EnhancedTailCommand extends Command
     {
         return [
             'vendor' => Hotkey::make('v', $this->toggleVendorFrames(...))
-                ->label($this->hideVendor ? 'Show Vendor' : 'Hide Vendor'),
+                ->label($this->hideVendor ? 'Show vendor' : 'Hide vendor'),
 
             'wrap' => $this->file ? Hotkey::make('w', $this->toggleWrappedLines(...))
                 ->label($this->wrapLines ? 'Prevent wrapping' : 'Allow wrapping  ') : null,
@@ -334,7 +334,7 @@ class EnhancedTailCommand extends Command
         $traceContentWidth = $traceBoxWidth - 4;
 
         // A single trailing line that closes the JSON exception object.
-        if (trim($line) === '"}') {
+        if (trim($line) === "\e[0m\"}") {
             return $theme->dim(' ╰' . str_repeat('═', $traceBoxWidth - 2) . '╯');
         }
 
@@ -357,7 +357,7 @@ class EnhancedTailCommand extends Command
 
         // Stack trace lines start with #\d. Here we pad the numbers 0-9
         // with a preceding zero to keep everything in line visually.
-        $line = preg_replace('/^#(\d)(?!\d)/', '#0$1', $line);
+        $line = preg_replace('/^(\e\[0m)#(\d)(?!\d)/', '$1#0$2', $line);
 
         $vendor = $this->isVendorFrame($line);
 
@@ -393,7 +393,7 @@ class EnhancedTailCommand extends Command
         // (#\d+): Capture the # followed by digits (this is the chunk we dim)
         // (.*?): Capture everything up to a colon if it exists (non-greedy)
         // (:.*)?: Capture an optional colon and everything after it
-        $pattern = '/^(#\d+)(.*?)(:.*)?$/';
+        $pattern = '/^\e\[0m(#\d+)(.*?)(:.*)?$/';
 
         // We then apply dim (\033[2m) and reset (\033[0m) codes. Reference $1 is
         // the frame number, $2 is the file, $3 is after the file, which is

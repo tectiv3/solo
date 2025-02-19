@@ -22,11 +22,11 @@ class HotkeyTest extends Base
             function (string $ansi, string $plain) {
                 $this->assertStringContainsString('h/l ', $plain);
                 $this->assertStringContainsString('j/k ', $plain);
-                $this->assertStringContainsString('Solo for Laravel is a package to run multiple', $plain);
+                $this->assertStringContainsString('GitHub: https://github.com/aarondfrancis/solo', $plain);
             },
             'l',
             function (string $ansi, string $plain) {
-                $this->assertStringNotContainsString('Solo for Laravel is a package to run multiple', $plain);
+                $this->assertStringNotContainsString('GitHub: https://github.com/aarondfrancis/solo', $plain);
             },
         ];
 
@@ -45,13 +45,13 @@ class HotkeyTest extends Base
         $actions = [
             Key::RIGHT_ARROW,
             function (string $ansi, string $plain) {
-                $this->assertStringContainsString('Hide Vendor', $plain);
+                $this->assertStringContainsString('Hide vendor', $plain);
             },
             Key::RIGHT_ARROW,
             'v',
             Key::RIGHT_ARROW,
             function (string $ansi, string $plain) {
-                $this->assertStringContainsString('Hide Vendor', $plain);
+                $this->assertStringContainsString('Hide vendor', $plain);
             },
         ];
 

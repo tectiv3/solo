@@ -50,13 +50,15 @@ trait ManagesProcess
         // https://superuser.com/questions/800126/gnu-screen-changes-vim-syntax-highlighting-colors
         // https://github.com/derailed/k9s/issues/2810
 
+        $screen = $this->makeNewScreen();
+
         // We have to make our own so that we can control pty.
         $process = app(PendingProcess::class)
             // ->command($command)
             ->command([
                 'bash',
                 '-c',
-                "stty cols {$this->scrollPaneWidth()} rows {$this->scrollPaneHeight()} && screen -q " . $this->command,
+                "stty cols {$screen->width} rows {$screen->height} && screen -q " . $this->command,
             ])
             ->forever()
             ->timeout(0)

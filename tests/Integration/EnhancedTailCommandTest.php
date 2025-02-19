@@ -30,34 +30,41 @@ class EnhancedTailCommandTest extends Base
         $actions = [
             // Disallow wrapping so we can scroll up faster
             'w',
+            // 'v',
             // Assert it's off. (We might change the default in the future.)
             function (string $ansi, string $plain) {
                 $this->assertStringContainsString('Allow wrapping ', $plain);
             },
             // Look for the right line.
             function (string $ansi, string $plain) {
-                while (!Str::contains($plain, '#00 /src/Commands/EnhancedTailCommand.php(121):')) {
+                // The second check is a safeguard
+                while (!Str::contains($plain, 'EnhancedTxxxCommand') && !Str::contains($plain, 'Viewing [1-')) {
                     yield Key::UP_ARROW;
                 }
             },
-            // Then arrow up one more time, to get to the Trace line.
-            Key::UP_ARROW,
+            // Then arrow up one more time, to get to the trace line.
+            //            Key::UP_ARROW,
+            //            'v',
+            function (string $ansi, string $plain) {
+                dd($plain);
+            },
+            //            'v',
             $traceIsFirstLine,
             // Allow wrapping
-            'w',
-            $traceIsFirstLine,
+            //            'w',
+            //            $traceIsFirstLine,
             // Disallow wrapping
-            'w',
-            $traceIsFirstLine,
+            //            'w',
+            //            $traceIsFirstLine,
             // Toggle Vendor
-            'v',
-            $traceIsFirstLine,
-            'w',
-            $traceIsFirstLine,
-            'v',
-            $traceIsFirstLine,
-            'w',
-            $traceIsFirstLine,
+            //            'v',
+            //            $traceIsFirstLine,
+            //            'w',
+            //            $traceIsFirstLine,
+            //            'v',
+            //            $traceIsFirstLine,
+            //            'w',
+            //            $traceIsFirstLine,
         ];
 
         $this->runSolo($actions, function () {

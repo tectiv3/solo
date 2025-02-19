@@ -353,7 +353,7 @@
 "}
 [2025-02-05 14:49:58] local.ERROR: Too few arguments to function Illuminate\Support\Str::contains(), 1 passed in /Users/aaron/Code/solo/src/Commands/EnhancedTailCommand.php on line 121 and at least 2 expected {"exception":"[object] (ArgumentCountError(code: 0): Too few arguments to function Illuminate\\Support\\Str::contains(), 1 passed in /Users/aaron/Code/solo/src/Commands/EnhancedTailCommand.php on line 121 and at least 2 expected at /Users/aaron/Code/solo/vendor/laravel/framework/src/Illuminate/Support/Str.php:253)
 [stacktrace]
-#0 /Users/aaron/Code/solo/src/Commands/EnhancedTailCommand.php(121): Illuminate\\Support\\Str::contains('[...]')
+#0 /Users/aaron/Code/solo/src/Commands/EnhancedTxxxCommand.php(121): Illuminate\\Support\\Str::contains('[...]')
 #1 /Users/aaron/Code/solo/src/Commands/EnhancedTailCommand.php(109): SoloTerm\\Solo\\Commands\\EnhancedTailCommand->showWrappedLines()
 #2 [internal function]: SoloTerm\\Solo\\Commands\\EnhancedTailCommand->toggleWrappedLines()
 #3 /Users/aaron/Code/solo/src/Hotkeys/Hotkey.php(165): call_user_func(Object(Closure))
