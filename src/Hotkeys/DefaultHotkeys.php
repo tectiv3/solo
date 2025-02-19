@@ -80,11 +80,13 @@ class DefaultHotkeys implements HotkeyProvider
                 ->label('Scroll down')
                 ->invisible(),
 
-            'page_up' => Hotkey::make([Key::SHIFT_UP, Key::PAGE_UP], KeyHandler::PageUp)
+            // @TODO once we drop support for Laravel 10, we can bump laravel/prompts to 0.3.3 and then use Key::PAGE_UP
+            'page_up' => Hotkey::make([Key::SHIFT_UP, "\e[5~"], KeyHandler::PageUp)
                 ->label('Page up')
                 ->invisible(),
 
-            'page_down' => Hotkey::make([Key::SHIFT_DOWN, KEY::PAGE_DOWN], KeyHandler::PageDown)
+            // @TODO once we drop support for Laravel 10, we can bump laravel/prompts to 0.3.3 and then use Key::PAGE_DOWN
+            'page_down' => Hotkey::make([Key::SHIFT_DOWN, "\e[6~"], KeyHandler::PageDown)
                 ->label('Page down')
                 ->invisible(),
 
