@@ -85,7 +85,7 @@ class LightTheme implements Theme
     {
         // Not all terminals support invisible mode, so we'll make
         // the text white and invisible, for the best odds.
-        return $this->white($text);
+        return "\e[8m" . $this->white($text) . "\e[28m";
     }
 
     /*
