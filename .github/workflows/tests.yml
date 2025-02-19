@@ -51,4 +51,4 @@ jobs:
         env:
           LINES: 32
           COLUMNS: 180
-        run: vendor/bin/phpunit --filter=wrapping
+        run: vendor/bin/phpunit

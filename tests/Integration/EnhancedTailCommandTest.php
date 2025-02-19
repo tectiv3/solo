@@ -30,7 +30,7 @@ class EnhancedTailCommandTest extends Base
         $actions = [
             // Disallow wrapping so we can scroll up faster
             'w',
-            // 'v',
+            'v',
             // Assert it's off. (We might change the default in the future.)
             function (string $ansi, string $plain) {
                 $this->assertStringContainsString('Allow wrapping ', $plain);
