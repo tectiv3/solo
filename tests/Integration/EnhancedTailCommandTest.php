@@ -43,8 +43,8 @@ class EnhancedTailCommandTest extends Base
                 }
             },
             // Then arrow up one more time, to get to the trace line.
-            //            Key::UP_ARROW,
-            //            'v',
+            Key::UP_ARROW,
+            'v',
             function (string $ansi, string $plain) {
                 dd($plain);
             },
