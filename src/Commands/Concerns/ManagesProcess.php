@@ -39,6 +39,8 @@ trait ManagesProcess
 
     protected $children = [];
 
+    protected $environment = [];
+
     public function createPendingProcess(): PendingProcess
     {
         $this->input ??= new InputStream;
@@ -83,6 +85,7 @@ trait ManagesProcess
             'FORCE_COLOR' => '1',
             'COLUMNS' => $this->scrollPaneWidth(),
             'LINES' => $this->scrollPaneHeight(),
+            ...$this->environment,
             ...$process->environment
         ]);
     }
@@ -123,6 +126,13 @@ trait ManagesProcess
     public function withProcess(Closure $cb)
     {
         $this->processModifier = $cb;
+
+        return $this;
+    }
+
+    public function withEnv(array $env)
+    {
+        $this->environment = $env;
 
         return $this;
     }
