@@ -49,6 +49,6 @@ jobs:
 
       - name: Execute tests
         env:
-          ROWS: 32
+          LINES: 32
           COLUMNS: 180
         run: vendor/bin/phpunit --filter=wrapping
