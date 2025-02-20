@@ -223,7 +223,7 @@ class Screen
 
     protected function handlePrintableCharacters(string $text): void
     {
-        if (empty($text)) {
+        if ($text === '') {
             return;
         }
 
