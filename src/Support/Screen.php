@@ -266,7 +266,7 @@ class Screen
         // on where the cursor started and where it ended.
         $this->ansi->fillBufferWithActiveFlags($this->cursorRow, $startCol, max($startCol, $this->cursorCol - 1));
 
-        if ($remainder !== "") {
+        if ($remainder !== '') {
             $this->newlineWithScroll();
             $this->handlePrintableCharacters($remainder);
         }
