@@ -622,4 +622,12 @@ TXT;
     {
         $this->assertTerminalMatch('0');
     }
+
+    #[Test]
+    public function the_daniel_weaver_test_bless_you_daniel()
+    {
+        $line = str_repeat('a', 128);
+
+        $this->assertTerminalMatch($line.'0');
+    }
 }
